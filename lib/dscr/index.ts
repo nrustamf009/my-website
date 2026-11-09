@@ -9,3 +9,4 @@ export * from "./analyze";
 export * from "./scenario";
 export * from "./prepay";
 export * from "./refi";
+export * from "./opportunities";
