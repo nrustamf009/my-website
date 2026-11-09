@@ -24,7 +24,17 @@ export default async function Snapshots() {
       {snaps.length === 0 ? (
         <EmptyState title="No snapshots yet" body="Create one for a listing your realtor partner is marketing to investors." action={<LinkButton href="/dashboard/snapshots/new">Create snapshot</LinkButton>} />
       ) : (
-        <Card className="overflow-x-auto">
+        <>
+        <div className="space-y-2 sm:hidden">
+          {snaps.map((s) => (
+            <Link key={s.id} href={`/dashboard/snapshots/${s.id}`} className="block rounded-2xl border border-line bg-white p-4">
+              <div className="truncate font-medium text-ink">{s.address}</div>
+              <div className="truncate text-xs text-muted">{s.realtor.name} · {s.realtor.brokerage}</div>
+              <div className="mt-2 flex gap-3 text-xs text-ink-2"><span>{usd(s.price)}</span><span>{s._count.scans} scans</span><span>{s._count.leads} leads</span><span className="text-muted">{relativeTime(s.createdAt)}</span></div>
+            </Link>
+          ))}
+        </div>
+        <Card className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[760px]">
             <thead className="bg-paper"><tr><Th>Property</Th><Th>Realtor</Th><Th className="text-right">DSCR @ 25%</Th><Th className="text-right">Scans</Th><Th className="text-right">Leads</Th><Th className="text-right">Created</Th></tr></thead>
             <tbody className="divide-y divide-line">
@@ -44,6 +54,7 @@ export default async function Snapshots() {
             </tbody>
           </table>
         </Card>
+        </>
       )}
     </div>
   );

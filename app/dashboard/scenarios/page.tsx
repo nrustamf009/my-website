@@ -20,7 +20,25 @@ export default async function Scenarios() {
       {list.length === 0 ? (
         <EmptyState title="No scenarios yet" body="Build one from scratch, from a lead, or from a call recording." action={<LinkButton href="/dashboard/scenarios/new">New scenario</LinkButton>} />
       ) : (
-        <Card className="overflow-x-auto">
+        <>
+        <div className="space-y-2 sm:hidden">
+          {list.map((s) => {
+            const interested = s.options.find((o) => o.id === s.interestedOptionId);
+            return (
+              <Link key={s.id} href={`/dashboard/scenarios/${s.id}`} className="block rounded-2xl border border-line bg-white p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium text-ink">{s.investorName}</div>
+                    <div className="truncate text-xs text-muted">{s.propertyAddress}</div>
+                  </div>
+                  {interested ? <Badge tone="good">Picked {interested.label}</Badge> : s.status === "DRAFT" ? <Badge>Draft</Badge> : <Badge tone="accent">Shared</Badge>}
+                </div>
+                <div className="mt-2 text-xs text-muted">{s.views.length} open{s.views.length === 1 ? "" : "s"} · {s.views[0] ? `last ${relativeTime(s.views[0].startedAt)}` : "not opened yet"}</div>
+              </Link>
+            );
+          })}
+        </div>
+        <Card className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[820px]">
             <thead className="bg-paper"><tr><Th>Investor</Th><Th>Property</Th><Th>Status</Th><Th className="text-right">Opens</Th><Th className="text-right">Time on page</Th><Th>Last opened</Th><Th>Interest</Th></tr></thead>
             <tbody className="divide-y divide-line">
@@ -42,6 +60,7 @@ export default async function Scenarios() {
             </tbody>
           </table>
         </Card>
+        </>
       )}
     </div>
   );

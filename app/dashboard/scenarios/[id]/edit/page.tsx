@@ -29,7 +29,7 @@ export default async function EditScenario({ params }: { params: Promise<{ id: s
           insuranceMonthly: s.insuranceMonthly,
           hoaMonthly: s.hoaMonthly,
           note: s.note ?? "",
-          options: s.options.map((o) => ({ label: o.label as "A", loanAmount: o.loanAmount, ratePct: o.ratePct, termYears: o.termYears, interestOnly: o.interestOnly, ioYears: o.ioYears, prepay: o.prepay as "NONE", pointsPct: o.pointsPct, lenderFees: o.lenderFees })),
+          options: s.options.map((o) => ({ label: o.label as "A", loanAmount: o.loanAmount, ratePct: o.ratePct, termYears: o.termYears, interestOnly: o.interestOnly, ioYears: o.ioYears, prepay: o.prepay as "NONE", pointsPct: o.pointsPct, lenderFees: o.lenderFees, recommended: o.recommended })),
         }}
       />
     </div>

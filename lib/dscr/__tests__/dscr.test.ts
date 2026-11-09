@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import {
   SYSTEM_DEFAULTS,
   analyzeDeal,
+  compareOptions,
   computeScenarioOption,
   dscr,
   escrowFromPrice,
@@ -204,5 +205,35 @@ describe("scenario options, prepay and refi", () => {
     expect(s.twenty.pitia).toBeCloseTo(2695.63, 2);
     expect(s.twenty.rentForDscr12).toBeCloseTo(3234.76, 2);
     expect(s.twentyFive.pitia).toBeCloseTo(2562.57, 2);
+  });
+
+  const scen = (opt: Partial<Parameters<typeof computeScenarioOption>[0]["option"]>) =>
+    computeScenarioOption({
+      propertyValue: 400_000,
+      monthlyRent: 3000,
+      escrow: escrow400,
+      isPurchase: true,
+      option: { loanAmount: 300_000, ratePct: 7, termYears: 30, interestOnly: false, prepay: "5-4-3-2-1", pointsPct: 0, lenderFees: 1495, ...opt },
+    });
+
+  it("27. 5-year cost, amortizing: 1,495 fees + 60 × 2,562.57 = $155,249.45", () => {
+    expect(scen({}).fiveYearCost).toBeCloseTo(155_249.45, 1);
+  });
+
+  it("28. 5-year cost, IO for 3 years: 36 × 2,316.67 + 24 × (2,063.44 P&I over 27 yrs + 566.67) = $146,522.68", () => {
+    const r = scen({ interestOnly: true, ioYears: 3, lenderFees: 0 });
+    expect(r.postIoPI).toBeCloseTo(2063.44, 2);
+    expect(r.fiveYearCost).toBeCloseTo(146_522.68, 1);
+  });
+
+  it("29. points break-even: 1 point ($3,000) at 6.625% saves 2,562.57 − 2,487.60 = $74.97/mo → 40.0 months", () => {
+    const a = scen({});
+    const b = scen({ ratePct: 6.625, pointsPct: 1 });
+    const c = compareOptions(a, b);
+    expect(c.extraUpfront).toBe(3000);
+    expect(c.monthlySavings).toBeCloseTo(74.97, 2);
+    expect(c.breakEvenMonths).toBeCloseTo(40.01, 2);
+    // Cheaper upfront and lower payment => nothing to break even.
+    expect(compareOptions(b, a).breakEvenMonths).toBeNull();
   });
 });

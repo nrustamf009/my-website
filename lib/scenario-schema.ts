@@ -11,6 +11,7 @@ const OptionInput = z.object({
   prepay: z.enum(["5-4-3-2-1", "3-2-1", "NONE"]),
   pointsPct: z.coerce.number().min(0).max(5, "Points look too high"),
   lenderFees: z.coerce.number().min(0).max(100_000),
+  recommended: z.boolean().default(false),
 });
 
 export const ScenarioInputSchema = z.object({
@@ -44,6 +45,7 @@ export function defaultOption(label: "A" | "B" | "C", value: number, rate: numbe
     prepay: variant === 2 ? "3-2-1" : "5-4-3-2-1",
     pointsPct: variant === 1 ? 1 : 0,
     lenderFees: 1495,
+    recommended: false,
   };
 }
 

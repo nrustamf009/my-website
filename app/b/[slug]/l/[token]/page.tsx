@@ -4,11 +4,11 @@ import { prisma } from "@/lib/db";
 import { getActiveBrokerBySlug } from "@/lib/broker";
 import { pickPublic } from "@/lib/leads";
 import { currentDevice } from "@/lib/request";
-import { listingSnapshotNumbers } from "@/lib/dscr";
+import { getVerdict, listingSnapshotNumbers, VERDICT_LABEL } from "@/lib/dscr";
 import { pct, rate, ratio, usd } from "@/lib/format";
 import { PublicShell } from "@/components/public/PublicShell";
 import { ListingPrequal } from "@/components/public/ListingPrequal";
-import { Card } from "@/components/ui";
+import { Card, cx } from "@/components/ui";
 import { initials } from "@/lib/format";
 
 export const metadata: Metadata = { robots: { index: false }, title: { absolute: "Investor Financing Snapshot" } };
@@ -53,17 +53,21 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
       </section>
 
       <section className="mx-auto mt-8 grid max-w-5xl gap-4 px-4 sm:grid-cols-2 sm:px-6">
-        {cols.map(({ label, d }) => (
+        {cols.map(({ label, d }) => {
+          const verdict = getVerdict({ dscr: d.dscr, minDscr: broker.minDscr, borderlineBand: broker.borderlineBand, ltv: 1 - d.downPaymentPct, maxLtv: broker.maxLtv });
+          return (
           <Card key={label} className="p-5 sm:p-6">
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-accent">{label}</div>
                 <div className="num mt-1 font-display text-5xl text-ink">{ratio(d.dscr)}</div>
                 <div className="text-xs text-muted">Estimated DSCR</div>
+                <span className={cx("mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold", verdict === "LIKELY" ? "bg-good-soft text-good" : verdict === "BORDERLINE" ? "bg-warn-soft text-warn" : "bg-bad-soft text-bad")}>{VERDICT_LABEL[verdict]}</span>
               </div>
               <div className="text-right">
                 <div className="text-xs text-muted">Monthly payment</div>
                 <div className="num text-2xl font-semibold">{usd(d.pitia)}</div>
+                <div className={cx("num mt-1 text-sm font-medium", d.monthlyCashFlow >= 0 ? "text-good" : "text-bad")}>{d.monthlyCashFlow >= 0 ? "+" : ""}{usd(d.monthlyCashFlow)}/mo cash flow</div>
               </div>
             </div>
             <dl className="mt-4 space-y-1.5 border-t border-line pt-3 text-sm">
@@ -73,7 +77,8 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
               <div className="flex justify-between"><dt className="text-muted">Rent for DSCR 1.20</dt><dd className="num">{usd(d.rentForDscr12)}/mo</dd></div>
             </dl>
           </Card>
-        ))}
+          );
+        })}
         <p className="text-xs text-muted sm:col-span-2">Payment includes estimated taxes {usd(snap.taxesMonthly)}/mo and insurance {usd(snap.insuranceMonthly)}/mo{snap.hoaMonthly ? ` and HOA ${usd(snap.hoaMonthly)}/mo` : ""}. Estimates only, not an offer to lend.</p>
       </section>
 

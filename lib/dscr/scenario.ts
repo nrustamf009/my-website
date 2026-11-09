@@ -30,7 +30,11 @@ export interface ScenarioOptionResult {
   postIoPITIA: number | null;
   annualPITIA: number;
   monthlyCashFlow: number;
+  /** Payments plus upfront costs (points + fees) over the first 5 years. Excludes down payment. */
+  fiveYearCost: number;
 }
+
+export const COST_HORIZON_YEARS = 5;
 
 /** Compute one option of a Scenario Sheet. */
 export function computeScenarioOption(params: {
@@ -54,6 +58,11 @@ export function computeScenarioOption(params: {
   const pointsCost = (option.loanAmount * option.pointsPct) / 100;
   const downPayment = isPurchase ? Math.max(0, propertyValue - option.loanAmount) : 0;
   const upfrontCosts = pointsCost + option.lenderFees;
+  const postIoPITIA = postIoPI === null ? null : monthlyPITIA(postIoPI, escrow);
+  // Months at the initial payment vs. the post-IO payment inside the 5-year horizon.
+  const horizon = COST_HORIZON_YEARS * 12;
+  const initialMonths = option.interestOnly && postIoPITIA !== null ? Math.min(horizon, ioYears * 12) : horizon;
+  const fiveYearCost = upfrontCosts + pitia * initialMonths + (postIoPITIA ?? pitia) * (horizon - initialMonths);
   return {
     pi,
     pitia,
@@ -64,13 +73,31 @@ export function computeScenarioOption(params: {
     upfrontCosts,
     cashToClose: downPayment + upfrontCosts,
     postIoPI,
-    postIoPITIA: postIoPI === null ? null : monthlyPITIA(postIoPI, escrow),
+    postIoPITIA,
     annualPITIA: pitia * 12,
     monthlyCashFlow: monthlyRent - pitia,
+    fiveYearCost,
   };
 }
 
 /** Loan amount for a target LTV, rounded down to the nearest $500. */
 export function loanFromLtv(propertyValue: number, ltv: number): number {
   return Math.floor((propertyValue * ltv) / 500) * 500;
+}
+
+export interface OptionComparison {
+  /** Extra upfront cost (points + fees) of `other` vs. `base`. Negative = cheaper upfront. */
+  extraUpfront: number;
+  /** Monthly payment savings of `other` vs. `base`. Negative = higher payment. */
+  monthlySavings: number;
+  /** Months until lower payments repay the extra upfront cost; null when not applicable. */
+  breakEvenMonths: number | null;
+}
+
+/** Compare two options: does paying more upfront (e.g. points) pay for itself, and when? */
+export function compareOptions(base: ScenarioOptionResult, other: ScenarioOptionResult): OptionComparison {
+  const extraUpfront = other.upfrontCosts - base.upfrontCosts;
+  const monthlySavings = base.pitia - other.pitia;
+  const breakEvenMonths = extraUpfront > 0 && monthlySavings > 0 ? extraUpfront / monthlySavings : null;
+  return { extraUpfront, monthlySavings, breakEvenMonths };
 }

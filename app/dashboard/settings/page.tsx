@@ -1,6 +1,6 @@
 import { requireBroker } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { env, providerModes } from "@/lib/env";
+import { env } from "@/lib/env";
 import { brokerDefaults, parseJson } from "@/lib/broker";
 import { relativeTime } from "@/lib/format";
 import { redeliver, rotateWebhookSecret } from "@/lib/actions/settings";
@@ -16,13 +16,12 @@ export default async function Settings() {
   const deliveries = await prisma.webhookDelivery.findMany({ where: { brokerId: broker.id }, orderBy: { createdAt: "desc" }, take: 10 });
   const embedScript = `<script src="${env.appUrl}/b/${broker.slug}/embed.js" async></script>`;
   const embedIframe = `<iframe src="${env.appUrl}/b/${broker.slug}/embed/check" style="width:100%;min-height:1100px;border:0" title="DSCR Instant Check"></iframe>`;
-  const modes = providerModes();
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader title="Settings" subtitle="Branding, compliance text, underwriting defaults and integrations." />
       <SettingsForm broker={broker} caps={brokerDefaults(broker).ficoLtvCaps} seasoning={parseJson<number[]>(broker.seasoningMonths, [6, 12])} />
 
-      <Card>
+      <Card id="embed">
         <CardHeader title="Embed the Instant Check on your website" subtitle="Paste one of these where you want the calculator to appear." />
         <div className="space-y-4 p-5">
           {[["Script (auto-resizing)", embedScript], ["Plain iframe", embedIframe]].map(([label, code]) => (
@@ -58,11 +57,6 @@ export default async function Settings() {
             </li>
           ))}
         </ul>
-      </Card>
-
-      <Card>
-        <CardHeader title="Integrations status" subtitle="Set by your agency. Mock modes keep everything working without API keys." />
-        <div className="flex flex-wrap gap-2 p-5">{Object.entries(modes).map(([k, v]) => <Badge key={k} tone={v.includes("ock") ? "warn" : "good"}>{k}: {v}</Badge>)}</div>
       </Card>
     </div>
   );

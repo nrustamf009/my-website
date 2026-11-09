@@ -10,12 +10,13 @@ export interface BrokerStats {
   scans: number;
   opportunities: number;
   closedLoans: number;
+  lastActivity: Date | null;
 }
 
 /** Per-broker usage stats for the agency admin and the broker overview. */
 export async function brokerStats(brokerIds: string[]): Promise<Map<string, BrokerStats>> {
   const since = new Date(Date.now() - 30 * 86400_000);
-  const [leads, leads30, scenarios, opens, snapshots, scans, brokers] = await Promise.all([
+  const [leads, leads30, scenarios, opens, snapshots, scans, brokers, lastLead, lastScenario, lastSnap, lastCall] = await Promise.all([
     prisma.lead.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _count: true }),
     prisma.lead.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds }, createdAt: { gte: since } }, _count: true }),
     prisma.scenario.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _count: true }),
@@ -23,7 +24,20 @@ export async function brokerStats(brokerIds: string[]): Promise<Map<string, Brok
     prisma.snapshot.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _count: true }),
     prisma.snapshotScan.findMany({ where: { snapshot: { brokerId: { in: brokerIds } } }, select: { snapshot: { select: { brokerId: true } } } }),
     prisma.broker.findMany({ where: { id: { in: brokerIds } }, include: { closedLoans: { where: { contactedAt: null } } } }),
+    prisma.lead.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _max: { createdAt: true } }),
+    prisma.scenario.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _max: { updatedAt: true } }),
+    prisma.snapshot.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _max: { createdAt: true } }),
+    prisma.callSession.groupBy({ by: ["brokerId"], where: { brokerId: { in: brokerIds } }, _max: { createdAt: true } }),
   ]);
+  const latest = (id: string) => {
+    const dates = [
+      lastLead.find((r) => r.brokerId === id)?._max.createdAt,
+      lastScenario.find((r) => r.brokerId === id)?._max.updatedAt,
+      lastSnap.find((r) => r.brokerId === id)?._max.createdAt,
+      lastCall.find((r) => r.brokerId === id)?._max.createdAt,
+    ].filter((d): d is Date => d instanceof Date);
+    return dates.length ? new Date(Math.max(...dates.map((d) => d.getTime()))) : null;
+  };
   const count = (rows: { brokerId: string; _count: number }[], id: string) => rows.find((r) => r.brokerId === id)?._count ?? 0;
   const map = new Map<string, BrokerStats>();
   for (const b of brokers) {
@@ -36,6 +50,7 @@ export async function brokerStats(brokerIds: string[]): Promise<Map<string, Brok
       scans: scans.filter((s) => s.snapshot.brokerId === b.id).length,
       opportunities: evaluateAll(b.closedLoans, settingsFromBroker(b)).length,
       closedLoans: b.closedLoans.length,
+      lastActivity: latest(b.id),
     });
   }
   return map;

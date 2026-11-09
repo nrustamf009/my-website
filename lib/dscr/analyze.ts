@@ -194,6 +194,7 @@ export function listingSnapshotNumbers(params: {
       pi,
       pitia,
       dscr: calcDscr(monthlyRent, pitia),
+      monthlyCashFlow: monthlyRent - pitia,
       rentForDscr1: minRentForDscr(pitia, 1.0),
       rentForDscr12: minRentForDscr(pitia, 1.2),
     };

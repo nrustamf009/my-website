@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { cx } from "@/components/ui";
 
@@ -34,7 +35,7 @@ export function Icon({ name, className = "h-[18px] w-[18px]" }: { name: string; 
 export function SideNav({ items }: { items: NavItem[] }) {
   const path = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto px-3 pb-2 md:flex-col md:overflow-visible md:pb-0">
+    <nav className="flex flex-col gap-1 px-3">
       {items.map((it) => {
         const active = it.href === path || (it.href !== "/dashboard" && it.href !== "/admin" && path.startsWith(it.href));
         return (
@@ -53,5 +54,41 @@ export function SideNav({ items }: { items: NavItem[] }) {
         );
       })}
     </nav>
+  );
+}
+
+/** Mobile: compact top bar with a menu button that opens the full navigation. */
+export function MobileBar({ items, header, userLabel, signOut }: { items: NavItem[]; header: ReactNode; userLabel: string; signOut: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const path = usePathname();
+  useEffect(() => setOpen(false), [path]);
+  const current = items.find((it) => it.href === path || (it.href !== "/dashboard" && it.href !== "/admin" && path.startsWith(it.href)));
+  const badge = items.reduce((n, it) => n + (it.badge ?? 0), 0);
+  return (
+    <div className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur md:hidden">
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+        <div className="min-w-0">{header}</div>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-label="Menu"
+          className="relative inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink"
+        >
+          {current?.label ?? "Menu"}
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">{open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
+          {badge > 0 && !open && <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[11px] font-semibold text-on-accent">{badge}</span>}
+        </button>
+      </div>
+      {open && (
+        <div className="animate-rise border-t border-line pb-3 pt-2">
+          <SideNav items={items} />
+          <div className="mx-3 mt-3 flex items-center justify-between rounded-lg bg-black/5 px-3 py-2 text-xs text-muted">
+            <span className="truncate">{userLabel}</span>
+            <form action={signOut}><button className="font-medium text-ink">Sign out</button></form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

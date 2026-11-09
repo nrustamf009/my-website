@@ -37,7 +37,29 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
       {leads.length === 0 ? (
         <EmptyState title="No leads here" body="Share your Instant Check page or a listing snapshot to start collecting leads." />
       ) : (
-        <Card className="overflow-x-auto">
+        <>
+        <div className="space-y-2 sm:hidden">
+          {leads.map((l) => {
+            const r = parseJson<{ dscr: number | null; verdict: Verdict } | null>(l.resultJson, null);
+            return (
+              <Link key={l.id} href={`/dashboard/leads/${l.id}`} className="block rounded-2xl border border-line bg-white p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium text-ink">{l.name}</div>
+                    <div className="truncate text-xs text-muted">{l.propertyAddress ?? "—"}</div>
+                  </div>
+                  {l.status === "NEW" ? <Badge tone="accent">New</Badge> : <Badge>{l.status.toLowerCase()}</Badge>}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                  {r && <Badge tone={VERDICT_TONE[r.verdict]}>{ratio(r.dscr)} · {VERDICT_LABEL[r.verdict]}</Badge>}
+                  <span>{l.source === "LISTING" ? `Listing · ${l.realtor?.name ?? "realtor"}` : "Instant Check"}</span>
+                  <span>· {relativeTime(l.createdAt)}</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <Card className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[820px]">
             <thead className="bg-paper"><tr><Th>Investor</Th><Th>Property</Th><Th className="text-right">DSCR</Th><Th>Source</Th><Th>Status</Th><Th className="text-right">When</Th></tr></thead>
             <tbody className="divide-y divide-line">
@@ -57,6 +79,7 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
             </tbody>
           </table>
         </Card>
+        </>
       )}
     </div>
   );

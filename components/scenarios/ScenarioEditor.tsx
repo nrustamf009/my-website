@@ -103,10 +103,20 @@ export function ScenarioEditor({
         {s.options.map((o, i) => {
           const r = results[i];
           return (
-            <Card key={o.label} className="flex flex-col">
-              <div className="flex items-center justify-between border-b border-line px-5 py-3">
+            <Card key={o.label} className={cx("flex flex-col", o.recommended && "ring-2 ring-[color:var(--accent)]")}>
+              <div className="flex items-center justify-between gap-2 border-b border-line px-5 py-3">
                 <div className="font-display text-xl">Option {o.label}</div>
-                {s.options.length > 2 && <button type="button" onClick={() => setS((p) => ({ ...p, options: p.options.filter((_, j) => j !== i).map((x, j) => ({ ...x, label: (["A", "B", "C"] as const)[j]! })) }))} className="text-xs text-muted hover:text-bad">Remove</button>}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    aria-pressed={o.recommended}
+                    onClick={() => setS((p) => ({ ...p, options: p.options.map((x, j) => ({ ...x, recommended: j === i ? !x.recommended : false })) }))}
+                    className={cx("rounded-full px-2.5 py-1 text-xs font-semibold transition", o.recommended ? "bg-accent text-on-accent" : "bg-black/5 text-ink-2 hover:bg-black/10")}
+                  >
+                    {o.recommended ? "★ My pick" : "☆ Recommend"}
+                  </button>
+                  {s.options.length > 2 && <button type="button" onClick={() => setS((p) => ({ ...p, options: p.options.filter((_, j) => j !== i).map((x, j) => ({ ...x, label: (["A", "B", "C"] as const)[j]! })) }))} className="text-xs text-muted hover:text-bad">Remove</button>}
+                </div>
               </div>
               <div className="space-y-3 p-5">
                 <Field label={`Loan amount${r && s.propertyValue ? ` · ${pct(r.ltv)} LTV` : ""}`} error={e[`options.${i}.loanAmount`]}>
@@ -130,7 +140,17 @@ export function ScenarioEditor({
                 </Field>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={o.interestOnly} onChange={(ev) => setOpt(i, { interestOnly: ev.target.checked, ioYears: ev.target.checked ? 10 : null })} className="h-4 w-4 accent-[var(--accent)]" />
-                  Interest-only{o.interestOnly && <> for <Input type="number" min={1} max={15} value={o.ioYears ?? 10} onChange={(ev) => setOpt(i, { ioYears: Number(ev.target.value) })} className="inline h-8 w-16" /> years</>}
+                  Interest-only
+                  {o.interestOnly && (
+                    <select
+                      aria-label="Interest-only period"
+                      value={o.ioYears ?? 10}
+                      onChange={(ev) => setOpt(i, { ioYears: Number(ev.target.value) })}
+                      className="ml-auto h-8 rounded-md border border-line bg-white px-2 text-sm"
+                    >
+                      {[3, 5, 7, 10].map((y) => <option key={y} value={y}>for {y} years</option>)}
+                    </select>
+                  )}
                 </label>
               </div>
               <div className="mt-auto grid grid-cols-3 gap-2 border-t border-line bg-paper/60 px-5 py-3 text-center">

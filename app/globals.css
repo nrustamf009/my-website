@@ -21,6 +21,7 @@
   --accent: #1f4e79;
   --accent-ink: #ffffff;
   --accent-soft: color-mix(in srgb, var(--accent) 10%, white);
+  --accent-faint: color-mix(in srgb, var(--accent) 5%, white);
   --accent-line: color-mix(in srgb, var(--accent) 28%, white);
   --accent-deep: color-mix(in srgb, var(--accent) 80%, black);
 }
@@ -36,12 +37,18 @@ body {
   font-feature-settings: "cv11", "ss01";
 }
 
+/* Grid/flex children must be allowed to shrink, or long truncated text widens the page on phones. */
+.grid > * {
+  min-width: 0;
+}
+
 .num {
   font-variant-numeric: tabular-nums;
 }
 
 .bg-accent { background-color: var(--accent); }
 .bg-accent-soft { background-color: var(--accent-soft); }
+.bg-accent-faint { background-color: var(--accent-faint); }
 .bg-accent-deep { background-color: var(--accent-deep); }
 .text-accent { color: var(--accent); }
 .text-accent-deep { color: var(--accent-deep); }

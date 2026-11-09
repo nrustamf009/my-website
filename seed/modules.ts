@@ -37,7 +37,12 @@ const CITIES: Record<string, CityInfo[]> = {
   ],
 };
 
-const INVESTORS = ["Nadia Okoro", "Theo Lindgren", "Priscilla Vance", "Gabriel Achebe", "Lena Morrow", "Felix Ortega", "Imani Brooks", "Owen Castellano", "Sofia Petrakis", "Darius Kemp", "Hana Whitlock", "Mateo Ruiz", "Yara Haddad", "Silas Thorne", "Celeste Navarro", "Ezra Collins"];
+const INVESTORS = [
+  "Nadia Okoro", "Theo Lindgren", "Priscilla Vance", "Gabriel Achebe", "Lena Morrow", "Felix Ortega", "Imani Brooks", "Owen Castellano",
+  "Sofia Petrakis", "Darius Kemp", "Hana Whitlock", "Mateo Ruiz", "Yara Haddad", "Silas Thorne", "Celeste Navarro", "Ezra Collins",
+  "Wren Halvorsen", "Jasper Mbeki", "Odette Fairweather", "Kai Montoya", "Rosalind Achterberg", "Tobias Greer", "Amara Lindqvist", "Beckett Sorensen",
+  "Leila Farrokh", "Desmond Ayodele", "Juniper Hale", "Rafael Quintana", "Margot Ellery", "Isaiah Pruitt",
+];
 const STREETS = ["Bayberry Ct", "Oleander Way", "Cypress Run", "Granite Ridge Dr", "Pinyon Pl", "Ocotillo Ln", "Spruce Hollow Rd", "Alder Creek Dr", "Sandpiper Ln", "Mesquite Trl"];
 
 export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
@@ -51,6 +56,8 @@ export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
   for (const broker of brokers) {
     const defaults = brokerDefaults(broker);
     const cities = CITIES[broker.slug]!;
+    let nameIdx = brokers.indexOf(broker) * 10;
+    const nextName = () => INVESTORS[nameIdx++ % INVESTORS.length]!;
     const addr = () => {
       const c = pick(cities);
       return `${1000 + Math.floor(rand() * 8900)} ${pick(STREETS)}, ${c.city}, ${c.state} ${c.zip}`;
@@ -91,7 +98,7 @@ export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
       for (let s = 0; s < scans; s++) await prisma.snapshotScan.create({ data: { snapshotId: snap.id, device: rand() < 0.8 ? "mobile" : "desktop", createdAt: ago(Math.floor(rand() * 18), Math.floor(rand() * 20)) } });
       const listingLeads = 1 + Math.floor(rand() * 3);
       for (let l = 0; l < listingLeads; l++) {
-        const name = pick(INVESTORS);
+        const name = nextName();
         const down = pick([0.2, 0.25]);
         const fico = pick(["760+", "720-759", "680-719"] as FicoRange[]);
         const a = analyzeDeal({ price: snap.price, downPaymentPct: down, monthlyRent: snap.monthlyRent, fico, ratePct: snap.ratePct, taxesMonthly: snap.taxesMonthly, insuranceMonthly: snap.insuranceMonthly }, defaults);
@@ -100,7 +107,7 @@ export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
             brokerId: broker.id,
             source: "LISTING",
             name,
-            email: `${name.toLowerCase().replace(/\s+/g, ".")}.${l}@example.com`,
+            email: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
             phone: `(555) 010-${String(1000 + Math.floor(rand() * 8999))}`,
             consentAt: ago(10 - l),
             consentText: CONSENT_TEXT,
@@ -122,7 +129,7 @@ export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
     // ---- Instant Check leads ----
     const checkLeads = broker.slug === "harborline" ? 9 : 6;
     for (let i = 0; i < checkLeads; i++) {
-      const name = INVESTORS[(i * 3 + broker.slug.length) % INVESTORS.length]!;
+      const name = nextName();
       const price = 220_000 + Math.round(rand() * 40) * 10_000;
       const down = pick([0.2, 0.25, 0.25, 0.3]);
       const rent = Math.round((price * (0.0062 + rand() * 0.0028)) / 25) * 25;
@@ -184,7 +191,7 @@ export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
           options: {
             create: [
               { label: "A", loanAmount: loan, ratePct: broker.defaultRate, termYears: 30, interestOnly: false, prepay: "5-4-3-2-1", pointsPct: 0, lenderFees: 1495, sortOrder: 0 },
-              { label: "B", loanAmount: loan, ratePct: broker.defaultRate - 0.375, termYears: 30, interestOnly: false, prepay: "5-4-3-2-1", pointsPct: 1, lenderFees: 1495, sortOrder: 1 },
+              { label: "B", loanAmount: loan, ratePct: broker.defaultRate - 0.375, termYears: 30, interestOnly: false, prepay: "5-4-3-2-1", pointsPct: 1, lenderFees: 1495, recommended: true, sortOrder: 1 },
               { label: "C", loanAmount: loan, ratePct: broker.defaultRate + 0.25, termYears: 30, interestOnly: true, ioYears: 10, prepay: "3-2-1", pointsPct: 0, lenderFees: 1495, sortOrder: 2 },
             ],
           },

@@ -194,6 +194,7 @@ model ScenarioOption {
   prepay       String   @default("5-4-3-2-1")
   pointsPct    Float    @default(0)
   lenderFees   Int      @default(0)
+  recommended  Boolean  @default(false)
   sortOrder    Int      @default(0)
 }
 
