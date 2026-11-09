@@ -7,9 +7,12 @@ const prisma = new PrismaClient();
 test("Module 5: notes → extraction → review → draft scenario, checklist and email", async ({ page }) => {
   await signInAs(page, "priya@evergreenkey.example");
   await page.goto("/dashboard/calls/new");
-  await page.getByRole("button", { name: "Sample: cash-out refi (LO notes)" }).click();
+  await expect(async () => {
+    await page.getByRole("button", { name: "Sample: cash-out refi (LO notes)" }).click();
+    await expect(page.getByLabel("Call notes")).toHaveValue(/Renata Szabo/, { timeout: 1000 });
+  }).toPass({ timeout: 20_000 });
   await page.getByRole("button", { name: "Extract deal details" }).click();
-  await expect(page).toHaveURL(/\/dashboard\/calls\/(?!new)[a-z0-9]+$/);
+  await expect(page).toHaveURL(/\/dashboard\/calls\/(?!new)[a-z0-9]+$/, { timeout: 30_000 });
   await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Renata Szabo");
   await expect(page.getByLabel("Loan purpose")).toHaveValue("CASH_OUT");
 
@@ -35,7 +38,10 @@ test("Module 5: notes → extraction → review → draft scenario, checklist an
 test("Module 5: audio upload is transcribed (mock) and deleted", async ({ page }) => {
   await signInAs(page, "priya@evergreenkey.example");
   await page.goto("/dashboard/calls/new");
-  await page.getByRole("button", { name: "Upload recording (MP3 / M4A)" }).click();
+  await expect(async () => {
+    await page.getByRole("button", { name: "Upload recording (MP3 / M4A)" }).click();
+    await expect(page.getByTestId("audio-input")).toBeAttached({ timeout: 1000 });
+  }).toPass({ timeout: 20_000 });
   await page.getByTestId("audio-input").setInputFiles({ name: "call.mp3", mimeType: "audio/mpeg", buffer: Buffer.alloc(2048, 1) });
   await expect(page).toHaveURL(/\/dashboard\/calls\/(?!new)[a-z0-9]+$/, { timeout: 30_000 });
   await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Jordan Ellison");

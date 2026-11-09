@@ -3,6 +3,7 @@ import { ProductMark } from "@/components/brand/Logo";
 import { Card, buttonClass } from "@/components/ui";
 import { env } from "@/lib/env";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Check your email" };
 
 export default function CheckEmail() {
