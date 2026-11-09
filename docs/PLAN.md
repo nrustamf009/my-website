@@ -469,3 +469,9 @@ Seeds the agency "Northbeam Growth Partners" plus admin `admin@demo.test`. It cr
 2. Auth, tenancy, agency admin, impersonation
 3. Module 1 → 4 → 3 → 2 → 5. After each: run the app, Playwright spec for the key flow, fix, short report
 4. README: 3-command run, keys table, cost per broker/month, 10-minute demo script
+
+## 10. Changes made during the build
+
+- **Default Claude model:** `claude-opus-5-5` (override with `ANTHROPIC_MODEL=claude-sonnet-5-5` to roughly halve AI cost). Requests use structured outputs and server-side refusal fallbacks, and fall back to the mock if Claude is unavailable.
+- **Verdict rule simplified:** Likely = DSCR ≥ min and LTV within the FICO cap. Borderline = DSCR within a configurable band (default 0.10) below the min, or only LTV blocks. Unlikely = otherwise.
+- **Money List opportunity math** lives in `lib/dscr/opportunities.ts` (not `lib/moneylist`) to keep all financial math in one place. "Recently" for expired prepay and reached seasoning means within the last 120 days.
