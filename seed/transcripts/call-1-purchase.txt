@@ -1,0 +1,18 @@
+Broker: Thanks for calling Harborline Lending, this is Maya.
+Investor: Hi Maya, this is Marcus Bellweather. A friend gave me your number. I'm under contract on a duplex at 2714 Palmetto Grove Way, Tampa, FL 33610.
+Broker: Congratulations. What's the purchase price?
+Investor: Purchase price is $468,000. Closing is set for about five weeks out.
+Broker: And how are you planning to structure the down payment?
+Investor: I was thinking 25% down. I could stretch to 30 if it makes the numbers work.
+Broker: Good to know. Do you know roughly where your credit is?
+Investor: My credit score was 748 when I checked last month.
+Broker: Great. What do the units rent for?
+Investor: Both sides are leased. Combined rent is $3,850 a month. Taxes are about $640 a month and insurance runs around $310 because it's Florida.
+Broker: Understood. Is this your first rental?
+Investor: No, I own 4 rentals already, all single family, all in an LLC. I want to keep growing, maybe two more doors this year.
+Broker: What matters most to you on this one?
+Investor: Honestly I want to keep cash flow positive. I'm worried the rate will be too high with everything going on, and I don't like long prepayment penalties because I might sell in three years.
+Broker: That's helpful. I'll run a 3-2-1 prepay option and a no-prepay option so you can see the tradeoff, plus an interest-only version to show the cash flow.
+Investor: Perfect. When can I see them?
+Broker: I'll send you options by Thursday. I'll need your LLC docs and the two leases.
+Investor: Sounds good. Email is marcus.bellweather@example.com.
