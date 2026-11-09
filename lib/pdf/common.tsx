@@ -18,8 +18,8 @@ export const C = {
 
 export const s = StyleSheet.create({
   page: { padding: 36, fontSize: 10, fontFamily: "Helvetica", color: C.ink, lineHeight: 1.35 },
-  h1: { fontSize: 20, fontFamily: "Helvetica-Bold", marginBottom: 4 },
-  h2: { fontSize: 12, fontFamily: "Helvetica-Bold", marginBottom: 6 },
+  h1: { fontSize: 20, lineHeight: 1.2, fontFamily: "Helvetica-Bold", marginBottom: 4 },
+  h2: { fontSize: 12, lineHeight: 1.2, fontFamily: "Helvetica-Bold", marginBottom: 6 },
   muted: { color: C.muted },
   small: { fontSize: 8, color: C.muted },
   row: { flexDirection: "row" },
@@ -49,7 +49,7 @@ export function PdfBrandHeader({ broker, title, subtitle }: { broker: PublicBrok
         <View style={[s.row, { alignItems: "center" }]}>
           <PdfLogo logoUrl={broker.logoUrl} name={broker.companyName} accent={broker.accentColor} />
           <View style={{ marginLeft: 10 }}>
-            <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 12 }}>{broker.companyName}</Text>
+            <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 12, lineHeight: 1.2 }}>{broker.companyName}</Text>
             <Text style={s.small}>{broker.name}, {broker.title} · NMLS #{broker.nmlsId}</Text>
           </View>
         </View>

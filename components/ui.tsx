@@ -75,11 +75,24 @@ export function Select({ className, children, ...props }: ComponentProps<"select
 }
 
 export function Field({ label, hint, error, children, htmlFor }: { label: string; hint?: ReactNode; error?: string; children: ReactNode; htmlFor?: string }) {
+  const help = error ? <p className="mt-1 text-xs text-bad">{error}</p> : hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null;
+  if (htmlFor) {
+    return (
+      <div>
+        <Label htmlFor={htmlFor}>{label}</Label>
+        {children}
+        {help}
+      </div>
+    );
+  }
+  // Wrapping in <label> associates the text with the first control inside.
   return (
     <div>
-      <Label htmlFor={htmlFor}>{label}</Label>
-      {children}
-      {error ? <p className="mt-1 text-xs text-bad">{error}</p> : hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium text-ink-2">{label}</span>
+        {children}
+      </label>
+      {help}
     </div>
   );
 }

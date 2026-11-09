@@ -20,18 +20,18 @@ function DealAnalysisDoc({ broker, address, investorName, a, sensitivity }: { br
         <View style={[s.row, { gap: 10, marginBottom: 14 }]}>
           <View style={[s.card, { flex: 1, backgroundColor: vc.bg, borderColor: vc.bg }]}>
             <Text style={{ fontSize: 8, color: vc.fg, textTransform: "uppercase", letterSpacing: 1 }}>Estimated DSCR</Text>
-            <Text style={{ fontSize: 30, fontFamily: "Helvetica-Bold", color: vc.fg, marginTop: 2 }}>{ratio(a.dscr)}</Text>
+            <Text style={{ fontSize: 30, lineHeight: 1.2, fontFamily: "Helvetica-Bold", color: vc.fg, marginTop: 2 }}>{ratio(a.dscr)}</Text>
             <Text style={{ fontFamily: "Helvetica-Bold", color: vc.fg }}>{VERDICT_LABEL[a.verdict]}</Text>
             <Text style={{ fontSize: 8, color: vc.fg, marginTop: 2 }}>Program minimum used: {a.minDscr.toFixed(2)}</Text>
           </View>
           <View style={[s.card, { flex: 1 }]}>
             <Text style={{ fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1 }}>Monthly payment (PITIA)</Text>
-            <Text style={{ fontSize: 22, fontFamily: "Helvetica-Bold", marginTop: 2 }}>{usd(a.pitia)}</Text>
+            <Text style={{ fontSize: 22, lineHeight: 1.2, fontFamily: "Helvetica-Bold", marginTop: 2 }}>{usd(a.pitia)}</Text>
             <Text style={s.muted}>Rent {usd(a.monthlyRent)}/mo · cash flow {usd(a.monthlyRent - a.pitia)}/mo</Text>
           </View>
           <View style={[s.card, { flex: 1 }]}>
             <Text style={{ fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1 }}>Max loan estimate</Text>
-            <Text style={{ fontSize: 22, fontFamily: "Helvetica-Bold", marginTop: 2 }}>{usd(a.maxLoan)}</Text>
+            <Text style={{ fontSize: 22, lineHeight: 1.2, fontFamily: "Helvetica-Bold", marginTop: 2 }}>{usd(a.maxLoan)}</Text>
             <Text style={s.muted}>Limited by {a.maxLoanLimitedBy === "DSCR" ? "rental income (DSCR)" : `max LTV ${pct(a.maxLtv)}`}</Text>
           </View>
         </View>
