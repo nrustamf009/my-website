@@ -9,6 +9,7 @@ import { requireAdmin, signImpersonation, IMPERSONATE_COOKIE } from "@/lib/auth/
 import { randomToken, slugify } from "@/lib/tokens";
 import { DEFAULT_DISCLAIMER } from "@/lib/broker";
 import { DEFAULT_FICO_LTV_CAPS } from "@/lib/dscr";
+import { sendBrokerInvite } from "@/lib/invite";
 
 export async function impersonate(brokerId: string) {
   const { agency } = await requireAdmin();
@@ -63,6 +64,7 @@ export async function createBroker(_prev: FormState, formData: FormData): Promis
       users: { create: { email: loginEmail, name: d.name, role: "BROKER" } },
     },
   });
+  await sendBrokerInvite({ to: loginEmail, name: d.name, agencyName: agency.name, companyName: d.companyName, slug });
   revalidatePath("/admin");
   redirect(`/admin/brokers/${broker.id}?created=1`);
 }
@@ -89,7 +91,17 @@ export async function addBrokerUser(brokerId: string, _prev: FormState, formData
   const email = z.email().safeParse(String(formData.get("email") ?? "").toLowerCase());
   if (!email.success) return { fieldErrors: { email: "Enter a valid email" } };
   if (await prisma.user.findUnique({ where: { email: email.data } })) return { fieldErrors: { email: "A user with this email already exists" } };
-  await prisma.user.create({ data: { email: email.data, name: String(formData.get("name") || "") || null, role: "BROKER", brokerId: broker.id } });
+  const name = String(formData.get("name") || "") || null;
+  await prisma.user.create({ data: { email: email.data, name, role: "BROKER", brokerId: broker.id } });
+  await sendBrokerInvite({ to: email.data, name, agencyName: agency.name, companyName: broker.companyName, slug: broker.slug });
   revalidatePath(`/admin/brokers/${broker.id}`);
   return { ok: true };
+}
+
+export async function resendInvite(userId: string): Promise<{ ok: boolean }> {
+  const { agency } = await requireAdmin();
+  const user = await prisma.user.findFirst({ where: { id: userId, broker: { agencyId: agency.id } }, include: { broker: true } });
+  if (!user?.broker) return { ok: false };
+  const ok = await sendBrokerInvite({ to: user.email, name: user.name, agencyName: agency.name, companyName: user.broker.companyName, slug: user.broker.slug });
+  return { ok };
 }

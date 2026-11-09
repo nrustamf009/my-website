@@ -1,6 +1,6 @@
 import { requireBroker } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { escrowFromPrice } from "@/lib/dscr";
+import { escrowFromPrice, loanFromLtv } from "@/lib/dscr";
 import { parseJson } from "@/lib/broker";
 import type { CallExtraction } from "@/lib/providers/ai";
 import { defaultOption, type ScenarioInput } from "@/lib/scenario-schema";
@@ -27,11 +27,13 @@ export default async function NewScenario({ searchParams }: { searchParams: Prom
     options: [],
   };
   let source: string | null = null;
+  let downPct: number | null = null;
 
   if (leadId) {
     const lead = await prisma.lead.findFirst({ where: { id: leadId, brokerId: broker.id } });
     if (lead) {
       source = `Prefilled from ${lead.name}'s lead.`;
+      downPct = lead.downPaymentPct;
       Object.assign(base, { investorName: lead.name, investorEmail: lead.email, investorPhone: lead.phone ?? "", propertyAddress: lead.propertyAddress ?? "", propertyValue: lead.purchasePrice ?? 0, monthlyRent: lead.monthlyRent ?? 0 });
     }
   }
@@ -52,6 +54,7 @@ export default async function NewScenario({ searchParams }: { searchParams: Prom
         insuranceMonthly: x.deal.insuranceMonthly ?? 0,
         hoaMonthly: x.deal.hoaMonthly ?? 0,
       });
+      downPct = x.deal.downPaymentPct;
     }
   }
   if (base.propertyValue && !base.taxesMonthly) {
@@ -60,6 +63,7 @@ export default async function NewScenario({ searchParams }: { searchParams: Prom
     base.insuranceMonthly = Math.round(esc.insuranceMonthly);
   }
   base.options = [defaultOption("A", base.propertyValue, broker.defaultRate, 0), defaultOption("B", base.propertyValue, broker.defaultRate, 1)];
+  if (base.propertyValue && downPct != null) base.options = base.options.map((o) => ({ ...o, loanAmount: loanFromLtv(base.propertyValue, 1 - downPct!) }));
 
   return (
     <div className="mx-auto max-w-6xl">

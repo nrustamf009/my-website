@@ -12,7 +12,7 @@ export default async function EmbedCheck({ params }: { params: Promise<{ slug: s
   if (!broker) notFound();
   return (
     <div className="bg-paper p-3 sm:p-4">
-      <InstantCheck slug={broker.slug} brokerFirstName={broker.name.split(" ")[0]!} defaults={brokerDefaults(broker)} embed />
+      <InstantCheck slug={broker.slug} brokerFirstName={broker.name.split(" ")[0]!} brokerPhone={broker.phone} defaults={brokerDefaults(broker)} embed />
       <ComplianceFooter broker={pickPublic(broker)} compact />
     </div>
   );

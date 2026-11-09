@@ -92,7 +92,7 @@ export class MockAi implements AiClient {
     if (!ficoRange) missing.push("Credit score range");
 
     return {
-      summary: `${name ?? "The investor"} is looking at a ${loanPurpose === "CASH_OUT" ? "cash-out refinance" : loanPurpose === "RATE_TERM" ? "rate-and-term refinance" : "purchase"}${address ? ` on ${address}` : ""}${price ? ` around $${Math.round(price).toLocaleString("en-US")}` : ""}. (Mock AI extraction: review every field.)`,
+      summary: `${name ?? "The investor"} is looking at a ${loanPurpose === "CASH_OUT" ? "cash-out refinance" : loanPurpose === "RATE_TERM" ? "rate-and-term refinance" : "purchase"}${address ? ` on ${address}` : ""}${price ? ` around $${Math.round(price).toLocaleString("en-US")}` : ""}. (Auto-extracted: please review every field.)`,
       investor: { name, email, phone, experience: lower.match(/(own|have)\s+(\w+)\s+(rentals|doors|properties|units)/)?.[0] ?? null },
       deal: {
         propertyAddress: address,

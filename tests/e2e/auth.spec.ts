@@ -12,7 +12,7 @@ test("magic link sign-in via dev mailbox", async ({ page }) => {
   expect(href).toContain("/api/auth/callback/resend");
   await page.goto(href!);
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByText("Evergreen Key Capital").first()).toBeVisible();
+  await expect(page.getByText("Evergreen Key Capital").filter({ visible: true }).first()).toBeVisible();
 });
 
 test("unknown email is rejected", async ({ page }) => {
@@ -38,4 +38,20 @@ test("broker cannot open the admin panel", async ({ page }) => {
   await signInAs(page, "maya@harborline.example");
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/dashboard/);
+});
+
+test("broker dashboard on a phone: menu opens, navigates, signs out", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  await signInAs(page, "maya@harborline.example");
+  // No sideways scrolling anywhere on the overview.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+  await page.getByRole("button", { name: "Menu" }).click();
+  await page.getByRole("navigation").filter({ visible: true }).getByRole("link", { name: "Money List" }).click();
+  await expect(page).toHaveURL(/money-list/, { timeout: 20_000 });
+  await expect(page.getByRole("button", { name: "Menu" })).toContainText("Money List");
+  await page.getByRole("button", { name: "Menu" }).click();
+  await page.getByRole("button", { name: "Sign out" }).filter({ visible: true }).click();
+  await expect(page).toHaveURL(/\/login/);
+  await ctx.close();
 });

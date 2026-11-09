@@ -22,6 +22,7 @@ export function LeadCaptureForm({
   getDeal,
   submitLabel = "Email me the full analysis",
   brokerFirstName,
+  brokerPhone,
   onSuccess,
 }: {
   slug: string;
@@ -30,6 +31,7 @@ export function LeadCaptureForm({
   getDeal: () => DealPayload | null;
   submitLabel?: string;
   brokerFirstName: string;
+  brokerPhone?: string | null;
   onSuccess?: () => void;
 }) {
   const openedAt = useRef(Date.now());
@@ -92,6 +94,12 @@ export function LeadCaptureForm({
         </div>
         <h3 className="mt-3 font-display text-xl text-ink">Check your inbox</h3>
         <p className="mt-1 text-sm text-ink-2">We sent the full analysis to <strong>{done}</strong>. {brokerFirstName} will reach out shortly to walk you through it.</p>
+        {brokerPhone && (
+          <div className="mt-4 flex justify-center gap-2">
+            <a href={`tel:${brokerPhone.replace(/[^\d+]/g, "")}`} className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent">Call {brokerFirstName} now</a>
+            <a href={`sms:${brokerPhone.replace(/[^\d+]/g, "")}?&body=${encodeURIComponent(`Hi ${brokerFirstName}, I just ran a DSCR check and would like to talk.`)}`} className="inline-flex h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold text-ink">Text</a>
+          </div>
+        )}
       </div>
     );
   }

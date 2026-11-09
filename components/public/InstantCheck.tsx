@@ -18,7 +18,7 @@ const VERDICT_STYLE = {
 
 const DOWN_CHIPS = [0.2, 0.25, 0.3, 0.35];
 
-export function InstantCheck({ slug, brokerFirstName, defaults, embed = false }: { slug: string; brokerFirstName: string; defaults: BrokerDefaults; embed?: boolean }) {
+export function InstantCheck({ slug, brokerFirstName, brokerPhone, defaults, embed = false }: { slug: string; brokerFirstName: string; brokerPhone?: string | null; defaults: BrokerDefaults; embed?: boolean }) {
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState<number | null>(null);
   const [down, setDown] = useState(0.25);
@@ -159,7 +159,7 @@ export function InstantCheck({ slug, brokerFirstName, defaults, embed = false }:
           <Card className="p-5 sm:p-6">
             <h3 className="font-display text-xl text-ink">Get the full PDF analysis</h3>
             <p className="mb-4 mt-1 text-sm text-muted">Payment breakdown, down-payment comparison and next steps, sent to your inbox.</p>
-            <LeadCaptureForm slug={slug} source="CHECK" getDeal={deal} brokerFirstName={brokerFirstName} />
+            <LeadCaptureForm slug={slug} source="CHECK" getDeal={deal} brokerFirstName={brokerFirstName} brokerPhone={brokerPhone} />
           </Card>
         </div>
       </div>

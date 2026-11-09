@@ -22,7 +22,7 @@ export default async function CheckPage({ params }: { params: Promise<{ slug: st
         <p className="mt-3 max-w-2xl text-base text-ink-2 sm:text-lg">DSCR loans are approved on the property's rent, not your W-2s or tax returns. Enter the deal and see where you stand in seconds.</p>
       </section>
       <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <InstantCheck slug={broker.slug} brokerFirstName={first} defaults={brokerDefaults(broker)} />
+        <InstantCheck slug={broker.slug} brokerFirstName={first} brokerPhone={broker.phone} defaults={brokerDefaults(broker)} />
       </section>
       <section className="mx-auto mt-12 grid max-w-6xl gap-4 px-4 sm:grid-cols-3 sm:px-6">
         {[

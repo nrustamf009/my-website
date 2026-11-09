@@ -6,7 +6,7 @@ import { pct } from "@/lib/format";
 import { cx, Label, Select } from "@/components/ui";
 import { LeadCaptureForm } from "./LeadCaptureForm";
 
-export function ListingPrequal({ slug, token, address, price, monthlyRent, ratePct, hoaMonthly, brokerFirstName }: { slug: string; token: string; address: string; price: number; monthlyRent: number; ratePct: number; hoaMonthly: number; brokerFirstName: string }) {
+export function ListingPrequal({ slug, token, address, price, monthlyRent, ratePct, hoaMonthly, brokerFirstName, brokerPhone }: { slug: string; token: string; address: string; price: number; monthlyRent: number; ratePct: number; hoaMonthly: number; brokerFirstName: string; brokerPhone?: string | null }) {
   const [down, setDown] = useState(0.25);
   const [fico, setFico] = useState("720-759");
   return (
@@ -31,6 +31,7 @@ export function ListingPrequal({ slug, token, address, price, monthlyRent, rateP
         snapshotToken={token}
         submitLabel="Get pre-qualified for this property"
         brokerFirstName={brokerFirstName}
+        brokerPhone={brokerPhone}
         getDeal={() => ({ address, price, downPaymentPct: down, monthlyRent, fico, ratePct, hoaMonthly })}
       />
     </div>

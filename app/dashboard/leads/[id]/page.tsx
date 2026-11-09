@@ -61,6 +61,7 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
               <div className="flex items-center justify-between"><dt className="text-muted">DSCR</dt><dd className="flex items-center gap-2"><span className="num font-display text-2xl">{ratio(a.dscr)}</span><Badge tone={a.verdict === "LIKELY" ? "good" : a.verdict === "BORDERLINE" ? "warn" : "bad"}>{VERDICT_LABEL[a.verdict]}</Badge></dd></div>
               <div className="flex justify-between"><dt className="text-muted">Price</dt><dd className="num">{usd(a.price)}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Down payment</dt><dd className="num">{pct(a.downPaymentPct)} · {usd(a.downPayment)}</dd></div>
+              <div className="flex justify-between"><dt className="text-muted">Loan-to-value</dt><dd className="num">{pct(a.ltv)} <span className="text-muted">(max {pct(a.maxLtv)} for {lead.ficoRange ?? "this credit"})</span></dd></div>
               <div className="flex justify-between"><dt className="text-muted">Rent</dt><dd className="num">{usd(a.monthlyRent)}/mo</dd></div>
               <div className="flex justify-between"><dt className="text-muted">PITIA at {rate(a.ratePct)}</dt><dd className="num">{usd(a.pitia)}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Max loan estimate</dt><dd className="num">{usd(a.maxLoan)}</dd></div>
@@ -71,6 +72,27 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
           )}
         </Card>
       </div>
+      {a && (
+        <Card>
+          <CardHeader title="Talking points" subtitle="Why the check came out this way, and what would change it" />
+          <div className="space-y-3 p-5 text-sm">
+            <p className="text-ink-2">
+              {a.verdict === "LIKELY"
+                ? `Rent covers the payment ${ratio(a.dscr)}x and ${pct(a.ltv)} LTV is within the ${pct(a.maxLtv)} limit for ${lead.ficoRange ?? "their credit range"}. Lead with a pre-qualification.`
+                : a.ltv > a.maxLtv + 1e-9 && (a.dscr ?? 0) >= a.minDscr
+                  ? `The rent works (DSCR ${ratio(a.dscr)}), but ${pct(a.ltv)} LTV is above the ${pct(a.maxLtv)} limit for ${lead.ficoRange} credit. The fix is more down payment, or a credit bump into the next range.`
+                  : `DSCR ${ratio(a.dscr)} is below the ${a.minDscr.toFixed(2)} minimum: rent needs to be about ${usd(a.rentForMinDscr)}/mo at this price and down payment.`}
+            </p>
+            {a.suggestions.length > 0 && (
+              <ul className="space-y-2">
+                {a.suggestions.map((sg) => (
+                  <li key={sg.title} className="flex gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" /><span><strong className="font-medium text-ink">{sg.title}.</strong> <span className="text-muted">{sg.detail}</span></span></li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

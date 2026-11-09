@@ -94,7 +94,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
                 ))}
               </ul>
             </div>
-            <ListingPrequal slug={broker.slug} token={snap.token} address={snap.address} price={snap.price} monthlyRent={snap.monthlyRent} ratePct={snap.ratePct} hoaMonthly={snap.hoaMonthly} brokerFirstName={first} />
+            <ListingPrequal slug={broker.slug} token={snap.token} address={snap.address} price={snap.price} monthlyRent={snap.monthlyRent} ratePct={snap.ratePct} hoaMonthly={snap.hoaMonthly} brokerFirstName={first} brokerPhone={broker.phone} />
           </div>
         </Card>
       </section>
