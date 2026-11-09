@@ -26,6 +26,8 @@ export interface ScenarioOptionResult {
   cashToClose: number;
   /** Amortizing P&I after the IO period ends (IO loans only). */
   postIoPI: number | null;
+  /** PITIA after the IO period ends (IO loans only). */
+  postIoPITIA: number | null;
   annualPITIA: number;
   monthlyCashFlow: number;
 }
@@ -62,7 +64,13 @@ export function computeScenarioOption(params: {
     upfrontCosts,
     cashToClose: downPayment + upfrontCosts,
     postIoPI,
+    postIoPITIA: postIoPI === null ? null : monthlyPITIA(postIoPI, escrow),
     annualPITIA: pitia * 12,
     monthlyCashFlow: monthlyRent - pitia,
   };
+}
+
+/** Loan amount for a target LTV, rounded down to the nearest $500. */
+export function loanFromLtv(propertyValue: number, ltv: number): number {
+  return Math.floor((propertyValue * ltv) / 500) * 500;
 }
