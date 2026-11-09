@@ -17,8 +17,8 @@ function money(raw: string): number {
   return m[2] === "k" ? n * 1000 : m[2] === "m" ? n * 1_000_000 : n;
 }
 
-function findMoney(text: string, keywords: RegExp): number | null {
-  const re = new RegExp(`(?:${keywords.source})[^$\\d]{0,40}\\$?\\s?([\\d,.]+\\s?[km]?)`, "i");
+function findMoney(text: string, keywords: RegExp, requireDollar = false): number | null {
+  const re = new RegExp(`(?:${keywords.source})[^$\\d]{0,40}\\$${requireDollar ? "" : "?"}\\s?([\\d,.]+\\s?[km]?)`, "i");
   const m = text.match(re);
   if (!m) return null;
   const v = money(m[1]!);
@@ -39,12 +39,17 @@ export class MockAi implements AiClient {
 
   async extractCall(transcript: string): Promise<CallExtraction> {
     const t = transcript;
-    const name = t.match(/(?:this is|my name is|i'm|name's)\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/)?.[1] ?? null;
+    // Ignore the loan officer's own lines when looking for the investor's name.
+    const investorText = t
+      .split("\n")
+      .filter((l) => !/^\s*(broker|loan officer|lo|me)\s*:/i.test(l))
+      .join("\n");
+    const name = investorText.match(/(?:this is|my name is|i'm|name's|call with|spoke with|met with)\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/)?.[1] ?? null;
     const email = t.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? null;
     const phone = t.match(/\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/)?.[0] ?? null;
-    const address = t.match(/\d{2,6}\s+[A-Z][A-Za-z]+(?:\s[A-Z][A-Za-z]+)*\s(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Boulevard|Blvd|Way|Place|Pl|Trail|Terrace)\b[^.\n]*?(?:,\s*[A-Z][a-z]+(?:\s[A-Z][a-z]+)*)?(?:,\s*[A-Z]{2})?(?:\s\d{5})?/)?.[0] ?? null;
+    const address = t.match(/\d{2,6}\s+[A-Z][A-Za-z]+(?:\s[A-Z][A-Za-z]+)*\s(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Boulevard|Blvd|Way|Place|Pl|Trail|Trl|Terrace|Ter|Circle|Cir|Parkway|Pkwy|Loop|Run|Pass)\b[^.\n]*?(?:,\s*[A-Z][a-z]+(?:\s[A-Z][a-z]+)*)?(?:,\s*[A-Z]{2})?(?:\s\d{5})?/)?.[0] ?? null;
     const price = findMoney(t, /purchase price|price is|under contract (?:at|for)|asking|offer(?:ed)? (?:at|of)|worth|valued? (?:at)?|paying/);
-    const rent = findMoney(t, /rent(?:s)?(?: is| for| at| around| about)?|lease(?:d)? (?:for|at)/);
+    const rent = findMoney(t, /\b(?:rent|rents|lease)\b/, true);
     const downMatch = t.match(/(\d{1,2})\s?(?:%|percent)\s?down/i);
     const ficoMatch = t.match(/(?:credit|fico|score)[^\d]{0,25}(\d{3})/i);
     const fico = ficoMatch ? parseInt(ficoMatch[1]!, 10) : null;
@@ -57,13 +62,26 @@ export class MockAi implements AiClient {
         : /purchase|buy|under contract|offer/.test(lower)
           ? "PURCHASE"
           : null;
-    const prepay = /no prepay|without (?:a )?prepay/.test(lower) ? "NONE" : /3-2-1|three year prepay|3 year prepay/.test(lower) ? "3-2-1" : /5-4-3-2-1|five year prepay/.test(lower) ? "5-4-3-2-1" : null;
-    const io = /interest[- ]only/.test(lower) ? true : null;
+    // Check the 5-year structure first: "3-2-1" is a substring of "5-4-3-2-1".
+    const prefersPrepay = lower.match(/prefer[^.\n]{0,30}?(5-4-3-2-1|3-2-1|no prepay)/)?.[1];
+    const prepay =
+      prefersPrepay === "5-4-3-2-1" || (!prefersPrepay && /5-4-3-2-1|five year prepay/.test(lower))
+        ? "5-4-3-2-1"
+        : prefersPrepay === "no prepay" || (!prefersPrepay && /no prepay|without (?:a )?prepay/.test(lower))
+          ? "NONE"
+          : prefersPrepay === "3-2-1" || /3-2-1|three year prepay|3 year prepay/.test(lower)
+            ? "3-2-1"
+            : null;
+    const io = /(not sure about|don't want|no|avoid|risky)[^.\n]{0,20}interest[- ]only|interest[- ]only[^.\n]{0,30}(risky|not for me)/.test(lower)
+      ? false
+      : /interest[- ]only/.test(lower)
+        ? true
+        : null;
     const taxes = findMoney(t, /taxes (?:are|run|about)?/);
     const insurance = findMoney(t, /insurance (?:is|runs|about)?/);
     const hoa = findMoney(t, /hoa (?:is|of|about)?/);
 
-    const goals = sentencesWith(t, /\b(want|goal|looking to|hoping|plan to|need to|cash flow|grow)\b/i);
+    const goals = sentencesWith(t, /\b(wants?|goals?|looking to|hoping|plans? to|cash flow|grow|pull (?:cash|equity))\b/i);
     const objections = sentencesWith(t, /\b(worried|concern|too high|expensive|not sure|hesitant|but the rate|penalty|don't like)\b/i);
     const nextSteps = sentencesWith(t, /\b(send|will get|next step|follow up|by (?:monday|tuesday|wednesday|thursday|friday)|tomorrow|this week)\b/i);
 
@@ -74,7 +92,7 @@ export class MockAi implements AiClient {
     if (!ficoRange) missing.push("Credit score range");
 
     return {
-      summary: `${name ?? "The investor"} discussed a ${loanPurpose === "CASH_OUT" ? "cash-out refinance" : loanPurpose === "RATE_TERM" ? "rate-and-term refinance" : "purchase"}${address ? ` for ${address}` : ""}${price ? ` around $${Math.round(price).toLocaleString("en-US")}` : ""}. (Mock AI extraction: review every field.)`,
+      summary: `${name ?? "The investor"} is looking at a ${loanPurpose === "CASH_OUT" ? "cash-out refinance" : loanPurpose === "RATE_TERM" ? "rate-and-term refinance" : "purchase"}${address ? ` on ${address}` : ""}${price ? ` around $${Math.round(price).toLocaleString("en-US")}` : ""}. (Mock AI extraction: review every field.)`,
       investor: { name, email, phone, experience: lower.match(/(own|have)\s+(\w+)\s+(rentals|doors|properties|units)/)?.[0] ?? null },
       deal: {
         propertyAddress: address,
@@ -121,13 +139,13 @@ export class MockAi implements AiClient {
     const body = [
       `${casual ? "Hi" : "Hello"} ${ctx.investorFirstName},`,
       "",
-      `Thanks for taking the time to talk${ctx.propertyAddress ? ` about ${ctx.propertyAddress}` : ""}. ${ctx.summary.replace(/\s*\(Mock AI.*\)$/, "")}`,
+      `Thanks for taking the time to talk${ctx.propertyAddress ? ` about ${ctx.propertyAddress}` : " about your next investment"}. I enjoyed hearing about your plans, and I think we can find a structure that fits.`,
       "",
       ctx.scenarioUrl ? `I put together a few loan options for you to compare:\n${ctx.scenarioUrl}\n` : "I'll send over a few loan options to compare shortly.\n",
-      "To keep things moving, here is what I'll need:",
+      "To keep things moving, here is what the lender will ask for:",
       ...ctx.checklist.map((c) => `- ${c}`),
       "",
-      ctx.nextSteps.length ? `Next steps: ${ctx.nextSteps.join("; ")}.` : "",
+      "I'll keep an eye out for those and follow up in a couple of days.",
       "",
       "Any questions at all, just reply here or give me a call.",
       "",

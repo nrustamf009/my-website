@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Broker, PrismaClient } from "@prisma/client";
 import { analyzeDeal, escrowFromPrice, type FicoRange } from "../lib/dscr";
@@ -7,6 +7,7 @@ import { autoMap, parseCsv, validateRows } from "../lib/moneylist/csv";
 import { CONSENT_TEXT } from "../lib/validation";
 import { MockAi } from "../lib/providers/ai/mock";
 import { closedLoansCsv, type CityInfo } from "./closedLoans";
+import { SAMPLE_CALLS } from "../lib/calls/samples";
 
 const DAY = 86400_000;
 let seedState = 42;
@@ -215,7 +216,9 @@ export async function seedModules(prisma: PrismaClient, brokers: Broker[]) {
 
   // ---- Call-to-Scenario: one processed sample for Harborline ----
   const harbor = brokers.find((b) => b.slug === "harborline")!;
-  const transcript = readFileSync(path.join(process.cwd(), "seed", "transcripts", "call-1-purchase.txt"), "utf8");
+  mkdirSync(path.join(process.cwd(), "seed", "transcripts"), { recursive: true });
+  for (const c of SAMPLE_CALLS) writeFileSync(path.join(process.cwd(), "seed", "transcripts", `${c.id}.txt`), c.text);
+  const transcript = SAMPLE_CALLS[0]!.text;
   const extraction = await new MockAi().extractCall(transcript);
   await prisma.callSession.create({
     data: { brokerId: harbor.id, inputType: "NOTES", status: "EXTRACTED", title: "Marcus Bellweather · duplex purchase", transcript, extraction: JSON.stringify(extraction), createdAt: ago(0, 3) },
