@@ -21,11 +21,15 @@ test("Module 3: Money List shows ranked opportunities, drafts, contacted, digest
   expect((await first.getByTestId("draft").inputValue()).length).toBeGreaterThan(80);
   await first.getByRole("button", { name: "Copy" }).click();
   await expect(first.getByRole("button", { name: "Copied ✓" })).toBeVisible();
+  const borrower = await first.locator("h3").innerText();
   await first.getByRole("button", { name: "Mark contacted" }).click();
-  await expect(first.getByRole("button", { name: "Undo contacted" })).toBeVisible();
-  await page.reload();
+  // The card moves into the "Contacted" section.
   await expect(page.getByRole("heading", { name: "Contacted" })).toBeVisible();
-  await page.getByTestId("opportunity").last().getByRole("button", { name: "Undo contacted" }).click();
+  const moved = page.getByTestId("opportunity").filter({ hasText: borrower }).filter({ has: page.getByRole("button", { name: "Undo contacted" }) });
+  await expect(moved).toHaveCount(1);
+  await expect(cards.filter({ has: page.getByRole("button", { name: "Undo contacted" }) })).toHaveCount(1);
+  await moved.getByRole("button", { name: "Undo contacted" }).click();
+  await expect(page.getByRole("heading", { name: "Contacted" })).toBeHidden();
 
   const before = await prisma.devEmail.count({ where: { subject: { startsWith: "Your Money List" } } });
   await page.getByRole("button", { name: "Email me the digest" }).click();

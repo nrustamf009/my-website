@@ -163,7 +163,7 @@ npm test         # Vitest: 26 hand-verified lib/dscr scenarios, CSV import, Mone
 npm run e2e      # Playwright: auth/admin, all 5 modules (desktop + mobile for public pages), settings
 ```
 
-Playwright starts `npm run dev` automatically (or set `E2E_BASE_URL`). On first run, use `npx playwright install chromium` unless a browser is already installed.
+Playwright starts `npm run dev` automatically (or set `E2E_BASE_URL`). For the most reliable run, test a production build: `NEXT_DIST_DIR=.next-prod npx next build && NEXT_DIST_DIR=.next-prod DEMO_LOGIN=true npx next start -p 3200`, then `E2E_BASE_URL=http://localhost:3200 npm run e2e`. The dev server can briefly error while it hot-recompiles mid-request. On first run, use `npx playwright install chromium` unless a browser is already installed.
 
 ---
 
