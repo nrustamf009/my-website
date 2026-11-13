@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import { parseDollarsToCents, parsePctToRatio } from "@/lib/format";
 import { FICO_BUCKETS, PREPAYS, PRODUCTS, PROPERTY_TYPES, isUsState, type DealInput, type UsState } from "@/lib/dscr";
 
 /** Investor-facing deal form. All money in cents, ratios ×10,000 (no math happens in components). */
@@ -46,8 +47,14 @@ export function toDealInput(f: CheckForm): DealInput {
     : { ...common, mode: "CASH_OUT", valueCents: f.valueCents, currentBalanceCents: f.currentBalanceCents ?? 0, cashOutCents: f.cashOutCents ?? 0, monthsOwned: f.monthsOwned ?? 24, purchasePriceCents: f.purchasePriceCents ?? null };
 }
 
-/** Is the form complete enough to analyze? */
+/** Numbers can be shown before the address is typed; the address is required only to request the PDF. */
+const AnalyzableSchema = CheckFormSchema.extend({ address: z.string().max(200).optional().default("") });
+
 export function isAnalyzable(f: Partial<CheckForm>): f is CheckForm {
+  return AnalyzableSchema.safeParse(f).success;
+}
+
+export function isSubmittable(f: Partial<CheckForm>): f is CheckForm {
   return CheckFormSchema.safeParse(f).success;
 }
 
@@ -61,7 +68,24 @@ export function formFromQuery(q: Record<string, string | string[] | undefined>, 
     return Number.isFinite(n) ? n : undefined;
   };
   const out: Partial<CheckForm> = { ...defaults };
-  for (const k of ["mode", "address", "state", "propertyType", "use", "fico", "product", "prepay"] as const) if (g(k)) (out as Record<string, unknown>)[k] = g(k);
+  // Only accept valid values: a stale or hand-edited link must never break the calculator.
+  const shape = CheckFormSchema.shape;
+  for (const k of ["mode", "address", "state", "propertyType", "use", "fico", "product", "prepay"] as const) {
+    const v = g(k);
+    if (v && shape[k].safeParse(v).success) (out as Record<string, unknown>)[k] = v;
+  }
+  // Plain-form fallback (no JS): visible inputs post dollars ("price=425,000") and percent ("downPct=25").
+  for (const k of ["priceCents", "valueCents", "currentBalanceCents", "cashOutCents", "purchasePriceCents", "rentCents", "taxesAnnualCents", "insuranceAnnualCents", "hoaMonthlyCents"] as const) {
+    const dollars = g(k.replace("Cents", ""));
+    if (dollars) {
+      const c = parseDollarsToCents(dollars);
+      if (c != null) (out as Record<string, unknown>)[k] = c;
+    }
+  }
+  if (g("downPct")) {
+    const r = parsePctToRatio(g("downPct"));
+    if (r != null) out.downPaymentRatio = r;
+  }
   for (const k of ["units", "priceCents", "downPaymentRatio", "valueCents", "currentBalanceCents", "cashOutCents", "monthsOwned", "purchasePriceCents", "rentCents", "taxesAnnualCents", "insuranceAnnualCents", "hoaMonthlyCents"] as const) {
     const n = num(k);
     if (n !== undefined) (out as Record<string, unknown>)[k] = n;

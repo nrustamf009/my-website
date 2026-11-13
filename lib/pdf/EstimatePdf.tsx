@@ -28,18 +28,18 @@ function EstimateDoc({ brand, address, investor, a, compare }: { brand: PublicBr
         <View style={[s.row, { gap: 8, marginBottom: 12 }]}>
           <View style={[s.card, { flex: 1.1, backgroundColor: vc.bg, borderColor: vc.bg }]}>
             <Text style={[s.eyebrow, { color: vc.fg }]}>Estimated DSCR</Text>
-            <Text style={{ fontFamily: "Fraunces", fontSize: 28, color: vc.fg, lineHeight: 1.1 }}>{dscr(a.dscrRatio)}</Text>
+            <Text style={{ fontFamily: "Fraunces", fontSize: 28, color: vc.fg, lineHeight: 1.15 }}>{dscr(a.dscrRatio)}</Text>
             <Text style={{ fontWeight: 700, color: vc.fg }}>{t.verdict[a.verdict]}</Text>
             <Text style={{ fontSize: 7.5, color: vc.fg, marginTop: 2 }}>{t.verdictHelp[a.verdict]}</Text>
           </View>
           <View style={[s.card, { flex: 1 }]}>
             <Text style={[s.eyebrow, s.muted]}>Estimated payment (PITIA)</Text>
-            <Text style={{ fontSize: 18, fontWeight: 700, marginTop: 2 }}>{usd(a.pitiaCents)}/mo</Text>
+            <Text style={{ fontSize: 18, fontWeight: 700, marginTop: 2, lineHeight: 1.2 }}>{usd(a.pitiaCents)}/mo</Text>
             <Text style={s.muted}>Rent {usd(a.qualifyingRentCents)} · cash flow {usd(a.cashFlowCents)}/mo</Text>
           </View>
           <View style={[s.card, { flex: 1 }]}>
             <Text style={[s.eyebrow, s.muted]}>{purchase ? "Total cash needed" : "Cash to you"}</Text>
-            <Text style={{ fontSize: 18, fontWeight: 700, marginTop: 2 }}>{purchase ? usd(a.totalCashNeededCents) : usd(a.cashToBorrowerCents)}</Text>
+            <Text style={{ fontSize: 18, fontWeight: 700, marginTop: 2, lineHeight: 1.2 }}>{purchase ? usd(a.totalCashNeededCents) : usd(a.cashToBorrowerCents)}</Text>
             <Text style={s.muted}>{purchase ? `Closing ${usd(a.cashToCloseCents)} + reserves ${usd(a.reservesCents)}` : `Reserves needed ${usd(a.reservesCents)}`}</Text>
           </View>
         </View>
