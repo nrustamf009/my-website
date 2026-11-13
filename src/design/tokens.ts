@@ -52,7 +52,7 @@ export interface ThemeTokens {
   type: Record<TypeRole, TypeSpec>;
   radius: { card: number; tile: number; control: number; cta: number; badge: number; logo: number };
   border: { hairline: number; strong: number };
-  space: { page: number; section: number };
+  space: { page: number; section: number; cta: number };
   /** Box shadow for raised surfaces; "none" in all three themes (depth comes from surfaces and rules). */
   shadow: string;
 }

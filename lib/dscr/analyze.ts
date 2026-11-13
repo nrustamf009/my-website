@@ -67,6 +67,11 @@ export interface WhatToChange {
   /** True when the change is large enough to be unrealistic (price −7%+, rent +10%+). */
   stretch: boolean;
   reaches: Verdict;
+  /** to − from (cents, or points ratio for BUYDOWN), so the UI never subtracts. */
+  delta: number;
+  /** BUYDOWN only: the rate after buying down, and the change in milli-percent (negative). */
+  rateMilliTo?: Milli;
+  rateDeltaMilli?: Milli;
 }
 
 export interface DealAnalysis {
@@ -327,7 +332,7 @@ export function whatToChange(input: DealInput, ctx: EngineContext, currentTier: 
       return false;
     }
   };
-  const out: WhatToChange[] = [];
+  const out: Omit<WhatToChange, "delta">[] = [];
   const n = normalize(input, ctx);
 
   if (input.mode === "PURCHASE") {
@@ -380,11 +385,15 @@ export function whatToChange(input: DealInput, ctx: EngineContext, currentTier: 
     if (bStep !== null) {
       const to = cur + bStep * 25;
       const variant = normalize({ ...input, pointsRatio: to }, ctx);
-      out.push({ lever: "BUYDOWN", from: cur, to, cashCostCents: applyRatio(variant.loanCents, to) - applyRatio(n.loanCents, cur), stretch: false, reaches });
+      const before = core(ctx.grid, n).rateMilli;
+      const after = core(ctx.grid, variant).rateMilli;
+      out.push({ lever: "BUYDOWN", from: cur, to, cashCostCents: applyRatio(variant.loanCents, to) - applyRatio(n.loanCents, cur), stretch: false, reaches, rateMilliTo: after, rateDeltaMilli: after - before } as WhatToChange);
     }
   }
 
-  return out.sort((a, b) => Number(a.stretch) - Number(b.stretch) || a.cashCostCents - b.cashCostCents);
+  return out
+    .map((w) => ({ ...w, delta: w.to - w.from }))
+    .sort((a, b) => Number(a.stretch) - Number(b.stretch) || a.cashCostCents - b.cashCostCents);
 }
 
 /** Largest loan (in $100 steps) that keeps the deal eligible (≥ Borderline) at this value. */

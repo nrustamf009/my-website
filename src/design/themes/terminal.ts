@@ -53,7 +53,7 @@ export const terminal: ThemeDefinition = {
     },
     radius: { card: 12, tile: 10, control: 8, cta: 10, badge: 4, logo: 6 },
     border: { hairline: 1, strong: 2 },
-    space: { page: 20, section: 32 },
+    space: { page: 20, section: 32, cta: 56 },
     shadow: "none",
   },
   variants: { meter: "gauge", verdict: "chip", options: "table", shell: "sidebar-bordered", iconStroke: 1.5, monogram: "solid-rounded", numberedSections: false },

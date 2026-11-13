@@ -53,7 +53,7 @@ export const atelier: ThemeDefinition = {
     },
     radius: { card: 0, tile: 0, control: 0, cta: 0, badge: 0, logo: 0 },
     border: { hairline: 1, strong: 2 },
-    space: { page: 20, section: 40 },
+    space: { page: 20, section: 40, cta: 64 },
     shadow: "none",
   },
   variants: { meter: "linear-block", verdict: "sentence", options: "sections", shell: "topbar", iconStroke: 2, monogram: "wordmark", numberedSections: true },

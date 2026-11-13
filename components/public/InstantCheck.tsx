@@ -4,14 +4,16 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { analyzeDeal, estimateEscrow, FICO_BUCKETS, PREPAYS, PRODUCTS, PROPERTY_TYPES, US_STATES, STATE_NAMES, type DealAnalysis, type EngineContext, type UsState } from "@/lib/dscr";
 import { isAnalyzable, isSubmittable, toDealInput, type CheckForm } from "@/lib/check/form";
 import { normalizeAddress } from "@/lib/providers/address";
-import { dscr, pct, points, rate, usd } from "@/lib/format";
+import { dscr, pct, points, rate, usd, usdMagnitude, usdSigned } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import { Badge, Card, cx, Input, Label, Select } from "@/components/ui";
-import { DscrGauge } from "./DscrGauge";
+import { DataRow, Eyebrow, Metric, Panel, SectionTitle } from "@design/components/primitives";
+import { ResultHero } from "@design/variants/ResultHero";
+import { VerdictBadge } from "@design/variants/VerdictBadge";
+import { ImprovementList, type Improvement } from "@design/variants/ImprovementList";
 import { LeadForm } from "./LeadForm";
 import { MoneyInput } from "./MoneyInput";
 
-const VERDICT_STYLE = { STRONG: "bg-good-soft text-good", BORDERLINE: "bg-warn-soft text-warn", NEEDS_ADJUSTMENT: "bg-warn-soft text-warn", NOT_ELIGIBLE: "bg-bad-soft text-bad" } as const;
 const DOWN_CHIPS = [2_000, 2_500, 3_000, 3_500];
 const OWNED = [
   [3, "Under 6 months"],
@@ -42,6 +44,7 @@ export function InstantCheck(p: InstantCheckProps) {
   const [loading, setLoading] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const inputsRef = useRef<HTMLDivElement>(null);
   const set = <K extends keyof CheckForm>(k: K, v: CheckForm[K] | undefined) => setF((x) => ({ ...x, [k]: v }));
   const purchase = f.mode !== "CASH_OUT";
 
@@ -122,7 +125,7 @@ export function InstantCheck(p: InstantCheckProps) {
   return (
     <div className={cx("grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8", !p.embed && !p.listing && "pb-24 lg:pb-0")}>
       {/* Inputs: a real GET form so the page works without JavaScript */}
-      <Card className="h-fit p-5 sm:p-6">
+      <Card className="h-fit scroll-mt-24 p-5 sm:p-6" ref={inputsRef}>
         <form method="get" onSubmit={(e) => e.preventDefault()} className="space-y-5" aria-label="Deal details">
           {p.loSlug && <input type="hidden" name="lo" value={p.loSlug} />}
           {!p.listing && (
@@ -138,7 +141,7 @@ export function InstantCheck(p: InstantCheckProps) {
           {!p.listing && (
             <div>
               <Label htmlFor="ic-address">Property address</Label>
-              <Input id="ic-address" name="address" value={f.address ?? ""} onChange={(e) => set("address", e.target.value)} placeholder="123 Main St, Austin, TX 78704" autoComplete="street-address" className="h-12 rounded-xl text-[17px]" />
+              <Input id="ic-address" name="address" value={f.address ?? ""} onChange={(e) => set("address", e.target.value)} placeholder="123 Main St, Austin, TX 78704" autoComplete="street-address" className="h-12 rounded-xl text-lg" />
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -246,7 +249,18 @@ export function InstantCheck(p: InstantCheckProps) {
 
       {/* Results */}
       <div className="space-y-5 lg:sticky lg:top-20 lg:h-fit">
-        {a ? <Results a={a} ctx={p.ctx} /> : <Card className="grain flex min-h-[300px] flex-col items-center justify-center p-8 text-center"><div className="font-display text-5xl text-line">—.——</div><p className="mt-4 max-w-xs text-sm text-muted">{t.check.placeholder}</p></Card>}
+        {a ? (
+          <Results
+            a={a}
+            ctx={p.ctx}
+            address={p.listing?.address ?? f.address}
+            rentRange={rentSource === "provider" ? rentRange : null}
+            basedOn={`${usd(a.valueCents)} ${purchase ? "purchase" : "value"}${purchase ? ` · ${pct(a.downPaymentRatio)} down` : ""} · FICO ${f.fico} · ${rate(a.rateMilli)} · ${t.productShort[a.product]}`}
+            onAdjust={() => inputsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          />
+        ) : (
+          <Card className="grain flex min-h-72 flex-col items-center justify-center p-8 text-center"><div className="type-hero-numeral text-rule">—.——</div><p className="mt-4 max-w-xs text-sm text-muted">{t.check.placeholder}</p></Card>
+        )}
         <div ref={formRef} id="get-estimate">
           <Card className="p-5 sm:p-6">
             <h2 className="font-display text-xl text-ink">{p.listing ? t.listing.formTitle : t.check.pdfTitle}</h2>
@@ -272,7 +286,7 @@ export function InstantCheck(p: InstantCheckProps) {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
           <div className="flex items-center gap-3">
             <div className="num font-display text-3xl">{dscr(a.dscrRatio)}</div>
-            <span className={cx("rounded-full px-2.5 py-1 text-xs font-semibold", VERDICT_STYLE[a.verdict])}>{t.verdict[a.verdict]}</span>
+            <VerdictBadge verdict={a.verdict} size="sm" testId="verdict-bar" />
             <button type="button" onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })} className="ml-auto h-10 rounded-full bg-accent px-4 text-sm font-semibold text-on-accent">Get PDF</button>
           </div>
         </div>
@@ -281,91 +295,103 @@ export function InstantCheck(p: InstantCheckProps) {
   );
 }
 
-function Results({ a, ctx }: { a: DealAnalysis; ctx: EngineContext }) {
+function leverItem(w: DealAnalysis["whatToChange"][number]): Improvement {
+  const minus = (x: string) => x.replace(/^-/, "−");
+  switch (w.lever) {
+    case "RENT":
+      return { delta: `+${usd(w.delta)}`, unit: "/mo", label: `Rent at ${usd(w.to)} a month`, hint: t.leverNote.RENT(), stretch: w.stretch };
+    case "DOWN_PAYMENT":
+      return { delta: `+${usd(w.cashCostCents)}`, label: t.lever.DOWN_PAYMENT(usd(w.to)), hint: t.leverNote.DOWN_PAYMENT(usd(w.cashCostCents)), stretch: w.stretch };
+    case "PRICE":
+      return { delta: `−${usdMagnitude(w.delta)}`, label: t.lever.PRICE(usd(w.to)), hint: t.leverNote.PRICE(), stretch: w.stretch };
+    case "BUYDOWN":
+      return { delta: w.rateDeltaMilli != null ? minus(rate(w.rateDeltaMilli)) : points(w.to), label: w.rateMilliTo != null ? `A rate of ${rate(w.rateMilliTo)}` : t.lever.BUYDOWN(points(w.to)), hint: `${points(w.to)} · ${t.leverNote.BUYDOWN(usd(w.cashCostCents))}`, stretch: w.stretch };
+    case "CASH_OUT":
+      return { delta: `−${usdMagnitude(w.delta)}`, label: t.lever.CASH_OUT(usd(w.to)), hint: t.leverNote.CASH_OUT(), stretch: w.stretch };
+    case "PAYDOWN":
+      return { delta: `+${usd(w.cashCostCents)}`, label: t.lever.PAYDOWN(usd(w.to)), hint: t.leverNote.PAYDOWN(usd(w.cashCostCents)), stretch: w.stretch };
+  }
+}
+
+function Results({ a, ctx, address, basedOn, onAdjust, rentRange }: { a: DealAnalysis; ctx: EngineContext; address?: string; basedOn: string; onAdjust: () => void; rentRange: [number, number] | null }) {
   const purchase = a.mode === "PURCHASE";
-  const best = a.whatToChange[0];
-  const others = a.whatToChange.slice(1, 4);
-  const leverTitle = (w: DealAnalysis["whatToChange"][number]) => t.lever[w.lever](w.lever === "BUYDOWN" ? points(w.to) : usd(w.to));
+  const strong = ctx.grid.strongDscrRatio;
+  const items = a.whatToChange.slice(0, 4).map(leverItem);
   return (
-    <Card className="overflow-hidden" aria-live="polite" data-testid="results">
-      <div className="flex flex-col items-center gap-2 px-5 pb-4 pt-6 sm:flex-row sm:gap-6 sm:px-6">
-        <DscrGauge value={a.dscrRatio} verdict={a.verdict} minRatio={ctx.grid.minDscrRatio} strongRatio={ctx.grid.strongDscrRatio} />
-        <div className="text-center sm:text-left">
-          <div className="text-xs font-medium uppercase tracking-wider text-muted">Estimated DSCR</div>
-          <div className="num font-display text-6xl leading-none text-ink" data-testid="dscr-value">{dscr(a.dscrRatio)}</div>
-          <span className={cx("mt-2 inline-block rounded-full px-3 py-1 text-sm font-semibold", VERDICT_STYLE[a.verdict])} data-testid="verdict">{t.verdict[a.verdict]}</span>
-          <p className="mt-1.5 max-w-xs text-xs text-muted">{t.verdictHelp[a.verdict]}</p>
+    <div className="space-y-8" aria-live="polite" data-testid="results">
+      <ResultHero address={address || null} value={a.dscrRatio} verdict={a.verdict} min={ctx.grid.minDscrRatio} strong={strong} explanation={t.verdictHelp[a.verdict]} />
+
+      <div className="flex items-start justify-between gap-4 border-b border-rule pb-4">
+        <div>
+          <Eyebrow>Based on</Eyebrow>
+          <p className="mt-1 text-ink">{basedOn}</p>
         </div>
+        <button type="button" onClick={onAdjust} className="shrink-0 font-semibold text-ink underline underline-offset-4">Adjust</button>
       </div>
-      <div className="grid grid-cols-2 border-t border-line">
-        <div className="border-r border-line p-4 sm:p-5">
-          <div className="text-xs text-muted">Estimated payment</div>
-          <div className="num mt-1 text-2xl font-semibold">{usd(a.pitiaCents)}<span className="text-sm font-normal text-muted">/mo</span></div>
-          <div className="text-xs text-muted">{rate(a.rateMilli)} · {t.productShort[a.product]}</div>
+
+      <section aria-labelledby="ic-numbers">
+        <SectionTitle n="01" id="ic-numbers">The numbers</SectionTitle>
+        <div className="mt-2">
+          <DataRow label="Estimated rent" hint={rentRange ? `Likely range ${usd(rentRange[0])} to ${usd(rentRange[1])}. ${t.check.rentNote}` : t.check.rentNote} value={usd(a.qualifyingRentCents)} />
+          <DataRow
+            label="Monthly payment"
+            hint={`${a.postIoPiCents ? "Interest-only" : "Principal and interest"} ${usd(a.piCents)} · taxes ${usd(a.taxesMonthlyCents)}${a.taxSource === "STATE_DEFAULT" ? " (est.)" : ""} · insurance ${usd(a.insuranceMonthlyCents)} · HOA ${usd(a.hoaMonthlyCents)}`}
+            value={usd(a.pitiaCents)}
+          />
+          {a.postIoPitiaCents ? <DataRow label="After the interest-only years" hint="Principal starts being repaid" value={usd(a.postIoPitiaCents)} /> : null}
+          <DataRow label="Monthly cash flow" hint="Rent less the full payment, before repairs and vacancy." value={usdSigned(a.cashFlowCents)} tone={a.cashFlowCents >= 0 ? "accent" : "negative"} />
         </div>
-        <div className="p-4 sm:p-5">
-          <div className="text-xs text-muted">Cash flow</div>
-          <div className={cx("num mt-1 text-2xl font-semibold", a.cashFlowCents >= 0 ? "text-good" : "text-bad")}>{usd(a.cashFlowCents)}<span className="text-sm font-normal text-muted">/mo</span></div>
-          <div className="text-xs text-muted">Rent {usd(a.qualifyingRentCents)} − payment</div>
-        </div>
-        <div className="border-r border-t border-line p-4 sm:p-5">
-          <div className="text-xs text-muted">{purchase ? "Total cash needed" : "Cash to you"}</div>
-          <div className="num mt-1 text-2xl font-semibold" data-testid="cash-needed">{purchase ? usd(a.totalCashNeededCents) : usd(a.cashToBorrowerCents)}</div>
-          <div className="text-xs text-muted">{purchase ? `incl. ${usd(a.reservesCents)} reserves` : `${usd(a.reservesCents)} reserves needed`}</div>
-        </div>
-        <div className="border-t border-line p-4 sm:p-5">
-          <div className="text-xs text-muted">Max loan (program defaults)</div>
-          <div className="num mt-1 text-2xl font-semibold" data-testid="max-loan">{usd(a.maxLoanCents)}</div>
-          <div className="text-xs text-muted">This deal: {usd(a.loanAmountCents)} · {pct(a.ltvRatio)} LTV</div>
-        </div>
-      </div>
-      <details className="group border-t border-line">
-        <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-sm font-medium text-ink-2">
-          Payment and cash breakdown
-          <svg viewBox="0 0 24 24" className="h-4 w-4 transition group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
-        </summary>
-        <dl className="space-y-1.5 px-5 pb-4 text-sm">
-          {([
-            [a.postIoPiCents ? "Interest-only payment" : "Principal & interest", a.piCents],
-            [`Taxes${a.taxSource === "STATE_DEFAULT" ? " (state estimate)" : ""}`, a.taxesMonthlyCents],
-            [`Insurance${a.insuranceSource === "STATE_DEFAULT" ? " (state estimate)" : ""}`, a.insuranceMonthlyCents],
-            ["HOA", a.hoaMonthlyCents],
-          ] as [string, number][]).map(([k, v]) => <div key={k} className="flex justify-between"><dt className="text-muted">{k}</dt><dd className="num">{usd(v, { cents: true })}</dd></div>)}
-          <div className="flex justify-between border-t border-line pt-1.5 font-semibold"><dt>Total PITIA</dt><dd className="num">{usd(a.pitiaCents, { cents: true })}</dd></div>
-          {a.postIoPitiaCents && <div className="flex justify-between text-muted"><dt>After interest-only period</dt><dd className="num">{usd(a.postIoPitiaCents)}</dd></div>}
-          {purchase && (
-            <>
-              <div className="flex justify-between pt-2 text-muted"><dt>Down payment</dt><dd className="num">{usd(a.downPaymentCents)}</dd></div>
-              <div className="flex justify-between text-muted"><dt>Closing costs (est.)</dt><dd className="num">{usd(a.closingCostsCents)}</dd></div>
-              <div className="flex justify-between text-muted"><dt>Prepaids & escrow (est.)</dt><dd className="num">{usd(a.prepaidsCents)}</dd></div>
-              <div className="flex justify-between text-muted"><dt>Reserves ({ctx.grid.reservesMonths} months)</dt><dd className="num">{usd(a.reservesCents)}</dd></div>
-            </>
-          )}
-        </dl>
-      </details>
-      {best && (
-        <div className="border-t border-line bg-paper/70 px-5 py-4" data-testid="what-to-change">
-          <div className="text-xs font-semibold uppercase tracking-wider text-muted">{a.verdict === "BORDERLINE" ? "To look strong" : "What would change it"}</div>
-          <div className="mt-2 rounded-xl border border-accent-line bg-surface p-3">
-            <div className="text-xs font-semibold text-accent">Simplest path</div>
-            <div className="font-semibold text-ink">{leverTitle(best)}</div>
-            <div className="text-sm text-muted">{t.leverNote[best.lever](usd(best.cashCostCents))}</div>
-          </div>
-          {others.length > 0 && (
-            <ul className="mt-3 space-y-2">
-              {others.map((w) => (
-                <li key={w.lever} className="flex items-start gap-2 text-sm"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" /><span><strong className="font-medium text-ink">{leverTitle(w)}</strong> <span className="text-muted">{t.leverNote[w.lever](usd(w.cashCostCents))}</span>{w.stretch && <Badge className="ml-1">{t.stretch}</Badge>}</span></li>
-              ))}
-            </ul>
-          )}
-        </div>
+      </section>
+
+      {items.length > 0 && (
+        <section aria-labelledby="ic-paths" data-testid="what-to-change">
+          <SectionTitle n="02" id="ic-paths">{a.verdict === "BORDERLINE" ? `Ways to reach ${dscr(strong)}` : "What would change the outcome"}</SectionTitle>
+          <p className="type-body-small mb-3 mt-1 text-muted">Any one of these is enough. Simplest path first.</p>
+          <ImprovementList items={items} stretchLabel={t.stretch} />
+        </section>
       )}
+
       {a.reasons.length > 0 && (
-        <ul className="space-y-1 border-t border-line px-5 py-3 text-xs text-ink-2">
-          {a.reasons.map((r) => <li key={r}>• {t.reason[r]}</li>)}
+        <ul className="space-y-1 text-sm text-ink-2">
+          {a.reasons.map((r) => <li key={r}>{t.reason[r]}</li>)}
         </ul>
       )}
-      <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">{t.check.estimateOnly}</p>
-    </Card>
+
+      <Panel aria-labelledby="ic-supports">
+        <Eyebrow>
+          <span id="ic-supports">What this property supports</span>
+        </Eyebrow>
+        <div className="mt-2 divide-y divide-rule">
+          <Metric label="Maximum loan" hint="Under this broker's program defaults" value={usd(a.maxLoanCents)} testId="max-loan" />
+          {purchase ? (
+            <Metric label="Total cash needed" hint={`Cash to close ${usd(a.cashToCloseCents)} (down payment, costs, prepaids) + reserves`} value={usd(a.totalCashNeededCents)} testId="cash-needed" />
+          ) : (
+            <Metric label="Cash to you" hint="After paying off the current loan and closing costs" value={usd(a.cashToBorrowerCents)} testId="cash-needed" />
+          )}
+          <Metric label="Reserves to show" hint={`${ctx.grid.reservesMonths} months of payments`} value={usd(a.reservesCents)} />
+        </div>
+        <details className="group mt-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-sm font-medium text-ink-2">
+            Full breakdown
+            <svg viewBox="0 0 24 24" className="icon h-4 w-4 transition group-open:rotate-180" fill="none" stroke="currentColor" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <dl className="space-y-1.5 pb-2 text-sm">
+            {([
+              ["Loan amount", `${usd(a.loanAmountCents)} · ${pct(a.ltvRatio)} LTV`],
+              ["Estimated rate", `${rate(a.rateMilli)} · ${t.productShort[a.product]}`],
+              ...(purchase
+                ? ([
+                    ["Down payment", usd(a.downPaymentCents)],
+                    ["Closing costs (est.)", usd(a.closingCostsCents)],
+                    ["Prepaids & escrow (est.)", usd(a.prepaidsCents)],
+                  ] as [string, string][])
+                : []),
+              ["Total PITIA", usd(a.pitiaCents, { cents: true })],
+            ] as [string, string][]).map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted">{k}</dt><dd className="num text-right">{v}</dd></div>)}
+          </dl>
+        </details>
+      </Panel>
+      <p className="type-fine text-muted">{t.check.estimateOnly}</p>
+    </div>
   );
 }

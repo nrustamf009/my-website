@@ -26,13 +26,13 @@ export default async function CheckPage({ params, searchParams }: Props) {
   const first = pc.brand.lo.name.split(" ")[0]!;
   const defaultState = pc.brand.licensedStates.length === 1 ? pc.brand.licensedStates[0] : undefined;
   return (
-    <PublicShell brand={pc.brand}>
-      <section className="mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:pt-14">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{t.check.eyebrow}</p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl" style={{ textWrap: "balance" }}>{t.check.title}</h1>
-        <p className="mt-3 max-w-2xl text-base text-ink-2 sm:text-lg">{t.check.subtitle}</p>
+    <PublicShell brand={pc.brand} surface="Instant Check">
+      <section className="mx-auto max-w-6xl px-[var(--space-page)] pb-6 pt-8 sm:px-6 sm:pt-14">
+        <p className="type-eyebrow text-accent">{t.check.eyebrow}</p>
+        <h1 className="type-h1 mt-3 max-w-3xl text-ink" style={{ textWrap: "balance" }}>{t.check.title}</h1>
+        <p className="mt-3 max-w-2xl text-ink-2">{t.check.subtitle}</p>
       </section>
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="mx-auto max-w-6xl px-[var(--space-page)] sm:px-6">
         <InstantCheck
           slug={slug}
           loSlug={pc.brand.lo.slug}

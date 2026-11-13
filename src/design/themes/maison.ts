@@ -53,7 +53,7 @@ export const maison: ThemeDefinition = {
     },
     radius: { card: 0, tile: 0, control: 0, cta: 0, badge: 0, logo: 0 },
     border: { hairline: 1, strong: 1 },
-    space: { page: 24, section: 40 },
+    space: { page: 24, section: 40, cta: 56 },
     shadow: "none",
   },
   variants: { meter: "linear", verdict: "italic", options: "stacked", shell: "sidebar-dark", iconStroke: 1.5, monogram: "outline-square", numberedSections: false },

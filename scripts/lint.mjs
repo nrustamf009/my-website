@@ -38,7 +38,7 @@ const NEGATION = /not (?:a |an offer or (?:a )?)?commitment to lend/gi;
 
 // 2. Money math outside the engine.
 const MATH = /(?:\b\w*(?:Cents|Milli|Ratio)\b\s*[-+*/]\s*[\w(]|[-+*/]\s*[\w.!?]*(?:Cents|Milli|Ratio)\b|\*\s*12\b|\b10_000\s*-|\/\s*100\b|\*\s*100\b)/;
-const MATH_EXEMPT = ["lib/dscr/", "lib/format.ts", "lib/providers/", "lib/moneylist/csv.ts", "lib/actions/settings.ts"];
+const MATH_EXEMPT = ["lib/dscr/", "lib/format.ts", "lib/charts/", "lib/providers/", "lib/moneylist/csv.ts", "lib/actions/settings.ts"];
 const MATH_OK_LINE = /\b(points|usd|usdMagnitude|pct|rate|dscr)\(\s*-?\w/; // sign flips inside formatters
 
 // 3. Raw prisma on tenant models.

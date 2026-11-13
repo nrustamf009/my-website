@@ -25,3 +25,23 @@ input[type="range"].range-accent {
 }
 .animate-rise { animation: rise 0.35s ease-out both; }
 
+
+/* Section numbers (01, 02) show only where the theme numbers its sections. */
+.section-num { display: var(--section-number-display); }
+
+/* Broker monogram when no logo is uploaded: outline square (maison), solid rounded (terminal), wordmark only (atelier). */
+.monogram {
+  display: var(--monogram-display);
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--monogram-bg);
+  color: var(--monogram-fg);
+  border: var(--monogram-border);
+  border-radius: var(--radius-logo);
+  font-family: var(--monogram-font);
+  font-weight: 600;
+}
+
+.cta { min-height: var(--cta-height); border-radius: var(--radius-cta); }
+.rule-strong { border-color: var(--rule-strong); border-width: var(--border-strong); }
+.icon { stroke-width: var(--icon-stroke); }

@@ -47,16 +47,28 @@ function block(def: ThemeDefinition): string {
   v("border-strong", `${t.border.strong}px`);
   v("space-page", `${t.space.page}px`);
   v("space-section", `${t.space.section}px`);
+  v("cta-height", `${t.space.cta}px`);
   v("shadow", t.shadow === "none" ? "0 0 #0000" : t.shadow);
   v("icon-stroke", def.variants.iconStroke);
   v("color-scheme", dark ? "dark" : "light");
+  // Variant flags expressed as tokens, so primitives stay branch-free.
+  v("section-number-display", def.variants.numberedSections ? "inline" : "none");
+  const mono = def.variants.monogram;
+  v("monogram-display", mono === "wordmark" ? "none" : "grid");
+  v("monogram-bg", mono === "solid-rounded" ? "var(--accent)" : "transparent");
+  v("monogram-fg", mono === "solid-rounded" ? "var(--on-accent)" : "var(--ink)");
+  v("monogram-border", mono === "outline-square" ? "1px solid var(--ink)" : "0");
+  v("monogram-font", mono === "outline-square" ? "var(--font-display)" : "var(--font-body)");
   return lines.join("\n");
 }
 
 const utilities = TYPE_ROLES.filter((r) => r !== "h1Desktop")
   .map((role) => {
     const p = `type-${kebab(role)}`;
-    return `.${p} {\n  font-family: var(--${p}-family);\n  font-size: var(--${p}-size);\n  line-height: var(--${p}-line);\n  letter-spacing: var(--${p}-tracking);\n  font-weight: var(--${p}-weight);\n  font-style: var(--${p}-style);\n  text-transform: var(--${p}-case);\n}`;
+    // Display numerals scale down on narrow phones so a four-character DSCR never overflows.
+    const size = role === "heroNumeral" || role === "dashboardCount" ? `min(var(--${p}-size), 46vw)` : role === "optionRate" || role === "optionLetter" ? `min(var(--${p}-size), 30vw)` : `var(--${p}-size)`;
+    const line = role === "heroNumeral" || role === "dashboardCount" ? `min(var(--${p}-line), 37vw)` : `var(--${p}-line)`;
+    return `.${p} {\n  font-family: var(--${p}-family);\n  font-size: ${size};\n  line-height: ${line};\n  letter-spacing: var(--${p}-tracking);\n  font-weight: var(--${p}-weight);\n  font-style: var(--${p}-style);\n  text-transform: var(--${p}-case);\n}`;
   })
   .join("\n");
 

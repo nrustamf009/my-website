@@ -139,9 +139,16 @@
   --border-strong: 1px;
   --space-page: 24px;
   --space-section: 40px;
+  --cta-height: 56px;
   --shadow: 0 0 #0000;
   --icon-stroke: 1.5;
   --color-scheme: light;
+  --section-number-display: none;
+  --monogram-display: grid;
+  --monogram-bg: transparent;
+  --monogram-fg: var(--ink);
+  --monogram-border: 1px solid var(--ink);
+  --monogram-font: var(--font-display);
   color-scheme: var(--color-scheme);
 }
 
@@ -283,9 +290,16 @@
   --border-strong: 2px;
   --space-page: 20px;
   --space-section: 32px;
+  --cta-height: 56px;
   --shadow: 0 0 #0000;
   --icon-stroke: 1.5;
   --color-scheme: dark;
+  --section-number-display: none;
+  --monogram-display: grid;
+  --monogram-bg: var(--accent);
+  --monogram-fg: var(--on-accent);
+  --monogram-border: 0;
+  --monogram-font: var(--font-body);
   color-scheme: var(--color-scheme);
 }
 
@@ -427,16 +441,23 @@
   --border-strong: 2px;
   --space-page: 20px;
   --space-section: 40px;
+  --cta-height: 64px;
   --shadow: 0 0 #0000;
   --icon-stroke: 2;
   --color-scheme: light;
+  --section-number-display: inline;
+  --monogram-display: none;
+  --monogram-bg: transparent;
+  --monogram-fg: var(--ink);
+  --monogram-border: 0;
+  --monogram-font: var(--font-body);
   color-scheme: var(--color-scheme);
 }
 
 .type-hero-numeral {
   font-family: var(--type-hero-numeral-family);
-  font-size: var(--type-hero-numeral-size);
-  line-height: var(--type-hero-numeral-line);
+  font-size: min(var(--type-hero-numeral-size), 46vw);
+  line-height: min(var(--type-hero-numeral-line), 37vw);
   letter-spacing: var(--type-hero-numeral-tracking);
   font-weight: var(--type-hero-numeral-weight);
   font-style: var(--type-hero-numeral-style);
@@ -444,8 +465,8 @@
 }
 .type-dashboard-count {
   font-family: var(--type-dashboard-count-family);
-  font-size: var(--type-dashboard-count-size);
-  line-height: var(--type-dashboard-count-line);
+  font-size: min(var(--type-dashboard-count-size), 46vw);
+  line-height: min(var(--type-dashboard-count-line), 37vw);
   letter-spacing: var(--type-dashboard-count-tracking);
   font-weight: var(--type-dashboard-count-weight);
   font-style: var(--type-dashboard-count-style);
@@ -489,7 +510,7 @@
 }
 .type-option-rate {
   font-family: var(--type-option-rate-family);
-  font-size: var(--type-option-rate-size);
+  font-size: min(var(--type-option-rate-size), 30vw);
   line-height: var(--type-option-rate-line);
   letter-spacing: var(--type-option-rate-tracking);
   font-weight: var(--type-option-rate-weight);
@@ -498,7 +519,7 @@
 }
 .type-option-letter {
   font-family: var(--type-option-letter-family);
-  font-size: var(--type-option-letter-size);
+  font-size: min(var(--type-option-letter-size), 30vw);
   line-height: var(--type-option-letter-line);
   letter-spacing: var(--type-option-letter-tracking);
   font-weight: var(--type-option-letter-weight);
