@@ -1,58 +1,47 @@
-import type { PrepayType } from "./types";
+import type { Prepay, Product } from "./types";
+import { balanceAfter } from "./amortization";
+import { applyRatio, type Cents, type Milli, type Ratio } from "./units";
 
-/** Penalty % by loan year for each supported prepay structure. */
-export function prepaySchedule(type: PrepayType): number[] {
-  switch (type) {
-    case "5-4-3-2-1":
-      return [5, 4, 3, 2, 1];
-    case "3-2-1":
-      return [3, 2, 1];
-    default:
-      return [];
-  }
-}
-
-export const PREPAY_LABEL: Record<PrepayType, string> = {
-  "5-4-3-2-1": "5-4-3-2-1 (5 years)",
-  "3-2-1": "3-2-1 (3 years)",
-  NONE: "No prepay penalty",
+/** Penalty percentage by loan year. */
+export const PREPAY_SCHEDULES: Record<Prepay, number[]> = {
+  "5-4-3-2-1": [5, 4, 3, 2, 1],
+  "3-2-1": [3, 2, 1],
+  "5-5-5-5-5": [5, 5, 5, 5, 5],
+  "3-3-3": [3, 3, 3],
+  "2-1": [2, 1],
+  "1": [1],
+  NONE: [],
 };
 
-/** Whole months between two dates (a <= b gives >= 0). */
-export function monthsBetween(a: Date, b: Date): number {
-  let months = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth());
-  if (b.getUTCDate() < a.getUTCDate()) months -= 1;
-  return months;
+export function prepayTermMonths(type: Prepay): number {
+  return PREPAY_SCHEDULES[type].length * 12;
 }
 
-export function addMonths(d: Date, months: number): Date {
-  const r = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + months, 1));
-  const lastDay = new Date(Date.UTC(r.getUTCFullYear(), r.getUTCMonth() + 1, 0)).getUTCDate();
-  r.setUTCDate(Math.min(d.getUTCDate(), lastDay));
-  return r;
+/** Penalty ratio for a payoff in loan month N (1-based: months 1–12 are year 1). */
+export function prepayPenaltyRatio(type: Prepay, month: number): Ratio {
+  if (month < 1) return 0;
+  const pct = PREPAY_SCHEDULES[type][Math.ceil(month / 12) - 1] ?? 0;
+  return pct * 100;
 }
 
-export function daysBetween(a: Date, b: Date): number {
-  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+/** Penalty in cents for paying off `balanceCents` in loan month N. */
+export function prepayPenaltyCents(type: Prepay, balanceCents: Cents, month: number): Cents {
+  return applyRatio(balanceCents, prepayPenaltyRatio(type, month));
 }
 
-/** Date the prepay penalty ends. Null when there is no penalty. */
-export function prepayExpiry(closingDate: Date, termYears: number): Date | null {
-  if (termYears <= 0) return null;
-  return addMonths(closingDate, termYears * 12);
+export interface PrepayRow {
+  year: number;
+  penaltyRatio: Ratio;
+  /** Balance at the start of the year (payoff in its first month). */
+  balanceCents: Cents;
+  penaltyCents: Cents;
 }
 
-/**
- * Penalty % if the loan is paid off on `asOf`.
- * For a known step-down schedule the % follows the loan year; for "OTHER" types
- * with only a term, a flat 1% applies until expiry (conservative placeholder).
- */
-export function prepayPenaltyPct(type: PrepayType | "OTHER", closingDate: Date, termYears: number, asOf: Date): number {
-  if (termYears <= 0 || type === "NONE") return 0;
-  const months = monthsBetween(closingDate, asOf);
-  if (months < 0) return type === "OTHER" ? 1 : prepaySchedule(type)[0] ?? 0;
-  if (months >= termYears * 12) return 0;
-  if (type === "OTHER") return 1;
-  const schedule = prepaySchedule(type);
-  return schedule[Math.floor(months / 12)] ?? 0;
+/** Year-by-year penalty table for the investor ("if you sell or refinance in year N"). */
+export function prepaySchedule(type: Prepay, product: Product, loanCents: Cents, rateMilli: Milli): PrepayRow[] {
+  return PREPAY_SCHEDULES[type].map((pct, i) => {
+    const balanceCents = balanceAfter(product, loanCents, rateMilli, i * 12);
+    const penaltyRatio = pct * 100;
+    return { year: i + 1, penaltyRatio, balanceCents, penaltyCents: applyRatio(balanceCents, penaltyRatio) };
+  });
 }

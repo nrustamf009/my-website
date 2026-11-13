@@ -1,103 +1,110 @@
-import type { Escrow, PrepayType } from "./types";
-import { assertNonNegative } from "./guards";
-import { dscr as calcDscr, monthlyPI, monthlyPITIA } from "./payment";
+import type { Mode, Prepay, Product, ProgramGrid } from "./types";
+import { PRODUCT_SPECS, productPayments } from "./amortization";
+import { prepaySchedule, type PrepayRow } from "./prepay";
+import { applyRatio, monthly, ratioCeil, ratioFloor, type Cents, type Milli, type Ratio } from "./units";
+
+export const COST_HORIZON_MONTHS = 60;
 
 export interface ScenarioOptionInput {
-  loanAmount: number;
-  ratePct: number;
-  termYears: number;
-  interestOnly: boolean;
-  /** Length of the IO period in years (default 10). */
-  ioYears?: number | null;
-  prepay: PrepayType;
-  pointsPct: number;
-  lenderFees: number;
+  product: Product;
+  loanAmountCents: Cents;
+  rateMilli: Milli;
+  /** Points as ratio of loan (1 point = 100); negative = lender credit. */
+  pointsRatio: Ratio;
+  /** Lender/origination fees. */
+  feesCents: Cents;
+  prepay: Prepay;
+}
+
+export interface ScenarioPropertyInput {
+  mode: Mode;
+  valueCents: Cents;
+  rentCents: Cents;
+  taxesAnnualCents: Cents;
+  insuranceAnnualCents: Cents;
+  hoaMonthlyCents: Cents;
 }
 
 export interface ScenarioOptionResult {
-  pi: number;
-  pitia: number;
-  dscr: number | null;
-  ltv: number;
-  downPayment: number;
-  pointsCost: number;
-  upfrontCosts: number;
-  /** Down payment (purchase only) + points + lender fees. */
-  cashToClose: number;
-  /** Amortizing P&I after the IO period ends (IO loans only). */
-  postIoPI: number | null;
-  /** PITIA after the IO period ends (IO loans only). */
-  postIoPITIA: number | null;
-  annualPITIA: number;
-  monthlyCashFlow: number;
-  /** Payments plus upfront costs (points + fees) over the first 5 years. Excludes down payment. */
-  fiveYearCost: number;
+  piCents: Cents;
+  postIoPiCents: Cents | null;
+  pitiaCents: Cents;
+  postIoPitiaCents: Cents | null;
+  dscrRatio: Ratio | null;
+  postIoDscrRatio: Ratio | null;
+  cashFlowCents: Cents;
+  ltvRatio: Ratio;
+  downPaymentCents: Cents;
+  /** Positive = points paid, negative = lender credit received. */
+  pointsCents: Cents;
+  /** Total closing costs: the grid estimate, but never less than the option's lender fees. */
+  closingCostsCents: Cents;
+  prepaidsCents: Cents;
+  cashToCloseCents: Cents;
+  fiveYearCostCents: Cents;
+  ioMonths: number;
+  fixedMonths: number | null;
+  prepaySchedule: PrepayRow[];
 }
 
-export const COST_HORIZON_YEARS = 5;
-
-/** Compute one option of a Scenario Sheet. */
-export function computeScenarioOption(params: {
-  propertyValue: number;
-  monthlyRent: number;
-  escrow: Escrow;
-  isPurchase: boolean;
-  option: ScenarioOptionInput;
-}): ScenarioOptionResult {
-  const { propertyValue, monthlyRent, escrow, isPurchase, option } = params;
-  assertNonNegative("propertyValue", propertyValue);
-  assertNonNegative("pointsPct", option.pointsPct);
-  assertNonNegative("lenderFees", option.lenderFees);
-  const pi = monthlyPI({ loanAmount: option.loanAmount, ratePct: option.ratePct, termYears: option.termYears, interestOnly: option.interestOnly });
-  const pitia = monthlyPITIA(pi, escrow);
-  const ioYears = option.ioYears ?? 10;
-  const postIoPI =
-    option.interestOnly && option.termYears > ioYears
-      ? monthlyPI({ loanAmount: option.loanAmount, ratePct: option.ratePct, termYears: option.termYears - ioYears })
-      : null;
-  const pointsCost = (option.loanAmount * option.pointsPct) / 100;
-  const downPayment = isPurchase ? Math.max(0, propertyValue - option.loanAmount) : 0;
-  const upfrontCosts = pointsCost + option.lenderFees;
-  const postIoPITIA = postIoPI === null ? null : monthlyPITIA(postIoPI, escrow);
-  // Months at the initial payment vs. the post-IO payment inside the 5-year horizon.
-  const horizon = COST_HORIZON_YEARS * 12;
-  const initialMonths = option.interestOnly && postIoPITIA !== null ? Math.min(horizon, ioYears * 12) : horizon;
-  const fiveYearCost = upfrontCosts + pitia * initialMonths + (postIoPITIA ?? pitia) * (horizon - initialMonths);
+/**
+ * One Scenario Sheet option. Cash to close (purchase) = down payment + closing costs + prepaids + points.
+ * Refinances finance closing costs, so cash to close = prepaids + points (credits reduce it).
+ * 5-year cost = 60 monthly payments (stepping up after IO) + points + lender fees. Excludes down payment.
+ */
+export function computeScenarioOption(p: ScenarioPropertyInput, o: ScenarioOptionInput, grid: ProgramGrid): ScenarioOptionResult {
+  const taxesM = monthly(p.taxesAnnualCents);
+  const insM = monthly(p.insuranceAnnualCents);
+  const escrow = taxesM + insM + p.hoaMonthlyCents;
+  const pay = productPayments(o.product, o.loanAmountCents, o.rateMilli);
+  const pitia = pay.initialPI + escrow;
+  const postIoPitia = pay.postIoPI === null ? null : pay.postIoPI + escrow;
+  const isPurchase = p.mode === "PURCHASE";
+  const down = isPurchase ? Math.max(0, p.valueCents - o.loanAmountCents) : 0;
+  const pointsCents = applyRatio(Math.abs(o.loanAmountCents), Math.abs(o.pointsRatio)) * Math.sign(o.pointsRatio || 0);
+  const estimate = applyRatio(isPurchase ? p.valueCents : o.loanAmountCents, isPurchase ? grid.closingCostRatio.purchase : grid.closingCostRatio.refi);
+  const closing = Math.max(estimate, o.feesCents);
+  const prepaids = insM * grid.prepaids.insuranceMonths + taxesM * grid.prepaids.taxMonths;
+  const cashToClose = Math.max(0, isPurchase ? down + closing + prepaids + pointsCents : prepaids + pointsCents);
+  const spec = PRODUCT_SPECS[o.product];
+  const ioInHorizon = Math.min(COST_HORIZON_MONTHS, spec.ioMonths);
+  const fiveYear = pitia * ioInHorizon + (postIoPitia ?? pitia) * (COST_HORIZON_MONTHS - ioInHorizon) + Math.max(0, pointsCents) + o.feesCents;
   return {
-    pi,
-    pitia,
-    dscr: calcDscr(monthlyRent, pitia),
-    ltv: propertyValue > 0 ? option.loanAmount / propertyValue : 0,
-    downPayment,
-    pointsCost,
-    upfrontCosts,
-    cashToClose: downPayment + upfrontCosts,
-    postIoPI,
-    postIoPITIA,
-    annualPITIA: pitia * 12,
-    monthlyCashFlow: monthlyRent - pitia,
-    fiveYearCost,
+    piCents: pay.initialPI,
+    postIoPiCents: pay.postIoPI,
+    pitiaCents: pitia,
+    postIoPitiaCents: postIoPitia,
+    dscrRatio: ratioFloor(p.rentCents, pitia),
+    postIoDscrRatio: postIoPitia === null ? null : ratioFloor(p.rentCents, postIoPitia),
+    cashFlowCents: p.rentCents - pitia,
+    ltvRatio: ratioCeil(o.loanAmountCents, p.valueCents) ?? 0,
+    downPaymentCents: down,
+    pointsCents,
+    closingCostsCents: closing,
+    prepaidsCents: prepaids,
+    cashToCloseCents: cashToClose,
+    fiveYearCostCents: fiveYear,
+    ioMonths: spec.ioMonths,
+    fixedMonths: spec.fixedMonths,
+    prepaySchedule: prepaySchedule(o.prepay, o.product, o.loanAmountCents, o.rateMilli),
   };
 }
 
-/** Loan amount for a target LTV, rounded down to the nearest $500. */
-export function loanFromLtv(propertyValue: number, ltv: number): number {
-  return Math.floor((propertyValue * ltv) / 500) * 500;
-}
-
 export interface OptionComparison {
-  /** Extra upfront cost (points + fees) of `other` vs. `base`. Negative = cheaper upfront. */
-  extraUpfront: number;
-  /** Monthly payment savings of `other` vs. `base`. Negative = higher payment. */
-  monthlySavings: number;
-  /** Months until lower payments repay the extra upfront cost; null when not applicable. */
-  breakEvenMonths: number | null;
+  extraUpfrontCents: Cents;
+  monthlySavingsCents: Cents;
+  /** Whole months until payment savings repay the extra upfront cost (rounded up); null if n/a. */
+  breakevenMonths: number | null;
 }
 
-/** Compare two options: does paying more upfront (e.g. points) pay for itself, and when? */
-export function compareOptions(base: ScenarioOptionResult, other: ScenarioOptionResult): OptionComparison {
-  const extraUpfront = other.upfrontCosts - base.upfrontCosts;
-  const monthlySavings = base.pitia - other.pitia;
-  const breakEvenMonths = extraUpfront > 0 && monthlySavings > 0 ? extraUpfront / monthlySavings : null;
-  return { extraUpfront, monthlySavings, breakEvenMonths };
+export function compareOptions(base: ScenarioOptionResult, other: ScenarioOptionResult, baseOpt: ScenarioOptionInput, otherOpt: ScenarioOptionInput): OptionComparison {
+  const upfront = (r: ScenarioOptionResult, o: ScenarioOptionInput) => Math.max(0, r.pointsCents) + o.feesCents;
+  const extra = upfront(other, otherOpt) - upfront(base, baseOpt);
+  const savings = base.pitiaCents - other.pitiaCents;
+  return { extraUpfrontCents: extra, monthlySavingsCents: savings, breakevenMonths: extra > 0 && savings > 0 ? Math.ceil(extra / savings) : null };
+}
+
+/** Loan amount for a target LTV, rounded down to the nearest $500. */
+export function loanFromLtv(valueCents: Cents, ltvRatio: Ratio): Cents {
+  return Math.floor((valueCents * ltvRatio) / 10_000 / 50_000) * 50_000;
 }
