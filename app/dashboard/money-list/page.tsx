@@ -61,7 +61,7 @@ export default async function MoneyListPage({ searchParams }: { searchParams: Pr
 
   const count = rows.length;
   return (
-    <div className="mx-auto max-w-[1400px]">
+    <div className="mx-auto max-w-350">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex items-end gap-5">
           <span className="type-dashboard-count num text-accent [display:var(--dashboard-count-display)]" aria-hidden>{count}</span>
