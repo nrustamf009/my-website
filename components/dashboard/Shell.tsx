@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { MobileBar, SideNav, type NavItem } from "./Nav";
 import { signOutAction } from "@/lib/actions/auth";
 import { ProductMark } from "@/components/brand/Logo";
+import { paletteVars } from "@/lib/brand/palette";
 
 export function Shell({
   items,
@@ -20,7 +21,7 @@ export function Shell({
   children: ReactNode;
 }) {
   return (
-    <div style={accent ? ({ "--accent": accent } as React.CSSProperties) : undefined} className="min-h-screen">
+    <div style={accent ? (paletteVars(accent) as React.CSSProperties) : undefined} className="min-h-screen">
       {banner}
       <MobileBar items={items} header={header} userLabel={userLabel} signOut={signOutAction} />
       <div className="md:flex">

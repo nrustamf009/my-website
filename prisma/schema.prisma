@@ -1,6 +1,7 @@
-// DSCR Investor Toolkit data model.
-// Portable between SQLite (local) and Postgres (production): no enums, JSON stored as String.
-// scripts/prisma-provider.mjs switches the provider when DATABASE_URL is a Postgres URL.
+// DSCR Investor Toolkit v2 data model.
+// Portable SQLite (local) / Postgres (production): no enums, JSON stored as String and validated with zod.
+// Units: *Cents = integer cents, *Milli = rate in milli-percent (7.125% = 7125), *Ratio = ratio × 10,000.
+// Tenant tables carry brokerId and are only accessed through db.forBroker(brokerId) (lib/db/scoped.ts).
 
 generator client {
   provider = "prisma-client-js"
@@ -11,7 +12,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ---------- Auth.js ----------
+// ---------- Auth ----------
 
 model User {
   id            String    @id @default(cuid())
@@ -19,13 +20,21 @@ model User {
   name          String?
   emailVerified DateTime?
   image         String?
-  role          String    @default("BROKER") // AGENCY_ADMIN | BROKER
+  role          String    @default("LO") // AGENCY_ADMIN | BROKER_ADMIN | LO
   agencyId      String?
   agency        Agency?   @relation(fields: [agencyId], references: [id])
   brokerId      String?
-  broker        Broker?   @relation(fields: [brokerId], references: [id])
+  broker        Broker?   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  slug          String? // per-LO public links: /b/{broker}/check?lo={slug}
+  nmlsId        String?
+  phone         String?
+  title         String?
+  headshotUrl   String?
+  active        Boolean   @default(true)
   accounts      Account[]
   createdAt     DateTime  @default(now())
+
+  @@unique([brokerId, slug])
 }
 
 model Account {
@@ -57,145 +66,212 @@ model VerificationToken {
 // ---------- Tenancy ----------
 
 model Agency {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
-  slug        String   @unique
+  slug        String     @unique
   logoUrl     String?
-  accentColor String   @default("#0F766E")
+  accentColor String     @default("#17150F")
   brokers     Broker[]
   users       User[]
-  createdAt   DateTime @default(now())
+  audits      AuditLog[]
+  createdAt   DateTime   @default(now())
 }
 
 model Broker {
-  id                String  @id @default(cuid())
-  agencyId          String
-  agency            Agency  @relation(fields: [agencyId], references: [id])
-  slug              String  @unique
-  active            Boolean @default(true)
-  // Branding & contact
-  name              String
-  title             String  @default("Loan Officer")
-  companyName       String
-  nmlsId            String
-  companyNmlsId     String?
-  logoUrl           String?
-  accentColor       String  @default("#1F4E79")
-  email             String
-  phone             String?
-  website           String?
-  licensedStates    String?
-  notificationEmail String
-  webhookUrl        String?
-  webhookSecret     String
-  disclaimerText    String
-  messageTone       String  @default("Friendly and professional. Short sentences, no jargon, no pressure.")
-  // DSCR defaults
-  minDscr           Float   @default(1.0)
-  maxLtv            Float   @default(0.8)
-  defaultRate       Float   @default(7.5)
-  termYears         Int     @default(30)
-  taxRatePct        Float   @default(1.2)
-  insuranceRatePct  Float   @default(0.5)
-  borderlineBand    Float   @default(0.1)
-  ficoLtvCaps       String  @default("[]")
-  // Money List rules
-  marketRate          Float?
+  id                  String   @id @default(cuid())
+  agencyId            String
+  agency              Agency   @relation(fields: [agencyId], references: [id])
+  slug                String   @unique
+  status              String   @default("TRIAL") // TRIAL | ACTIVE | SUSPENDED
+  features            String   @default("{}") // {"check":true,"moneyList":true,"snapshot":true,"scenario":true,"notes":true}
+  companyName         String
+  companyNmlsId       String
+  logoUrl             String?
+  accentColor         String   @default("#1F4E79")
+  phone               String?
+  email               String
+  websiteUrl          String?
+  privacyPolicyUrl    String?
+  licensedStates      String   @default("[]")
+  notificationEmails  String   @default("[]")
+  webhookUrl          String?
+  webhookSecret       String
+  tonePreset          String   @default("FRIENDLY") // FRIENDLY | DIRECT | CONSULTATIVE | CUSTOM
+  toneCustom          String?
+  programGrid         String   @default("{}")
+  stateOverrides      String   @default("{}")
+  moneyListRules      String   @default("{}")
+  marketRateMilli     Int?
+  whatIfRateMilli     Int?
   marketRateUpdatedAt DateTime?
-  rateDropThreshold   Float     @default(0.75)
-  prepayWindowDays    Int       @default(60)
-  seasoningMonths     String    @default("[6,12]")
-  digestEnabled       Boolean   @default(true)
+  primaryUserId       String?
+  currentDisclaimerId String?
+  onboardingStep      Int      @default(0)
+  isDemo              Boolean  @default(false)
+  lastRoiEmailAt      DateTime?
   lastDigestAt        DateTime?
-  createdAt           DateTime  @default(now())
+  createdAt           DateTime @default(now())
 
-  users             User[]
-  leads             Lead[]
-  scenarios         Scenario[]
-  closedLoans       ClosedLoan[]
-  loanImports       LoanImport[]
-  realtors          Realtor[]
-  snapshots         Snapshot[]
-  calls             CallSession[]
-  webhookDeliveries WebhookDelivery[]
+  users        User[]
+  disclaimers  DisclaimerVersion[]
+  leads        Lead[]
+  scenarios    Scenario[]
+  realtors     Realtor[]
+  snapshots    Snapshot[]
+  loans        ClosedLoan[]
+  loanImports  LoanImport[]
+  events       Event[]
+  savedNotes   SavedNote[]
+  deliveries   WebhookDelivery[]
 }
 
-// ---------- Leads ----------
+model DisclaimerVersion {
+  id        String   @id @default(cuid())
+  brokerId  String
+  broker    Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  version   Int
+  text      String
+  createdAt DateTime @default(now())
+
+  @@unique([brokerId, version])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  agencyId       String
+  agency         Agency   @relation(fields: [agencyId], references: [id])
+  actorUserId    String
+  action         String // IMPERSONATE_START | IMPERSONATE_STOP | BROKER_CREATE | BROKER_STATUS | BROKER_FEATURES | USER_INVITE
+  targetBrokerId String?
+  meta           String   @default("{}")
+  createdAt      DateTime @default(now())
+
+  @@index([agencyId, createdAt])
+}
+
+// ---------- Leads, consent, events ----------
 
 model Lead {
-  id              String    @id @default(cuid())
-  brokerId        String
-  broker          Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  source          String // CHECK | LISTING | SCENARIO
-  name            String
-  email           String
-  phone           String?
-  consentAt       DateTime
-  consentText     String
-  propertyAddress String?
-  purchasePrice   Int?
-  downPaymentPct  Float?
-  monthlyRent     Int?
-  ficoRange       String?
-  resultJson      String?
-  snapshotId      String?
-  snapshot        Snapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
-  realtorId       String?
-  realtor         Realtor?  @relation(fields: [realtorId], references: [id], onDelete: SetNull)
-  scenarioId      String?
-  status          String    @default("NEW") // NEW | CONTACTED | ARCHIVED
-  createdAt       DateTime  @default(now())
+  id                  String    @id @default(cuid())
+  brokerId            String
+  broker              Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  ownerUserId         String?
+  source              String // WIDGET | SNAPSHOT | SCENARIO | NOTES | MANUAL
+  status              String    @default("NEW") // NEW | CONTACTED | IN_PROGRESS | CLOSED | LOST
+  name                String
+  email               String
+  phone               String?
+  phoneE164           String?
+  propertyAddress     String?
+  state               String?
+  engineInput         String    @default("{}")
+  engineOutput        String    @default("{}")
+  realtorId           String?
+  realtor             Realtor?  @relation(fields: [realtorId], references: [id], onDelete: SetNull)
+  snapshotId          String?
+  snapshot            Snapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
+  scenarioId          String?
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  utmTerm             String?
+  utmContent          String?
+  referrer            String?
+  disclaimerVersionId String?
+  notes               String?
+  submissions         Int       @default(1)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  consents            Consent[]
 
   @@index([brokerId, createdAt])
+  @@index([brokerId, email])
+  @@index([brokerId, phoneE164])
+}
+
+model Consent {
+  id          String   @id @default(cuid())
+  brokerId    String
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind        String // CONTACT | MARKETING | INVESTMENT_PROPERTY
+  textVersion String
+  text        String
+  granted     Boolean
+  ip          String
+  userAgent   String
+  createdAt   DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  brokerId    String
+  broker      Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  type        String
+  entityType  String
+  entityId    String
+  actorUserId String?
+  meta        String   @default("{}")
+  createdAt   DateTime @default(now())
+
+  @@index([brokerId, type, createdAt])
+  @@index([entityType, entityId])
 }
 
 // ---------- Module 2: Scenario Sheet ----------
 
 model Scenario {
-  id                 String    @id @default(cuid())
-  brokerId           String
-  broker             Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  token              String    @unique
-  status             String    @default("DRAFT") // DRAFT | SHARED | ARCHIVED
-  origin             String    @default("MANUAL") // MANUAL | CALL
-  investorName       String
-  investorEmail      String?
-  investorPhone      String?
-  propertyAddress    String
-  loanPurpose        String    @default("PURCHASE") // PURCHASE | RATE_TERM | CASH_OUT
-  propertyValue      Int
-  monthlyRent        Int
-  taxesMonthly       Float
-  insuranceMonthly   Float
-  hoaMonthly         Float     @default(0)
-  note               String?
-  interestedOptionId String?
-  interestedAt       DateTime?
-  firstOpenedAt      DateTime?
-  lastNotifiedAt     DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  options            ScenarioOption[]
-  views              ScenarioView[]
+  id                   String           @id @default(cuid())
+  brokerId             String
+  broker               Broker           @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  ownerUserId          String
+  token                String           @unique
+  status               String           @default("DRAFT") // DRAFT | SHARED | ARCHIVED
+  origin               String           @default("MANUAL") // MANUAL | NOTES | LEAD
+  expiresAt            DateTime
+  revokedAt            DateTime?
+  mode                 String // PURCHASE | RATE_TERM | CASH_OUT
+  investorName         String
+  investorEmail        String?
+  investorPhone        String?
+  leadId               String?
+  propertyAddress      String
+  state                String
+  propertyType         String           @default("SFR")
+  use                  String           @default("LTR")
+  valueCents           Int
+  rentCents            Int
+  taxesAnnualCents     Int
+  insuranceAnnualCents Int
+  hoaMonthlyCents      Int              @default(0)
+  ficoBucket           String           @default("740+")
+  note                 String?
+  interestedOptionId   String?
+  interestedAt         DateTime?
+  interestQuestion     String?
+  firstOpenedAt        DateTime?
+  lastNotifiedAt       DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  options              ScenarioOption[]
+  views                ScenarioView[]
 
-  @@index([brokerId, createdAt])
+  @@index([brokerId, updatedAt])
 }
 
 model ScenarioOption {
-  id           String   @id @default(cuid())
-  scenarioId   String
-  scenario     Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
-  label        String
-  loanAmount   Int
-  ratePct      Float
-  termYears    Int      @default(30)
-  interestOnly Boolean  @default(false)
-  ioYears      Int?
-  prepay       String   @default("5-4-3-2-1")
-  pointsPct    Float    @default(0)
-  lenderFees   Int      @default(0)
-  recommended  Boolean  @default(false)
-  sortOrder    Int      @default(0)
+  id              String   @id @default(cuid())
+  scenarioId      String
+  scenario        Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  label           String
+  product         String // FIXED30 | IO30 | IO40 | ARM5_6 | ARM7_6
+  loanAmountCents Int
+  rateMilli       Int
+  pointsRatio     Int      @default(0) // negative = lender credit
+  feesCents       Int      @default(0)
+  prepay          String
+  recommended     Boolean  @default(false)
+  sortOrder       Int      @default(0)
 }
 
 model ScenarioView {
@@ -207,131 +283,157 @@ model ScenarioView {
   startedAt     DateTime @default(now())
   lastSeenAt    DateTime @default(now())
   activeSeconds Int      @default(0)
-
-  @@index([scenarioId, startedAt])
-}
-
-// ---------- Module 3: Money List ----------
-
-model LoanImport {
-  id        String       @id @default(cuid())
-  brokerId  String
-  broker    Broker       @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  filename  String
-  rowCount  Int
-  mapping   String
-  createdAt DateTime     @default(now())
-  loans     ClosedLoan[]
-}
-
-model ClosedLoan {
-  id              String      @id @default(cuid())
-  brokerId        String
-  broker          Broker      @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  importId        String?
-  import          LoanImport? @relation(fields: [importId], references: [id], onDelete: SetNull)
-  borrowerName    String
-  email           String?
-  phone           String?
-  propertyAddress String
-  loanAmount      Int
-  ratePct         Float
-  closingDate     DateTime
-  prepayType      String
-  prepayTermYears Int
-  interestOnly    Boolean
-  draftMessage    String?
-  draftedAt       DateTime?
-  contactedAt     DateTime?
-  createdAt       DateTime    @default(now())
-
-  @@unique([brokerId, propertyAddress, closingDate])
 }
 
 // ---------- Module 4: Listing Snapshot ----------
 
 model Realtor {
-  id        String     @id @default(cuid())
-  brokerId  String
-  broker    Broker     @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  name      String
-  brokerage String
-  email     String?
-  phone     String?
-  logoUrl   String?
-  createdAt DateTime   @default(now())
-  snapshots Snapshot[]
-  leads     Lead[]
+  id          String     @id @default(cuid())
+  brokerId    String
+  broker      Broker     @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  name        String
+  brokerage   String
+  phone       String?
+  email       String?
+  logoUrl     String?
+  headshotUrl String?
+  createdAt   DateTime   @default(now())
+  snapshots   Snapshot[]
+  leads       Lead[]
 }
 
 model Snapshot {
-  id               String         @id @default(cuid())
-  brokerId         String
-  broker           Broker         @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  realtorId        String
-  realtor          Realtor        @relation(fields: [realtorId], references: [id], onDelete: Cascade)
-  token            String         @unique
-  address          String
-  price            Int
-  monthlyRent      Int
-  rentSource       String
-  ratePct          Float
-  taxesMonthly     Float
-  insuranceMonthly Float
-  hoaMonthly       Float          @default(0)
-  createdAt        DateTime       @default(now())
-  scans            SnapshotScan[]
-  leads            Lead[]
+  id                   String   @id @default(cuid())
+  brokerId             String
+  broker               Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  ownerUserId          String
+  realtorId            String
+  realtor              Realtor  @relation(fields: [realtorId], references: [id], onDelete: Cascade)
+  token                String   @unique
+  template             String   @default("CLASSIC") // CLASSIC | MODERN
+  address              String
+  state                String
+  propertyType         String   @default("SFR")
+  listPriceCents       Int
+  rentCents            Int
+  rentSource           String // PROVIDER | MANUAL
+  taxesAnnualCents     Int
+  insuranceAnnualCents Int
+  hoaMonthlyCents      Int      @default(0)
+  rateMilli            Int
+  photoUrl             String?
+  createdAt            DateTime @default(now())
+  leads                Lead[]
 }
 
-model SnapshotScan {
+// ---------- Module 3: Money List ----------
+
+model LoanImport {
+  id        String   @id @default(cuid())
+  brokerId  String
+  broker    Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  filename  String
+  rowCount  Int
+  created   Int      @default(0)
+  updated   Int      @default(0)
+  mapping   String
+  createdAt DateTime @default(now())
+}
+
+model ClosedLoan {
+  id                String             @id @default(cuid())
+  brokerId          String
+  broker            Broker             @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  importId          String?
+  borrowerName      String
+  email             String             @default("")
+  phone             String?
+  propertyAddress   String
+  addressKey        String
+  loanAmountCents   Int
+  rateMilli         Int
+  closingDate       DateTime
+  product           String // FIXED | IO | ARM
+  armFirstResetDate DateTime?
+  prepayType        String
+  prepayTermMonths  Int
+  ltvAtClosingRatio Int?
+  closingValueCents Int?
+  notes             String?
+  status            String             @default("OPEN") // OPEN | CONTACTED | SNOOZED | NOT_INTERESTED | WON
+  snoozedUntil      DateTime?
+  draftEmail        String?
+  draftSms          String?
+  draftedAt         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  history           LoanStatusChange[]
+
+  @@unique([brokerId, email, addressKey])
+}
+
+model LoanStatusChange {
+  id        String     @id @default(cuid())
+  loanId    String
+  loan      ClosedLoan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  fromState String
+  toState   String
+  note      String?
+  userId    String?
+  createdAt DateTime   @default(now())
+}
+
+// ---------- Module 5: Notes-to-Scenario ----------
+
+model SavedNote {
   id         String   @id @default(cuid())
-  snapshotId String
-  snapshot   Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
-  device     String
+  brokerId   String
+  broker     Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  userId     String
+  title      String
+  extraction String
+  sourceText String? // only when the broker opts in
+  checklist  String
+  followUp   String
+  scenarioId String?
   createdAt  DateTime @default(now())
-}
-
-// ---------- Module 5: Call-to-Scenario ----------
-
-model CallSession {
-  id            String   @id @default(cuid())
-  brokerId      String
-  broker        Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  inputType     String // AUDIO | NOTES
-  status        String // EXTRACTED | CONVERTED | FAILED
-  title         String?
-  transcript    String?
-  extraction    String?
-  checklist     String?
-  followUpEmail String?
-  scenarioId    String?
-  errorCode     String?
-  createdAt     DateTime @default(now())
 }
 
 // ---------- Infra ----------
 
-model RentEstimateCache {
-  id         String   @id @default(cuid())
-  addressKey String   @unique
-  rent       Int
-  rentLow    Int?
-  rentHigh   Int?
-  provider   String
-  fetchedAt  DateTime @default(now())
+model WebhookDelivery {
+  id             String    @id @default(cuid())
+  brokerId       String
+  broker         Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  eventType      String
+  payload        String
+  status         String    @default("PENDING") // PENDING | SUCCESS | FAILED
+  attempts       Int       @default(0)
+  nextAttemptAt  DateTime?
+  lastHttpStatus Int?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status, nextAttemptAt])
 }
 
-model WebhookDelivery {
-  id         String   @id @default(cuid())
-  brokerId   String
-  broker     Broker   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  event      String
-  payload    String
-  status     String
-  httpStatus Int?
-  attempts   Int      @default(1)
-  createdAt  DateTime @default(now())
+model PropertyCache {
+  addressKey       String   @id
+  rentCents        Int?
+  rentLowCents     Int?
+  rentHighCents    Int?
+  taxesAnnualCents Int?
+  provider         String
+  fetchedAt        DateTime @default(now())
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }
 
 model DevEmail {
@@ -341,12 +443,4 @@ model DevEmail {
   html        String
   attachments String?
   createdAt   DateTime @default(now())
-}
-
-model RateLimitHit {
-  id        String   @id @default(cuid())
-  key       String
-  createdAt DateTime @default(now())
-
-  @@index([key, createdAt])
 }

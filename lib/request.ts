@@ -29,3 +29,13 @@ export async function rateLimit(key: string, max: number, windowSeconds: number)
   }
   return true;
 }
+
+/** Raw client IP. Stored ONLY on consent records as evidence (TCPA); never logged. */
+export async function clientIp() {
+  const h = await headers();
+  return (h.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+}
+
+export async function userAgent() {
+  return (await headers()).get("user-agent") ?? "unknown";
+}

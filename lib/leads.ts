@@ -1,119 +1,133 @@
 import type { Broker, Realtor, Snapshot } from "@prisma/client";
-import { prisma } from "@/lib/db";
-import { brokerDefaults, PUBLIC_BROKER_SELECT, type PublicBroker } from "@/lib/broker";
-import { analyzeDeal, VERDICT_LABEL, type DealInput, type FicoRange } from "@/lib/dscr";
-import { renderDealAnalysisPdf } from "@/lib/pdf/DealAnalysisPdf";
-import { sendEmailSafe } from "@/lib/providers/email";
-import { layout, textVersion, type Row } from "@/lib/providers/email/templates";
+import { forBroker } from "@/lib/db";
+import { analyzeDeal, type EngineContext } from "@/lib/dscr";
+import { notificationEmails, type PublicBrand } from "@/lib/broker";
+import { recordConsents } from "@/lib/compliance/consent";
+import { e164, toDealInput, type PublicLeadInput } from "@/lib/check/form";
+import { emit } from "@/lib/events";
+import { sendBrandEmail } from "@/lib/emails";
+import { renderEstimatePdf } from "@/lib/pdf/EstimatePdf";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { env } from "@/lib/env";
-import { pct, rate, ratio, usd } from "@/lib/format";
-import { CONSENT_TEXT, type PublicLeadInput } from "@/lib/validation";
+import { dscr, pct, rate, usd } from "@/lib/format";
+import { t } from "@/lib/strings/en";
 import { log } from "@/lib/log";
 
-export function pickPublic(b: Broker): PublicBroker {
-  return Object.fromEntries(Object.keys(PUBLIC_BROKER_SELECT).map((k) => [k, b[k as keyof Broker]])) as PublicBroker;
-}
-
 /**
- * Save a public lead, then (in the background) email the investor the PDF,
- * email the broker the numbers, and fire the webhook.
+ * Save (or dedupe) a public lead, record consents and events, then return a `notify`
+ * callback (run it in after()) that emails the investor the PDF, alerts the broker and fires the webhook.
  */
-export async function createPublicLead(broker: Broker, input: PublicLeadInput, snapshot?: (Snapshot & { realtor: Realtor }) | null) {
-  const defaults = brokerDefaults(broker);
-  const deal: DealInput = {
-    price: input.deal.price,
-    downPaymentPct: input.deal.downPaymentPct,
-    monthlyRent: input.deal.monthlyRent,
-    fico: (input.deal.fico ?? null) as FicoRange | null,
-    ratePct: input.deal.ratePct,
-    interestOnly: input.deal.interestOnly,
-    hoaMonthly: input.deal.hoaMonthly,
-    ...(snapshot ? { taxesMonthly: snapshot.taxesMonthly, insuranceMonthly: snapshot.insuranceMonthly, hoaMonthly: snapshot.hoaMonthly, ratePct: input.deal.ratePct ?? snapshot.ratePct } : {}),
+export async function createPublicLead(p: {
+  broker: Broker;
+  brand: PublicBrand;
+  ctx: EngineContext;
+  input: PublicLeadInput;
+  ip: string;
+  userAgent: string;
+  snapshot?: (Snapshot & { realtor: Realtor }) | null;
+}) {
+  const { broker, brand, ctx, input, snapshot } = p;
+  const db = forBroker(broker.id);
+  const deal = toDealInput(input.form);
+  const a = analyzeDeal(deal, ctx);
+  const email = input.contact.email.toLowerCase();
+  const phoneE164 = e164(input.contact.phone);
+  const engineOutput = JSON.stringify({ verdict: a.verdict, dscrRatio: a.dscrRatio, pitiaCents: a.pitiaCents, loanAmountCents: a.loanAmountCents, rateMilli: a.rateMilli, maxLoanCents: a.maxLoanCents, cashFlowCents: a.cashFlowCents, totalCashNeededCents: a.totalCashNeededCents });
+  const utm = input.utm ?? {};
+
+  // Dedupe within the broker by email or phone: update the existing lead and log a resubmission.
+  const existing = await db.lead.findFirst({ where: { OR: [{ email }, ...(phoneE164 ? [{ phoneE164 }] : [])] }, orderBy: { createdAt: "desc" } });
+  const data = {
+    name: input.contact.name,
+    email,
+    phone: input.contact.phone || null,
+    phoneE164,
+    propertyAddress: input.form.address,
+    state: input.form.state,
+    engineInput: JSON.stringify(input.form),
+    engineOutput,
+    disclaimerVersionId: brand.disclaimer.id,
+    ...(snapshot ? { snapshotId: snapshot.id, realtorId: snapshot.realtorId } : {}),
   };
-  const analysis = analyzeDeal(deal, defaults);
-
-  const lead = await prisma.lead.create({
-    data: {
-      brokerId: broker.id,
-      source: input.source,
-      name: input.contact.name,
-      email: input.contact.email.toLowerCase(),
-      phone: input.contact.phone || null,
-      consentAt: new Date(),
-      consentText: CONSENT_TEXT,
-      propertyAddress: input.deal.address,
-      purchasePrice: Math.round(input.deal.price),
-      downPaymentPct: input.deal.downPaymentPct,
-      monthlyRent: Math.round(input.deal.monthlyRent),
-      ficoRange: input.deal.fico ?? null,
-      resultJson: JSON.stringify({ dscr: analysis.dscr, verdict: analysis.verdict, pitia: analysis.pitia, maxLoan: analysis.maxLoan, loanAmount: analysis.loanAmount, ratePct: analysis.ratePct }),
-      snapshotId: snapshot?.id ?? null,
-      realtorId: snapshot?.realtorId ?? null,
-    },
-  });
-
-  const pub = pickPublic(broker);
-  const notify = async () => {
-    try {
-      const pdf = await renderDealAnalysisPdf({ broker: pub, defaults, input: deal, address: input.deal.address, investorName: input.contact.name });
-      const rows: Row[] = [
-        { label: "Estimated DSCR", value: `${ratio(analysis.dscr)} · ${VERDICT_LABEL[analysis.verdict]}` },
-        { label: "Estimated payment (PITIA)", value: usd(analysis.pitia) },
-        { label: "Max loan estimate", value: usd(analysis.maxLoan) },
-      ];
-      const first = input.contact.name.split(" ")[0];
-      const intro = `Hi ${first}, here is your DSCR analysis for ${input.deal.address}. The full breakdown, including what would change the outcome, is attached as a PDF.`;
-      await sendEmailSafe(
-        {
-          to: lead.email,
-          subject: `Your DSCR analysis for ${input.deal.address.split(",")[0]}`,
-          replyTo: broker.email,
-          fromName: `${broker.name} · ${broker.companyName}`,
-          html: layout({ broker: pub, heading: "Your DSCR analysis", intro, rows, footerNote: `You're receiving this because you requested an analysis on ${broker.companyName}'s website.` }),
-          text: textVersion("Your DSCR analysis", intro, rows, pub),
-          attachments: [{ filename: `DSCR-analysis-${input.deal.address.split(",")[0]!.replace(/[^a-z0-9]+/gi, "-")}.pdf`, content: pdf }],
+  const lead = existing
+    ? await db.lead.update({ where: { id: existing.id }, data: { ...data, submissions: { increment: 1 }, status: existing.status === "LOST" ? "NEW" : existing.status } })
+    : await db.lead.create({
+        data: {
+          ...data,
+          brokerId: broker.id,
+          source: input.source,
+          ownerUserId: brand.lo.id,
+          utmSource: utm.utm_source ?? null,
+          utmMedium: utm.utm_medium ?? null,
+          utmCampaign: utm.utm_campaign ?? null,
+          utmTerm: utm.utm_term ?? null,
+          utmContent: utm.utm_content ?? null,
+          referrer: input.referrer ?? null,
         },
-        "lead.investor_pdf",
-      );
+      });
+  await recordConsents(db, { leadId: lead.id, company: broker.companyName, ip: p.ip, userAgent: p.userAgent, contact: true, marketing: input.contact.consentMarketing, investment: true });
+  await emit(db, existing ? "lead.resubmitted" : "lead.created", "Lead", lead.id, { source: input.source, verdict: a.verdict, realtorId: snapshot?.realtorId ?? null, utmSource: utm.utm_source ?? null });
+
+  const notify = async () => {
+    const first = input.contact.name.split(" ")[0];
+    try {
+      const pdf = await renderEstimatePdf({ brand, ctx, input: deal, address: input.form.address, investor: input.contact.name });
+      await sendBrandEmail({
+        brand,
+        to: email,
+        subject: `Your DSCR estimate for ${input.form.address.split(",")[0]}`,
+        heading: "Your DSCR estimate",
+        intro: `Hi ${first}, here's your estimate for ${input.form.address}. The PDF has the full breakdown, the cash you'd need, and what would change the outcome.`,
+        rows: [
+          { label: "Estimated DSCR", value: `${dscr(a.dscrRatio)} · ${t.verdict[a.verdict]}` },
+          { label: "Estimated payment (PITIA)", value: `${usd(a.pitiaCents)}/mo` },
+          { label: "Estimated cash flow", value: `${usd(a.cashFlowCents)}/mo` },
+        ],
+        footerNote: `You're receiving this because you requested an estimate from ${broker.companyName}.`,
+        replyTo: brand.lo.email,
+        fromName: `${brand.lo.name} · ${broker.companyName}`,
+        attachments: [{ filename: `DSCR-estimate-${input.form.address.split(",")[0]!.replace(/[^a-z0-9]+/gi, "-")}.pdf`, content: pdf }],
+        tag: "lead.investor_pdf",
+      });
     } catch (err) {
       log.error("lead.pdf_failed", err);
     }
-
-    const brokerRows: Row[] = [
-      { label: "Name", value: lead.name },
-      { label: "Email", value: lead.email },
-      { label: "Phone", value: lead.phone ?? "—" },
-      { label: "Property", value: input.deal.address },
-      { label: "Price", value: usd(input.deal.price) },
-      { label: "Down payment", value: pct(input.deal.downPaymentPct) },
-      { label: "Rent", value: `${usd(input.deal.monthlyRent)}/mo` },
-      { label: "FICO", value: input.deal.fico ?? "—" },
-      { label: "Rate used", value: rate(analysis.ratePct) },
-      { label: "DSCR", value: `${ratio(analysis.dscr)} (${VERDICT_LABEL[analysis.verdict]})` },
-      { label: "PITIA", value: usd(analysis.pitia) },
-      ...(snapshot ? [{ label: "Referred by realtor", value: `${snapshot.realtor.name}, ${snapshot.realtor.brokerage}` }] : []),
-    ];
-    const heading = snapshot ? `New listing lead via ${snapshot.realtor.name}` : "New Instant Check lead";
-    await sendEmailSafe(
-      {
-        to: broker.notificationEmail,
-        subject: `${heading}: ${lead.name} · DSCR ${ratio(analysis.dscr)}`,
-        replyTo: lead.email,
-        html: layout({ broker: pub, heading, intro: `${lead.name} just requested the full analysis. They agreed to be contacted.`, rows: brokerRows, cta: { label: "Open lead", url: `${env.appUrl}/dashboard/leads/${lead.id}` } }),
-        text: textVersion(heading, undefined, brokerRows, pub, { label: "Open lead", url: `${env.appUrl}/dashboard/leads/${lead.id}` }),
-      },
-      "lead.broker_alert",
-    );
-
-    await dispatchWebhook(broker, "lead.created", {
-      lead: { id: lead.id, source: lead.source, name: lead.name, email: lead.email, phone: lead.phone, consentAt: lead.consentAt.toISOString(), createdAt: lead.createdAt.toISOString() },
-      property: { address: input.deal.address, purchasePrice: input.deal.price, downPaymentPct: input.deal.downPaymentPct, monthlyRent: input.deal.monthlyRent, ficoRange: input.deal.fico ?? null },
-      results: { dscr: analysis.dscr, verdict: analysis.verdict, pitia: Math.round(analysis.pitia * 100) / 100, loanAmount: analysis.loanAmount, maxLoan: Math.round(analysis.maxLoan), ratePct: analysis.ratePct },
+    const heading = snapshot ? `New listing lead via ${snapshot.realtor.name}` : existing ? "Returning lead submitted again" : "New Instant Check lead";
+    await sendBrandEmail({
+      brand,
+      internal: true,
+      to: notificationEmails(broker),
+      subject: `${heading}: ${input.contact.name} · DSCR ${dscr(a.dscrRatio)}`,
+      heading,
+      intro: `${input.contact.name} requested the full estimate and agreed to be contacted.`,
+      rows: [
+        { label: "Name", value: input.contact.name },
+        { label: "Email", value: email },
+        { label: "Phone", value: input.contact.phone || "—" },
+        { label: "Property", value: input.form.address },
+        { label: t.mode[a.mode], value: usd(a.valueCents) },
+        { label: "Loan / LTV", value: `${usd(a.loanAmountCents)} · ${pct(a.ltvRatio)}` },
+        { label: "Rent", value: `${usd(a.qualifyingRentCents)}/mo` },
+        { label: "FICO range", value: input.form.fico },
+        { label: "Rate used", value: rate(a.rateMilli) },
+        { label: "DSCR", value: `${dscr(a.dscrRatio)} (${t.verdict[a.verdict]})` },
+        ...(snapshot ? [{ label: "Referred by", value: `${snapshot.realtor.name}, ${snapshot.realtor.brokerage}` }] : []),
+        ...(utm.utm_source ? [{ label: "UTM source", value: utm.utm_source }] : []),
+      ],
+      cta: { label: "Open lead", url: `${env.appUrl}/dashboard/leads/${lead.id}` },
+      replyTo: email,
+      tag: "lead.broker_alert",
+    });
+    await dispatchWebhook(db, broker, existing ? "lead.updated" : snapshot ? "snapshot.lead" : "lead.created", {
+      lead: { id: lead.id, source: lead.source, status: lead.status, name: lead.name, email: lead.email, phone: lead.phone, createdAt: lead.createdAt.toISOString(), submissions: lead.submissions },
+      property: { address: input.form.address, state: input.form.state, propertyType: input.form.propertyType, mode: a.mode },
+      estimate: { verdict: a.verdict, dscr: dscr(a.dscrRatio), pitia: usd(a.pitiaCents, { cents: true }), loanAmount: usd(a.loanAmountCents), ltv: pct(a.ltvRatio), rate: rate(a.rateMilli), cashFlow: usd(a.cashFlowCents) },
+      consent: { contact: true, marketing: input.contact.consentMarketing, investmentProperty: true },
       realtor: snapshot ? { id: snapshot.realtor.id, name: snapshot.realtor.name, brokerage: snapshot.realtor.brokerage } : null,
+      utm,
       dashboardUrl: `${env.appUrl}/dashboard/leads/${lead.id}`,
     });
   };
 
-  return { lead, analysis, notify };
+  return { lead, analysis: a, notify, deduped: !!existing };
 }

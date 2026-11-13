@@ -7,7 +7,7 @@ export class DevMailbox implements Mailer {
   async send(msg: EmailMessage) {
     const row = await prisma.devEmail.create({
       data: {
-        to: msg.to,
+        to: Array.isArray(msg.to) ? msg.to.join(", ") : msg.to,
         subject: msg.subject,
         html: msg.html,
         attachments: msg.attachments?.length

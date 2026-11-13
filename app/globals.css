@@ -18,12 +18,14 @@
 }
 
 :root {
+  /* Overridden per broker by paletteVars() (lib/brand/palette.ts), which guarantees AA contrast. */
   --accent: #1f4e79;
   --accent-ink: #ffffff;
-  --accent-soft: color-mix(in srgb, var(--accent) 10%, white);
-  --accent-faint: color-mix(in srgb, var(--accent) 5%, white);
-  --accent-line: color-mix(in srgb, var(--accent) 28%, white);
-  --accent-deep: color-mix(in srgb, var(--accent) 80%, black);
+  --accent-text: #1f4e79;
+  --accent-soft: #e9edf2;
+  --accent-faint: #f4f6f8;
+  --accent-line: #b9c8d6;
+  --accent-deep: #173b5b;
 }
 
 html {
@@ -50,8 +52,9 @@ body {
 .bg-accent-soft { background-color: var(--accent-soft); }
 .bg-accent-faint { background-color: var(--accent-faint); }
 .bg-accent-deep { background-color: var(--accent-deep); }
-.text-accent { color: var(--accent); }
+.text-accent { color: var(--accent-text); }
 .text-accent-deep { color: var(--accent-deep); }
+.bg-accent-line { background-color: var(--accent-line); }
 .text-on-accent { color: var(--accent-ink); }
 .border-accent { border-color: var(--accent); }
 .border-accent-line { border-color: var(--accent-line); }
@@ -59,8 +62,13 @@ body {
 .fill-accent { fill: var(--accent); }
 .stroke-accent { stroke: var(--accent); }
 
-.focus-accent:focus-visible {
-  outline: 2px solid var(--accent);
+.focus-accent:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent-text);
   outline-offset: 2px;
 }
 

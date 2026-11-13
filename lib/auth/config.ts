@@ -6,9 +6,11 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { getMailer } from "@/lib/providers/email";
 
+export type Role = "AGENCY_ADMIN" | "BROKER_ADMIN" | "LO";
+
 declare module "next-auth" {
   interface Session {
-    user: { id: string; email: string; name?: string | null; role: "AGENCY_ADMIN" | "BROKER"; brokerId: string | null; agencyId: string | null };
+    user: { id: string; email: string; name?: string | null; role: Role; brokerId: string | null; agencyId: string | null };
   }
 }
 
@@ -80,7 +82,7 @@ const config: NextAuthConfig = {
     },
     async session({ session, token }) {
       session.user.id = token.sub!;
-      session.user.role = (token.role as "AGENCY_ADMIN" | "BROKER") ?? "BROKER";
+      session.user.role = (token.role as Role) ?? "LO";
       session.user.brokerId = (token.brokerId as string | null) ?? null;
       session.user.agencyId = (token.agencyId as string | null) ?? null;
       return session;

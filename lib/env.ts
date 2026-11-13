@@ -48,6 +48,6 @@ export function providerModes() {
     email: env.resendKey ? "Resend" : "Dev mailbox (mock)",
     ai: env.anthropicKey ? `Claude (${env.anthropicModel})` : "Mock AI",
     rent: env.rentcastKey ? "RentCast" : "Mock estimates",
-    transcription: env.transcribeKey ? "Whisper-compatible API" : "Mock transcription",
+    bot: process.env.TURNSTILE_SECRET_KEY ? "Cloudflare Turnstile" : "Mock (no bot check)",
   };
 }

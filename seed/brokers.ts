@@ -11,65 +11,76 @@ function monogramSvg(letters: string, bg: string, fg = "#ffffff", shape: "circle
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 
+import { DEFAULT_GRID, type ProgramGrid } from "../lib/dscr";
+
+const grid = (patch: (g: ProgramGrid) => void): ProgramGrid => {
+  const g = structuredClone(DEFAULT_GRID);
+  patch(g);
+  return g;
+};
+
 export const DEMO_BROKERS = [
   {
     slug: "harborline",
-    name: "Maya Castellano",
-    title: "Senior Loan Officer",
     companyName: "Harborline Lending",
-    nmlsId: "1849302",
     companyNmlsId: "2203117",
     accentColor: "#1F4E79",
     logoUrl: monogramSvg("HL", "#1F4E79", "#F2D27C", "square"),
-    email: "maya@harborline.example",
+    email: "hello@harborline.example",
     phone: "(555) 010-2240",
-    website: "https://harborline.example",
-    licensedStates: "TX, FL, GA, NC",
-    messageTone: "Warm and friendly, conversational, like texting a client you know. Short sentences.",
-    defaultRate: 7.25,
-    marketRate: 6.625,
-    taxRatePct: 1.6,
-    insuranceRatePct: 0.6,
-    login: "maya@harborline.example",
+    websiteUrl: "https://harborline.example",
+    privacyPolicyUrl: "https://harborline.example/privacy",
+    licensedStates: ["TX", "FL", "GA", "NC"],
+    tonePreset: "FRIENDLY",
+    marketRateMilli: 6_625,
+    status: "ACTIVE",
+    programGrid: grid((g) => {
+      g.baseRateMilli = 7_125;
+    }),
+    users: [
+      { email: "maya@harborline.example", name: "Maya Castellano", role: "BROKER_ADMIN", nmlsId: "1849302", title: "Senior Loan Officer", phone: "(555) 010-2240", slug: "maya" },
+      { email: "theo@harborline.example", name: "Theo Park", role: "LO", nmlsId: "2140077", title: "Loan Officer", phone: "(555) 010-2241", slug: "theo" },
+    ],
   },
   {
     slug: "cactus-ridge",
-    name: "Daniel Okafor",
-    title: "Branch Manager",
     companyName: "Cactus Ridge Mortgage",
-    nmlsId: "977415",
     companyNmlsId: "1650228",
     accentColor: "#B4532A",
     logoUrl: monogramSvg("CR", "#B4532A", "#FFF4E8", "arch"),
-    email: "daniel@cactusridge.example",
+    email: "loans@cactusridge.example",
     phone: "(555) 010-7731",
-    website: "https://cactusridge.example",
-    licensedStates: "AZ, NV, NM, UT",
-    messageTone: "Direct and numbers-first. Professional, confident, no fluff.",
-    defaultRate: 7.375,
-    marketRate: 6.75,
-    taxRatePct: 0.7,
-    insuranceRatePct: 0.55,
-    login: "daniel@cactusridge.example",
+    websiteUrl: "https://cactusridge.example",
+    privacyPolicyUrl: "https://cactusridge.example/privacy",
+    licensedStates: ["AZ", "NV", "NM", "UT"],
+    tonePreset: "DIRECT",
+    marketRateMilli: 6_750,
+    status: "ACTIVE",
+    programGrid: grid((g) => {
+      g.baseRateMilli = 7_250;
+      g.subOneDscrEnabled = true;
+    }),
+    users: [{ email: "daniel@cactusridge.example", name: "Daniel Okafor", role: "BROKER_ADMIN", nmlsId: "977415", title: "Branch Manager", phone: "(555) 010-7731", slug: "daniel" }],
   },
   {
     slug: "evergreen-key",
-    name: "Priya Raman",
-    title: "Investor Lending Specialist",
     companyName: "Evergreen Key Capital",
-    nmlsId: "2051876",
-    companyNmlsId: null,
-    accentColor: "#2F6B4F",
+    companyNmlsId: "2390551",
+    accentColor: "#8FBF9F",
     logoUrl: monogramSvg("EK", "#2F6B4F", "#E9F2E6", "circle"),
-    email: "priya@evergreenkey.example",
+    email: "team@evergreenkey.example",
     phone: "(555) 010-5518",
-    website: "https://evergreenkey.example",
-    licensedStates: "WA, OR, ID",
-    messageTone: "Polished and consultative. Educational, calm, and reassuring.",
-    defaultRate: 7.125,
-    marketRate: 6.5,
-    taxRatePct: 1.0,
-    insuranceRatePct: 0.45,
-    login: "priya@evergreenkey.example",
+    websiteUrl: "https://evergreenkey.example",
+    privacyPolicyUrl: "https://evergreenkey.example/privacy",
+    licensedStates: ["WA", "OR", "ID"],
+    tonePreset: "CONSULTATIVE",
+    marketRateMilli: 6_500,
+    status: "TRIAL",
+    programGrid: grid((g) => {
+      g.baseRateMilli = 7_000;
+      g.ficoFloor = 680;
+      g.strongDscrRatio = 12_500;
+    }),
+    users: [{ email: "priya@evergreenkey.example", name: "Priya Raman", role: "BROKER_ADMIN", nmlsId: "2051876", title: "Investor Lending Specialist", phone: "(555) 010-5518", slug: "priya" }],
   },
-] as const;
+];

@@ -3,7 +3,8 @@ import { randomBytes, createHmac, timingSafeEqual } from "node:crypto";
 const ALPHABET = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 /** URL-safe random token (default 20 chars, ~115 bits). */
-export function randomToken(length = 20): string {
+/** Public tokens use 24 chars from a 54-char alphabet ≈ 138 bits. */
+export function randomToken(length = 24): string {
   const bytes = randomBytes(length);
   let out = "";
   for (let i = 0; i < length; i++) out += ALPHABET[bytes[i] % ALPHABET.length];
