@@ -11,6 +11,9 @@ const SCENARIOS: Record<string, Seed[]> = {
     { investor: "Eli Sandoval", email: "eli.sandoval@example.com", phone: "(555) 010-4412", address: "45 Juniper Ct, Charlotte, NC 28203", state: "NC", mode: "PURCHASE", value: 329_000, rent: 2_450, fico: "740+", ltv: 8_000, opts: [["FIXED30", "5-4-3-2-1", 0], ["ARM5_6", "3-2-1", 0], ["IO30", "5-4-3-2-1", 50]], opens: [6], daysAgo: 7 },
     { investor: "Priya Natarajan", email: "priya.natarajan@example.com", phone: "(555) 010-4413", address: "1200 Sable Palm Way, Orlando, FL 32803", state: "FL", mode: "RATE_TERM", value: 410_000, balance: 290_000, rent: 2_900, fico: "740+", ltv: 7_100, opts: [["FIXED30", "3-2-1", 0], ["FIXED30", "NONE", 0]], opens: [], daysAgo: 1, status: "DRAFT" },
   ],
+  "evergreen-key": [
+    { investor: "Hana Lindgren", email: "hana.lindgren@example.com", phone: "(555) 010-4415", address: "3318 Alder Ct, Spokane, WA 99203", state: "WA", mode: "PURCHASE", value: 398_000, rent: 2_900, fico: "740+", ltv: 7_500, opts: [["FIXED30", "3-2-1", 0], ["IO30", "5-4-3-2-1", 0], ["FIXED30", "5-4-3-2-1", 125]], opens: [1.2], daysAgo: 2 },
+  ],
   "cactus-ridge": [
     { investor: "Tomas Herrera", email: "tomas.herrera@example.com", phone: "(555) 010-4414", address: "9021 Desert Willow Trl, Tucson, AZ 85743", state: "AZ", mode: "CASH_OUT", value: 415_000, balance: 205_000, rent: 2_375, fico: "680-699", ltv: 7_000, opts: [["FIXED30", "5-4-3-2-1", 0], ["IO30", "5-4-3-2-1", 0]], opens: [2.2, 0.2], pick: 0, daysAgo: 3 },
   ],

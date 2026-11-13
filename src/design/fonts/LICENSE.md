@@ -1,0 +1,1 @@
+All fonts in this folder are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org): Instrument Serif, Hanken Grotesk, IBM Plex Sans, IBM Plex Mono, Inter Tight. Downloaded from Google Fonts by scripts/design-fonts.mjs.

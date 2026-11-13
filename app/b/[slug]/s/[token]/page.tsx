@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { computeOptions, publicState } from "@/lib/scenarios";
 import { loadPublicScenario } from "@/lib/scenario-public";
-import { shortDate, usd } from "@/lib/format";
+import { pct, shortDate, usd } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import { PublicShell, UnavailablePage } from "@/components/public/PublicShell";
 import { ScenarioOptions, type PublicOption } from "@/components/public/ScenarioOptions";
-import { BrokerAvatar } from "@/components/brand/BrokerAvatar";
+import { BrokerMark, SectionTitle } from "@design/components/primitives";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string; token: string }> };
@@ -44,35 +44,50 @@ export default async function PublicScenario({ params }: Props) {
   const rows = computeOptions(s, pc.ctx.grid);
   const options: PublicOption[] = rows.map((x) => ({ id: x.option.id, label: x.option.label, recommended: x.option.recommended, product: x.input.product, loanAmountCents: x.input.loanAmountCents, rateMilli: x.input.rateMilli, pointsRatio: x.input.pointsRatio, feesCents: x.input.feesCents, prepay: x.input.prepay, result: x.result, vsFirst: x.vsFirst }));
 
+  const rec = rows.find((r) => r.option.recommended) ?? rows[0]!;
   return (
-    <PublicShell brand={pc.brand}>
-      <section className="mx-auto max-w-6xl px-4 pb-4 pt-8 sm:px-6 sm:pt-12">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{t.scenario.eyebrow(s.investorName.split(" ")[0]!)}</p>
-        <h1 className="mt-2 font-display text-3xl leading-tight tracking-tight text-ink sm:text-5xl" data-testid="scenario-address">{s.propertyAddress}</h1>
-        <p className="mt-2 text-sm text-muted">{t.mode[s.mode as "PURCHASE"]} · {s.mode === "PURCHASE" ? "Price" : "Value"} {usd(s.valueCents)} · Rent {usd(s.rentCents)}/mo</p>
-        <p className="mt-1 text-xs text-muted">{t.scenario.pricingAsOf(shortDate(s.updatedAt), shortDate(s.expiresAt))}</p>
+    <PublicShell brand={pc.brand} surface="Scenario sheet">
+      <section className="mx-auto max-w-3xl px-[var(--space-page)] pb-4 pt-8 sm:px-6 sm:pt-12">
+        <p className="type-eyebrow text-accent">{t.scenario.eyebrow(s.investorName.split(" ")[0]!)}</p>
+        <h1 className="type-h1 mt-2 text-ink" style={{ textWrap: "balance" }} data-testid="scenario-address">{s.propertyAddress}</h1>
+        <p className="mt-2 text-ink-2">By {lo.name}, {shortDate(s.updatedAt)}. Figures hold through {shortDate(s.expiresAt)}; rates change daily and are confirmed when you lock.</p>
+        <dl className="mt-6 grid grid-cols-3 border-y border-rule">
+          {([
+            [s.mode === "PURCHASE" ? "Price" : "Value", usd(s.valueCents)],
+            [`Loan · ${pct(rec.result.ltvRatio)}`, usd(rec.input.loanAmountCents)],
+            ["Est. rent", usd(s.rentCents)],
+          ] as const).map(([k, v], i) => (
+            <div key={k} className={`py-3 ${i ? "border-l border-rule pl-3" : ""}`}>
+              <dt className="type-eyebrow text-muted">{k}</dt>
+              <dd className="type-metric-panel num text-ink">{v}</dd>
+            </div>
+          ))}
+        </dl>
         {s.note && (
-          <div className="mt-5 flex max-w-2xl gap-3 rounded-2xl border border-line bg-card p-4">
-            <BrokerAvatar broker={{ logoUrl: lo.headshotUrl ?? pc.brand.logoUrl, companyName: lo.name, accentColor: pc.brand.accentColor }} size={36} />
-            <p className="text-sm text-ink-2"><span className="font-medium text-ink">{first}:</span> {s.note}</p>
+          <div className="mt-5 flex gap-3 border border-rule bg-surface p-4">
+            <BrokerMark logoUrl={lo.headshotUrl ?? pc.brand.logoUrl} name={lo.name} size={36} />
+            <p className="text-ink-2"><span className="font-medium text-ink">{first}:</span> {s.note}</p>
           </div>
         )}
       </section>
-      <section className="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
-        <ScenarioOptions slug={slug} token={token} options={options} mode={s.mode} loFirstName={first} initialPicked={s.interestedOptionId} hasPayoff={s.currentBalanceCents != null} />
+      <section className="mx-auto max-w-3xl px-[var(--space-page)] pt-4 sm:px-6">
+        <ScenarioOptions slug={slug} token={token} options={options} mode={s.mode} loFirstName={first} initialPicked={s.interestedOptionId} hasPayoff={s.currentBalanceCents != null} minDscr={pc.ctx.grid.minDscrRatio} strongDscr={pc.ctx.grid.strongDscrRatio} />
+        <a href={`/api/public/${slug}/s/${token}/pdf`} className="mt-6 flex items-center justify-between border-y border-rule py-4 font-medium text-ink" data-testid="scenario-pdf">
+          Download this comparison as a PDF
+          <svg viewBox="0 0 24 24" className="icon h-5 w-5" fill="none" stroke="currentColor" aria-hidden><path d="M12 4v12M6 10l6 6 6-6M5 20h14" /></svg>
+        </a>
       </section>
-      <section className="mx-auto grid max-w-6xl gap-5 px-4 py-10 sm:px-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-line bg-card p-5">
-          <h2 className="font-display text-xl text-ink">{t.scenario.nextSteps}</h2>
-          <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-ink-2">
+      <section className="mx-auto grid max-w-3xl gap-5 px-[var(--space-page)] py-10 sm:px-6">
+        <div className="border border-rule bg-surface p-5">
+          <SectionTitle>{t.scenario.nextSteps}</SectionTitle>
+          <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-ink-2">
             <li>Pick the option that fits your plans (you can switch later).</li>
             <li>{first} confirms rent, taxes and insurance and checks current pricing.</li>
             <li>When you&apos;re ready, lock the rate and start the application.</li>
           </ol>
           <div className="mt-4 flex flex-wrap gap-2">
-            {tel && <a href={`tel:${tel}`} className="inline-flex h-11 items-center rounded-full bg-accent px-5 text-sm font-semibold text-on-accent">Call {first}</a>}
-            {tel && <a href={`sms:${tel}`} className="inline-flex h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink">Text</a>}
-            <a href={`/api/public/${slug}/s/${token}/pdf`} className="inline-flex h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink" data-testid="scenario-pdf">Download PDF</a>
+            {tel && <a href={`tel:${tel}`} className="inline-flex h-11 items-center rounded-[var(--radius-control)] bg-accent px-5 text-sm font-semibold text-on-accent">Call {first}</a>}
+            {tel && <a href={`sms:${tel}`} className="inline-flex h-11 items-center rounded-[var(--radius-control)] border border-rule bg-surface px-5 text-sm font-semibold text-ink">Text</a>}
           </div>
         </div>
         <details className="rounded-2xl border border-line bg-card p-5">

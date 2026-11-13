@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { dscr, pct, points, rate, usd, usdMagnitude } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import type { Prepay, Product, ScenarioOptionResult } from "@/lib/dscr";
-import { Button, Textarea, cx } from "@/components/ui";
+import { Textarea, cx } from "@/components/ui";
+import { OptionCompare, type CompareOption } from "@design/variants/OptionCompare";
 
 export interface PublicOption {
   id: string;
@@ -42,7 +43,7 @@ function useVisit(slug: string, token: string) {
   return key;
 }
 
-export function ScenarioOptions({ slug, token, options, mode, loFirstName, initialPicked, hasPayoff }: { slug: string; token: string; options: PublicOption[]; mode: string; loFirstName: string; initialPicked: string | null; hasPayoff: boolean }) {
+export function ScenarioOptions({ slug, token, options, mode, loFirstName, initialPicked, hasPayoff, minDscr, strongDscr }: { slug: string; token: string; options: PublicOption[]; mode: string; loFirstName: string; initialPicked: string | null; hasPayoff: boolean; minDscr: number; strongDscr: number }) {
   const visit = useVisit(slug, token);
   const [open, setOpen] = useState<string | null>(null);
   const [asking, setAsking] = useState<string | null>(null);
@@ -74,90 +75,95 @@ export function ScenarioOptions({ slug, token, options, mode, loFirstName, initi
     }
   };
   const pickedLabel = options.find((o) => o.id === picked)?.label;
+  const maxCf = Math.max(...options.map((o) => o.result.cashFlowCents));
+  const minRate = Math.min(...options.map((o) => o.rateMilli));
+  const compare: CompareOption[] = options.map((o) => {
+    const r = o.result;
+    const tag = options.length > 1 && o.result.cashFlowCents === maxCf && options.filter((x) => x.result.cashFlowCents === maxCf).length === 1 ? "Highest cash flow" : o.rateMilli === minRate && options.filter((x) => x.rateMilli === minRate).length === 1 ? "Lowest rate" : o.pointsRatio === 0 ? "No points" : null;
+    const later = r.postIoPitiaCents ? `The payment rises to about ${usd(r.postIoPitiaCents)} in year ${r.ioMonths / 12 + 1}, when principal begins. ` : "";
+    return {
+      id: o.id,
+      label: o.label,
+      tag,
+      recommended: o.recommended,
+      rateMilli: o.rateMilli,
+      productLong: t.product[o.product],
+      productShort: t.productShort[o.product],
+      pitiaCents: r.pitiaCents,
+      dscrRatio: r.dscrRatio,
+      cashFlowCents: r.cashFlowCents,
+      pointsLabel: o.pointsRatio === 0 ? "0" : points(o.pointsRatio),
+      pointsCostCents: Math.max(0, r.pointsCents),
+      prepayShort: o.prepay === "NONE" ? "None" : o.prepay,
+      postIoPitiaCents: r.postIoPitiaCents,
+      note: `${later}${t.prepayExplainer[o.prepay]}${o.vsFirst?.breakevenMonths ? ` Costs ${usd(o.vsFirst.extraUpfrontCents)} more upfront than A and saves ${usd(o.vsFirst.monthlySavingsCents)} a month: pays for itself in about ${o.vsFirst.breakevenMonths} months.` : ""}`,
+    };
+  });
+  const byId = new Map(options.map((o) => [o.id, o]));
+
+  const details = (c: CompareOption) => {
+    const o = byId.get(c.id)!;
+    const r = o.result;
+    const cashToYou = !purchase && hasPayoff && (r.cashToBorrowerCents ?? 0) > 0;
+    return (
+      <div className="space-y-3 text-sm">
+        <dl className="space-y-1">
+          {([
+            ["Loan amount", `${usd(o.loanAmountCents)} (${pct(r.ltvRatio)} LTV)`],
+            [r.postIoPiCents ? "Interest-only payment" : "Principal & interest", usd(r.piCents, { cents: true })],
+            ["Taxes, insurance, HOA", usd(r.escrowCents, { cents: true })],
+            ...(purchase ? ([["Down payment", usd(r.downPaymentCents)]] as [string, string][]) : []),
+            ["Closing costs (est.)", usd(r.closingCostsCents)],
+            ["Prepaids & escrow (est.)", usd(r.prepaidsCents)],
+            ...(r.pointsCents ? ([[r.pointsCents > 0 ? "Points" : "Lender credit", usdMagnitude(r.pointsCents)]] as [string, string][]) : []),
+            [cashToYou ? "Cash to you" : "Cash to close", cashToYou ? usd(r.cashToBorrowerCents) : usd(r.cashToCloseCents)],
+            ["5-year cost", usd(r.fiveYearCostCents)],
+          ] as [string, string][]).map(([k, v]) => <div key={k} className="flex justify-between gap-2"><dt className="opacity-80">{k}</dt><dd className="num">{v}</dd></div>)}
+        </dl>
+        <div>
+          <div className="type-eyebrow mb-1 opacity-80">If you sell or refinance early</div>
+          {r.prepaySchedule.length === 0 ? (
+            <p className="opacity-80">No prepayment penalty.</p>
+          ) : (
+            <table className="w-full text-sm"><tbody>
+              {r.prepaySchedule.map((y) => <tr key={y.year} className="border-t border-current/20"><td className="py-1 opacity-80">Year {y.year}</td><td className="num py-1 text-right">{pct(y.penaltyRatio)}</td><td className="num py-1 text-right">{usd(y.penaltyCents)}</td></tr>)}
+            </tbody></table>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const action = (c: CompareOption, emphasis: "primary" | "secondary" | "on-block") => {
+    const btn = emphasis === "primary" ? "cta bg-accent text-on-accent" : emphasis === "on-block" ? "min-h-14 bg-surface text-ink" : "min-h-14 border border-current";
+    if (asking === c.id) {
+      return (
+        <div className="space-y-2">
+          <label htmlFor={`q-${c.id}`} className="block text-sm font-medium">{t.scenario.questionLabel}</label>
+          <Textarea id={`q-${c.id}`} rows={3} value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={1000} />
+          {error && <p className="text-sm" role="alert">{error}</p>}
+          <div className="flex gap-2">
+            <button type="button" className={cx("flex-1 px-4 font-semibold", btn)} disabled={pending} onClick={() => submit(c.id)}>{pending ? "Sending…" : `Send to ${loFirstName}`}</button>
+            <button type="button" className="px-4 text-sm underline" onClick={() => setAsking(null)}>Cancel</button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <button type="button" disabled={picked === c.id} onClick={() => setAsking(c.id)} className={cx("flex w-full items-center justify-between gap-2 px-5 text-left font-semibold disabled:opacity-70", btn)}>
+        <span>{picked === c.id ? `Your pick: Option ${c.label}` : picked ? t.scenario.switchTo(c.label) : t.scenario.interested(c.label)}</span>
+        <svg viewBox="0 0 24 24" className="icon h-5 w-5 shrink-0" fill="none" stroke="currentColor" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </button>
+    );
+  };
 
   return (
     <div>
       {pickedLabel && (
-        <div className="mb-4 rounded-2xl bg-good-soft px-4 py-3 text-sm text-good" role="status" data-testid="picked-banner">{t.scenario.picked(pickedLabel, loFirstName)}</div>
+        <div className="mb-4 border border-rule bg-positive-tint px-4 py-3 text-sm text-positive" role="status" data-testid="picked-banner">{t.scenario.picked(pickedLabel, loFirstName)}</div>
       )}
-      <div className="grid gap-4 lg:grid-cols-3" data-testid="options">
-        {options.map((o) => {
-          const r = o.result;
-          const cashLabel = !purchase && hasPayoff && (r.cashToBorrowerCents ?? 0) > 0 ? "Cash to you" : "Cash to close";
-          const cashValue = cashLabel === "Cash to you" ? usd(r.cashToBorrowerCents) : usd(r.cashToCloseCents);
-          return (
-            <article key={o.id} className={cx("relative flex flex-col rounded-3xl border bg-card p-5 shadow-sm", o.recommended ? "border-accent ring-1 ring-accent" : "border-line", picked === o.id && "ring-2 ring-good")} data-testid={`option-${o.label}`}>
-              {o.recommended && <span className="absolute -top-3 left-5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">Recommended</span>}
-              <div className="flex items-baseline justify-between">
-                <h2 className="font-display text-2xl text-ink">Option {o.label}</h2>
-                <span className="text-sm text-muted">{t.productShort[o.product]}</span>
-              </div>
-              <div className="mt-3">
-                <div className="text-xs text-muted">{r.postIoPitiaCents ? "Monthly payment (interest-only years)" : "Monthly payment"}</div>
-                <div className="num font-display text-4xl leading-tight text-ink">{usd(r.pitiaCents)}<span className="text-base text-muted">/mo</span></div>
-                {r.postIoPitiaCents && <div className="text-xs text-warn">Rises to {usd(r.postIoPitiaCents)}/mo after year {r.ioMonths / 12}</div>}
-              </div>
-              <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-                <div><dt className="text-xs text-muted">Rate</dt><dd className="num font-semibold">{rate(o.rateMilli)}</dd></div>
-                <div><dt className="text-xs text-muted">DSCR</dt><dd className="num font-semibold">{dscr(r.dscrRatio)}</dd></div>
-                <div><dt className="text-xs text-muted">{cashLabel}</dt><dd className="num font-semibold">{cashValue}</dd></div>
-                <div><dt className="text-xs text-muted">5-year cost</dt><dd className="num font-semibold">{usd(r.fiveYearCostCents)}</dd></div>
-              </dl>
-              <p className="mt-3 text-xs text-muted">{t.prepay[o.prepay]}{o.pointsRatio > 0 ? ` · ${points(o.pointsRatio)} to buy the rate down` : o.pointsRatio < 0 ? ` · ${points(o.pointsRatio)}` : ""}</p>
-              {o.vsFirst?.breakevenMonths && <p className="mt-1 text-xs text-ink-2">Costs {usd(o.vsFirst.extraUpfrontCents)} more upfront than A, saves {usd(o.vsFirst.monthlySavingsCents)}/mo: pays for itself in about {o.vsFirst.breakevenMonths} months.</p>}
-
-              <button type="button" onClick={() => expand(o.id)} aria-expanded={open === o.id} className="mt-4 flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-sm font-medium text-ink-2">
-                {open === o.id ? "Hide details" : "See details"}
-                <svg viewBox="0 0 24 24" className={cx("h-4 w-4 transition", open === o.id && "rotate-180")} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
-              </button>
-              {open === o.id && (
-                <div className="mt-3 space-y-3 text-sm" data-testid={`details-${o.label}`}>
-                  <dl className="space-y-1">
-                    {([
-                      ["Loan amount", `${usd(o.loanAmountCents)} (${pct(r.ltvRatio)} LTV)`],
-                      [r.postIoPiCents ? "Interest-only payment" : "Principal & interest", usd(r.piCents, { cents: true })],
-                      ["Taxes, insurance, HOA", usd(r.escrowCents, { cents: true })],
-                      ["Cash flow", `${usd(r.cashFlowCents)}/mo`],
-                      ...(purchase ? ([["Down payment", usd(r.downPaymentCents)]] as [string, string][]) : []),
-                      ["Closing costs (est.)", usd(r.closingCostsCents)],
-                      ["Prepaids & escrow (est.)", usd(r.prepaidsCents)],
-                      ...(r.pointsCents ? ([[r.pointsCents > 0 ? "Points" : "Lender credit", usdMagnitude(r.pointsCents)]] as [string, string][]) : []),
-                    ] as [string, string][]).map(([k, v]) => <div key={k} className="flex justify-between gap-2"><dt className="text-muted">{k}</dt><dd className="num">{v}</dd></div>)}
-                  </dl>
-                  <div>
-                    <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted">If you sell or refinance early</div>
-                    {r.prepaySchedule.length === 0 ? (
-                      <p className="text-muted">No prepayment penalty.</p>
-                    ) : (
-                      <table className="w-full text-sm"><tbody className="divide-y divide-line">
-                        {r.prepaySchedule.map((y) => <tr key={y.year}><td className="py-1 text-muted">Year {y.year}</td><td className="num py-1 text-right">{pct(y.penaltyRatio)}</td><td className="num py-1 text-right">{usd(y.penaltyCents)}</td></tr>)}
-                      </tbody></table>
-                    )}
-                    <p className="mt-1 text-xs text-muted">{t.prepayExplainer[o.prepay]}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-auto pt-4">
-                {asking === o.id ? (
-                  <div className="space-y-2">
-                    <label htmlFor={`q-${o.id}`} className="block text-sm font-medium text-ink">{t.scenario.questionLabel}</label>
-                    <Textarea id={`q-${o.id}`} rows={3} value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={1000} />
-                    {error && <p className="text-sm text-bad" role="alert">{error}</p>}
-                    <div className="flex gap-2">
-                      <Button variant="accent" className="flex-1" disabled={pending} onClick={() => submit(o.id)}>{pending ? "Sending…" : `Send to ${loFirstName}`}</Button>
-                      <Button variant="ghost" onClick={() => setAsking(null)}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button variant={picked === o.id ? "secondary" : "accent"} className="w-full" size="lg" disabled={picked === o.id} onClick={() => setAsking(o.id)}>
-                    {picked === o.id ? "Your pick ✓" : picked ? t.scenario.switchTo(o.label) : t.scenario.interested(o.label)}
-                  </Button>
-                )}
-              </div>
-            </article>
-          );
-        })}
+      <div data-testid="options">
+        <OptionCompare options={compare} picked={picked} min={minDscr} strong={strongDscr} details={details} action={action} open={open} onToggle={expand} />
       </div>
     </div>
   );

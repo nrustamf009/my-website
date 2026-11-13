@@ -19,7 +19,8 @@
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "design:css": "tsx scripts/design-css.ts",
-    "design:gallery": "node scripts/design-gallery.mjs"
+    "design:gallery": "node scripts/design-gallery.mjs",
+    "design:fonts": "node scripts/design-fonts.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
