@@ -96,6 +96,10 @@ export const en = {
     formBody: (lo: string) => `DSCR loans qualify the property on its rent, not your personal income. ${lo} will confirm the numbers and walk you through options.`,
     submit: "Get my financing estimate",
     shared: (realtor: string, brokerage: string) => `Listing shared by ${realtor}, ${brokerage}`,
+    respa: (company: string, brokerage: string) =>
+      `Co-marketing piece. ${company} and ${brokerage} are independent companies; no fee or thing of value is paid for referrals. You may choose any lender.`,
+    assumptions: (fico: string, product: string) => `Assumes a ${fico} credit score, ${product}, standard closing costs and 6 months of reserves. Adjust any number on the property page.`,
+    scan: "Scan for live numbers and your own financing estimate",
   },
   scenario: {
     eyebrow: (name: string) => `Loan options for ${name}`,

@@ -15,6 +15,7 @@ export type EventType =
   | "scenario.revoked"
   | "snapshot.created"
   | "snapshot.scanned"
+  | "snapshot.stats_emailed"
   | "moneylist.imported"
   | "moneylist.drafted"
   | "moneylist.contacted"

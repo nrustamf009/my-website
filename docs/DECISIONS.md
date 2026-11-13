@@ -19,3 +19,10 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **Money List defaults: 60-month horizon, 3% refi closing costs** (were 36 / 3.5%). — DSCR investors typically hold 5+ years; with 36 months a 1.1-point rate drop on a fresh-penalty loan ranked as "Review", which a broker would never believe.
 - **Cash out counts as the benefit only when a seasoning trigger fired.** — Otherwise equity alone ranks every old loan first and buries real rate/prepay opportunities.
 - **Slow savings (breakeven past the horizon) are shown to the LO but never pitched**: the row reads "Review" with "$X/mo, breakeven month N" as a hint, and the draft gets no dollar figure.
+
+## Listing Snapshot
+- **Taxes and insurance are stored on the snapshot when it is created** (typed, public record, or state table). — The flyer, the investor page and any re-download must show the same numbers even if state defaults change later.
+- **Default quoted rate = the broker grid's best-tier purchase rate** (740+, DSCR ≥1.20, 30-yr fixed, 5-4-3-2-1). The investor page's "Adjust assumptions" calculator re-prices from the grid, so changing FICO or DSCR changes the rate there.
+- **A scan is counted in the browser** (a beacon after the page renders), once per visitor per listing per 6 hours, and never for the broker's own staff. — Link-preview bots and prefetches don't run JavaScript, so they don't inflate realtor stats.
+- **RESPA language is a co-marketing statement, not legal advice**: "independent companies; no fee or thing of value is paid for referrals; you may choose any lender." Shown on the flyer, the investor page and the realtor stats email.
+- **Modern template drops the rows already shown in its DSCR cards** to stay on one Letter page.

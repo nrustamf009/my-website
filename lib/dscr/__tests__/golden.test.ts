@@ -26,7 +26,9 @@ import {
   prepaySchedule,
   productPayments,
   roundHalfUp,
+  listingSnapshot,
   type DealInput,
+  type ListingColumn,
 } from "..";
 
 const ctx = DEFAULT_CONTEXT;
@@ -277,5 +279,24 @@ describe("G20 solvers", () => {
     expect(roundHalfUp(-2.5)).toBe(-3);
     expect(roundHalfUp(100.4999)).toBe(100);
     expect(roundHalfUp(1.005 * 100)).toBe(101); // float noise (100.49999…) still rounds half-up
+  });
+});
+
+describe("Listing snapshot", () => {
+  it("25% down beats 20% down on DSCR and payment; rent targets bracket the given rent", () => {
+    const cols = listingSnapshot({ state: "TX", listPriceCents: 40_000_000, rentCents: 290_000, rateMilli: 7_250 }, DEFAULT_CONTEXT);
+    expect(cols.map((c) => c.downRatio)).toEqual([2_000, 2_500]);
+    const [a, b] = cols as [ListingColumn, ListingColumn];
+    expect(a.loanAmountCents).toBe(32_000_000);
+    expect(b.loanAmountCents).toBe(30_000_000);
+    expect(b.pitiaCents).toBeLessThan(a.pitiaCents);
+    expect(b.dscrRatio!).toBeGreaterThan(a.dscrRatio!);
+    expect(a.rateMilli).toBe(7_250);
+    expect(a.rentForDscr120Cents).toBeGreaterThan(a.rentForDscr100Cents);
+    // At the solved rent, DSCR reaches the target (rounded down), one cent less does not.
+    const at = (rent: number) => listingSnapshot({ state: "TX", listPriceCents: 40_000_000, rentCents: rent, rateMilli: 7_250 }, DEFAULT_CONTEXT, [2_000])[0]!.dscrRatio!;
+    expect(at(a.rentForDscr100Cents)).toBeGreaterThanOrEqual(10_000);
+    expect(at(a.rentForDscr100Cents - 1)).toBeLessThan(10_000);
+    expect(a.cashFlowCents).toBe(290_000 - a.pitiaCents);
   });
 });

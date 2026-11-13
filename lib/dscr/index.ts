@@ -14,3 +14,4 @@ import { STATE_DEFAULTS } from "./data/state-defaults";
 import type { EngineContext } from "./analyze";
 
 export const DEFAULT_CONTEXT: EngineContext = { grid: DEFAULT_GRID, stateDefaults: STATE_DEFAULTS };
+export * from "./snapshot";
