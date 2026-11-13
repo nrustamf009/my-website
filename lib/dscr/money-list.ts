@@ -39,8 +39,8 @@ export const DEFAULT_MONEY_LIST_RULES: MoneyListRules = {
   rateDropMilli: 750,
   armResetWindowDays: 183,
   anniversaryWindowDays: 30,
-  horizonMonths: 36,
-  refiClosingCostRatio: 350,
+  horizonMonths: 60,
+  refiClosingCostRatio: 300,
   appreciationRatioPerYear: 300,
   cashOutLtvRatio: 7_500,
   enabled: { PREPAY: true, SEASONING: true, RATE: true, ARM_RESET: true, ANNIVERSARY: true },
@@ -74,8 +74,16 @@ export interface LoanEvaluation {
   breakevenMonth: number | null;
   estimatedValueCents: Cents;
   cashOutAvailableCents: Cents;
-  /** max(refi net benefit, cash-out net of penalty and costs). Used for ranking. */
+  /** Prepayment penalty if paid off this month (0 when expired or none). */
+  penaltyTodayCents: Cents;
+  /** Estimated closing costs of a cash-out refinance on balance + cash out. */
+  cashOutCostsCents: Cents;
+  /** Cash out minus penalty and closing costs (0 if none available). */
+  cashOutNetCents: Cents;
+  /** max(refi net benefit, cash-out net of penalty and costs when a seasoning trigger fired). Used for ranking. */
   estimatedBenefitCents: Cents;
+  /** Which estimate drives the benefit; NONE = no dollar estimate (review / check-in). */
+  benefitKind: "SAVINGS" | "CASH_OUT" | "NONE";
   triggers: Trigger[];
   /** Smallest |days| among triggers, for tie-breaking by urgency. */
   urgencyDays: number;
@@ -175,7 +183,11 @@ export function evaluateClosedLoan(loan: ClosedLoanFacts, rules: MoneyListRules,
       ? roundHalfUp(closingValue * Math.pow(1 + rules.appreciationRatioPerYear / 10_000, months / 12))
       : closingValue;
   const cashOut = months >= rules.seasoningMonths.purchasePriceCap ? Math.max(0, applyRatio(value, rules.cashOutLtvRatio) - balance) : 0;
-  const cashOutNet = cashOut > 0 ? cashOut - penaltyToday - applyRatio(balance + cashOut, rules.refiClosingCostRatio) : 0;
+  const cashOutCosts = cashOut > 0 ? applyRatio(balance + cashOut, rules.refiClosingCostRatio) : 0;
+  const cashOutNet = cashOut > 0 ? Math.max(0, cashOut - penaltyToday - cashOutCosts) : 0;
+  // Cash out is a benefit only when seasoning is the reason to call; otherwise equity alone would rank every old loan first.
+  const seasoned = triggers.some((t) => t.kind === "SEASONING");
+  const benefit = Math.max(netRefi, seasoned ? cashOutNet : 0, 0);
 
   return {
     monthsSinceClosing: months,
@@ -190,7 +202,11 @@ export function evaluateClosedLoan(loan: ClosedLoanFacts, rules: MoneyListRules,
     breakevenMonth: breakeven,
     estimatedValueCents: value,
     cashOutAvailableCents: cashOut,
-    estimatedBenefitCents: Math.max(netRefi, cashOutNet, 0),
+    penaltyTodayCents: penaltyToday,
+    cashOutCostsCents: cashOutCosts,
+    cashOutNetCents: cashOutNet,
+    estimatedBenefitCents: benefit,
+    benefitKind: benefit <= 0 ? "NONE" : netRefi >= benefit ? "SAVINGS" : "CASH_OUT",
     triggers,
     urgencyDays: triggers.length ? Math.min(...triggers.map((t) => Math.abs(t.days))) : Infinity,
   };
@@ -201,4 +217,10 @@ export function rankMoneyList<T extends { evaluation: LoanEvaluation }>(rows: T[
   return rows
     .filter((r) => r.evaluation.triggers.length > 0)
     .sort((a, b) => b.evaluation.estimatedBenefitCents - a.evaluation.estimatedBenefitCents || a.evaluation.urgencyDays - b.evaluation.urgencyDays);
+}
+
+/** Totals for the Money List header (dollar estimates only; review/check-in rows are counted, not summed). */
+export function summarizeMoneyList(evals: LoanEvaluation[]): { count: number; withDollarEstimate: number; totalBenefitCents: Cents } {
+  const dollar = evals.filter((e) => e.benefitKind !== "NONE");
+  return { count: evals.length, withDollarEstimate: dollar.length, totalBenefitCents: dollar.reduce((s, e) => s + e.estimatedBenefitCents, 0) };
 }

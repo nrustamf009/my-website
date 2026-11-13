@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { requireBroker } from "@/lib/auth/session";
-import { features, parseJson } from "@/lib/broker";
+import { features, moneyListRules, parseJson } from "@/lib/broker";
 import { buildMoneyList } from "@/lib/moneylist/list";
 import { periods, roiStats, type RoiStats } from "@/lib/stats";
 import { dscr, relativeTime, usd } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import type { Verdict } from "@/lib/dscr";
 import { Badge, Card, CardHeader, LinkButton, Notice, PageHeader, cx } from "@/components/ui";
-import { triggerLabel } from "@/components/moneylist/labels";
+import { describeOpportunity, triggerShort } from "@/lib/moneylist/describe";
+import { TRIGGER_TONE } from "@/components/moneylist/labels";
 
 export const metadata = { title: "Overview" };
 
@@ -123,9 +124,9 @@ export default async function Overview({ searchParams }: { searchParams: Promise
             ) : (
               ml.rows.slice(0, 3).map(({ loan, evaluation }) => (
                 <li key={loan.id}>
-                  <Link href="/dashboard/money-list" className="block px-5 py-3 hover:bg-paper/60">
-                    <div className="flex items-center justify-between gap-2"><span className="truncate text-sm font-medium">{loan.borrowerName}</span><Badge>{triggerLabel(evaluation.triggers[0]!)}</Badge></div>
-                    <div className="truncate text-xs text-muted">{evaluation.estimatedBenefitCents > 0 ? `Est. benefit ${usd(evaluation.estimatedBenefitCents)}` : loan.propertyAddress}</div>
+                  <Link href={`/dashboard/money-list/${loan.id}`} className="block px-5 py-3 hover:bg-paper/60">
+                    <div className="flex items-center justify-between gap-2"><span className="truncate text-sm font-medium">{loan.borrowerName}</span><Badge tone={TRIGGER_TONE[evaluation.triggers[0]!.kind]}>{triggerShort(evaluation.triggers[0]!)}</Badge></div>
+                    <div className="truncate text-xs text-muted">{(() => { const op = describeOpportunity(evaluation, moneyListRules(broker).horizonMonths); return op.kind === "NONE" ? `${op.benefitLabel} · ${loan.propertyAddress}` : `${op.benefitLabel} ${op.benefitHint}`; })()}</div>
                   </Link>
                 </li>
               ))

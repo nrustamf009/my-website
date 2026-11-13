@@ -70,7 +70,10 @@ export function maxLtvFor(grid: ProgramGrid, mode: Mode, fico: FicoBucket, bucke
 export function gridRate(grid: ProgramGrid, p: { mode: Mode; fico: FicoBucket; bucket: DscrBucket; product: Product; prepay: Prepay; pointsRatio: Ratio }): Milli {
   const a = grid.rateAdjMilli;
   const buydown = roundHalfUp((Math.max(0, p.pointsRatio) * grid.buydownMilliPerPoint) / 100);
-  return Math.max(0, grid.baseRateMilli + a.fico[p.fico] + a.dscr[p.bucket] + a.product[p.product] + a.prepay[p.prepay] + a.mode[p.mode] - buydown);
+  // A worse DSCR bucket is never priced cheaper than a better one (keeps DSCR monotonic in rent/down).
+  const order = [">=1.20", "1.00-1.19", "0.75-0.99", "<0.75"] as const;
+  const dscrAdj = Math.max(...order.slice(0, order.indexOf(p.bucket) + 1).map((b) => a.dscr[b]));
+  return Math.max(0, grid.baseRateMilli + a.fico[p.fico] + dscrAdj + a.product[p.product] + a.prepay[p.prepay] + a.mode[p.mode] - buydown);
 }
 
 export function minEligibleDscr(grid: ProgramGrid): Ratio {

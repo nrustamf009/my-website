@@ -230,7 +230,7 @@ describe("G18 Money List math", () => {
   it("loan 400,000 at 8% closed 2023-12-28 (3-2-1, 36 mo); as of 2026-11-13: 34 months, balance 389,795.68; penalty 1% = 3,897.96; market 6.75%: 2,935.06 → 2,528.21 = $406.85/mo; costs 3.5% = 13,642.85; net 36 × 406.85 − 3,897.96 − 13,642.85 = −2,894.21; breakeven ⌈17,540.81 / 406.85⌉ = 44 mo", () => {
     const e = evaluateClosedLoan(
       { loanAmountCents: 400_000_00, rateMilli: 8_000, closingDate: new Date(Date.UTC(2023, 11, 28)), product: "FIXED", prepayType: "3-2-1", prepayTermMonths: 36 },
-      DEFAULT_MONEY_LIST_RULES,
+      { ...DEFAULT_MONEY_LIST_RULES, horizonMonths: 36, refiClosingCostRatio: 350 },
       6_750,
       new Date(Date.UTC(2026, 10, 13)),
     );

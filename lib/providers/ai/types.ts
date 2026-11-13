@@ -1,33 +1,36 @@
-import type { CallExtraction, FollowUpEmail } from "./schemas";
+import type { FollowUpEmail, NotesExtraction, OutreachDraft } from "./schemas";
 
-export interface OutreachContext {
-  brokerName: string;
+/**
+ * Facts for AI drafts. Every number is ALREADY FORMATTED by the engine ("$412/mo", "7.875%").
+ * The model may only quote these strings; a guard rejects drafts with any other $ or % figure.
+ */
+export interface OutreachFacts {
+  loName: string;
   companyName: string;
   borrowerFirstName: string;
   propertyAddress: string;
-  /** Human-readable reasons, e.g. "Prepayment penalty ended on Mar 3, 2026". */
   reasons: string[];
-  /** Human-readable benefit, e.g. "About $310/month lower payment at today's rates". */
-  benefit: string;
+  benefit: string | null;
+  netOf: string | null;
 }
 
-export interface FollowUpContext {
-  brokerName: string;
+export interface FollowUpFacts {
+  loName: string;
   companyName: string;
-  brokerPhone?: string | null;
+  loPhone: string | null;
   investorFirstName: string;
-  propertyAddress?: string | null;
+  propertyAddress: string | null;
   summary: string;
   nextSteps: string[];
   checklist: string[];
-  scenarioUrl?: string | null;
+  scenarioUrl: string | null;
 }
 
 export interface AiClient {
   readonly mode: "claude" | "mock";
-  extractCall(transcript: string): Promise<CallExtraction>;
-  draftOutreach(ctx: OutreachContext, tone: string): Promise<string>;
-  draftFollowUpEmail(ctx: FollowUpContext, tone: string): Promise<FollowUpEmail>;
+  extractNotes(text: string): Promise<NotesExtraction>;
+  draftOutreach(f: OutreachFacts, tone: string): Promise<OutreachDraft>;
+  draftFollowUp(f: FollowUpFacts, tone: string): Promise<FollowUpEmail>;
 }
 
-export type { CallExtraction, FollowUpEmail };
+export type { FollowUpEmail, NotesExtraction, OutreachDraft };

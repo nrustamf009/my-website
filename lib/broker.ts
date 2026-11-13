@@ -125,3 +125,13 @@ export async function getPublicContext(slug: string, opts: { loSlug?: string | n
   const disclaimer = broker.currentDisclaimerId ? await forBroker(broker.id).disclaimerVersion.findFirst({ where: { id: broker.currentDisclaimerId } }) : null;
   return { unavailable: false as const, broker, lo, disclaimer, brand: toPublicBrand(broker, lo, disclaimer), ctx: engineContext(broker) };
 }
+
+/** Brand for a dashboard user's outgoing messages (the signed-in LO, else the broker's primary LO). */
+export async function staffBrand(broker: Broker, user: User | null) {
+  const lo =
+    (user && user.brokerId === broker.id ? user : null) ??
+    (broker.primaryUserId ? await prisma.user.findUnique({ where: { id: broker.primaryUserId } }) : null) ??
+    (await prisma.user.findFirst({ where: { brokerId: broker.id, active: true }, orderBy: { createdAt: "asc" } }));
+  const disclaimer = broker.currentDisclaimerId ? await forBroker(broker.id).disclaimerVersion.findFirst({ where: { id: broker.currentDisclaimerId } }) : null;
+  return toPublicBrand(broker, lo, disclaimer);
+}

@@ -8,7 +8,6 @@ export interface MoneyListRow {
   evaluation: LoanEvaluation;
 }
 
-export const ACTIVE_STATUSES = ["OPEN", "SNOOZED"];
 
 function toFacts(l: ClosedLoan) {
   return {
@@ -24,16 +23,23 @@ function toFacts(l: ClosedLoan) {
   };
 }
 
-export function evaluateLoan(l: ClosedLoan, broker: Pick<Broker, "moneyListRules" | "marketRateMilli" | "whatIfRateMilli">, opts: { whatIf?: boolean; asOf?: Date } = {}) {
-  const rate = opts.whatIf && broker.whatIfRateMilli ? broker.whatIfRateMilli : broker.marketRateMilli;
-  return evaluateClosedLoan(toFacts(l), moneyListRules(broker), rate ?? null, opts.asOf);
+export interface ListOpts {
+  /** What-if market rate (milli-percent) from the URL; overrides the broker's market rate. */
+  rateMilli?: number | null;
+  asOf?: Date;
 }
 
+export function evaluateLoan(l: ClosedLoan, broker: Pick<Broker, "moneyListRules" | "marketRateMilli">, opts: ListOpts = {}) {
+  return evaluateClosedLoan(toFacts(l), moneyListRules(broker), opts.rateMilli ?? broker.marketRateMilli ?? null, opts.asOf);
+}
+
+export const isActive = (l: Pick<ClosedLoan, "status" | "snoozedUntil">, now = new Date()) => l.status === "OPEN" || (l.status === "SNOOZED" && (!l.snoozedUntil || l.snoozedUntil <= now));
+
 /** Ranked opportunities (snoozed-until-future, contacted, not-interested and won excluded). */
-export async function buildMoneyList(db: ScopedDb, broker: Broker, opts: { whatIf?: boolean } = {}) {
+export async function buildMoneyList(db: ScopedDb, broker: Broker, opts: ListOpts = {}) {
   const now = new Date();
-  const loans = await db.closedLoan.findMany();
-  const active = loans.filter((l) => l.status === "OPEN" || (l.status === "SNOOZED" && (!l.snoozedUntil || l.snoozedUntil <= now)));
+  const loans = await db.closedLoan.findMany({ orderBy: { closingDate: "desc" } });
+  const active = loans.filter((l) => isActive(l, now));
   const rows = rankMoneyList(active.map((loan) => ({ loan, evaluation: evaluateLoan(loan, broker, opts) })));
   return { rows, total: loans.length, loans };
 }
