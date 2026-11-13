@@ -148,9 +148,11 @@ export async function seedMoneyList(prisma: PrismaClient, broker: Broker, users:
     const history = [{ fromState: "", toState: "OPEN", note: "Imported", userId: lo.id, createdAt: daysAgo(now, 30) }];
     if (status === "CONTACTED") history.push({ fromState: "OPEN", toState: "CONTACTED", note: "Contacted by email · Wants numbers after tax season", userId: lo.id, createdAt: daysAgo(now, 3) });
     if (status === "SNOOZED") history.push({ fromState: "OPEN", toState: "SNOOZED", note: "Snoozed 60 days · Closing on another property first", userId: lo.id, createdAt: daysAgo(now, 15) });
-    await prisma.closedLoan.create({
+    const loan = await prisma.closedLoan.create({
       data: { ...rest, brokerId: broker.id, importId: imp.id, addressKey: normalizeAddress(l.propertyAddress).key, status, snoozedUntil, history: { create: history } },
     });
+    if (status === "CONTACTED") await prisma.event.create({ data: { brokerId: broker.id, type: "moneylist.contacted", entityType: "ClosedLoan", entityId: loan.id, actorUserId: lo.id, meta: JSON.stringify({ channel: "EMAIL" }), createdAt: daysAgo(now, 3) } });
+    if (status === "SNOOZED") await prisma.event.create({ data: { brokerId: broker.id, type: "moneylist.snoozed", entityType: "ClosedLoan", entityId: loan.id, actorUserId: lo.id, meta: JSON.stringify({ snoozeDays: 60 }), createdAt: daysAgo(now, 15) } });
   }
   const evs = book.filter((l) => !l.status).map((l) => evaluateClosedLoan(l, DEFAULT_MONEY_LIST_RULES, broker.marketRateMilli, now));
   return { loans: book.length, opportunities: evs.filter((e) => e.triggers.length).length };

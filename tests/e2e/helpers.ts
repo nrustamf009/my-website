@@ -19,3 +19,17 @@ export async function hydrated(page: Page) {
 export async function resetRateLimits() {
   await prisma.rateLimitHit.deleteMany();
 }
+
+/** Authorization header for cron routes (reads CRON_SECRET from the environment or .env). */
+export function cronHeaders(): Record<string, string> {
+  let secret = process.env.CRON_SECRET;
+  if (!secret) {
+    try {
+      const env = require("node:fs").readFileSync(".env", "utf8") as string;
+      secret = env.match(/^CRON_SECRET=["']?([^"'\n]+)/m)?.[1];
+    } catch {
+      /* no .env */
+    }
+  }
+  return secret ? { Authorization: `Bearer ${secret}` } : {};
+}

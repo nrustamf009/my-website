@@ -75,6 +75,7 @@ model Agency {
   users       User[]
   audits      AuditLog[]
   createdAt   DateTime   @default(now())
+  lastRollupAt DateTime?
 }
 
 model Broker {

@@ -42,3 +42,11 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **Option structures follow the conversation**: prefers amortizing → fixed, fixed + 1 point, 7/6 ARM; wants IO → IO, fixed, IO + 1 point; otherwise fixed, IO, fixed + 1 point. Loan from the stated down payment (default 25%), clamped to 50–80% LTV.
 - **The investor becomes a lead with source NOTES** (deduped by email/phone). No web consent is recorded for these; it's the LO's own contact.
 - **Follow-up email footer (NMLS IDs, EHO, estimate language) is appended by code**, same as Money List drafts.
+
+## Leads, ROI, crons
+- **CCPA deletion removes the lead and its consents and anonymizes scenarios built for that person**; events keep only non-identifying metadata (`lead.deleted`, reason). Broker admins only.
+- **CSV export uses Papa's `escapeFormulae`** so names like `=HYPERLINK(...)` can't execute in Excel.
+- **Status changes send `lead.updated` with `previousStatus`** so Zapier/Make can branch without polling.
+- **Crons are idempotent by timestamp**: weekly ROI skips brokers mailed in the last 6 days, the agency rollup and Money List digest skip anything sent in the last 25 days. Safe to retry or run more often.
+- **Webhook retries run every 10 minutes** (`/api/cron/webhooks`). Vercel Hobby only allows daily crons; on Hobby, retries happen daily (documented in the README).
+- **Cron routes require `Authorization: Bearer $CRON_SECRET` whenever the secret is set**; without a secret they run only outside production.
