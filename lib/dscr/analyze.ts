@@ -76,6 +76,8 @@ export interface DealAnalysis {
   ltvValueCents: Cents;
   loanAmountCents: Cents;
   downPaymentCents: Cents;
+  /** Down payment as a share of the price (purchase); 0 for refinances. */
+  downPaymentRatio: Ratio;
   ltvRatio: Ratio;
   product: Product;
   prepay: Prepay;
@@ -446,6 +448,7 @@ export function analyzeDeal(input: DealInput, ctx: EngineContext, opts: { solve?
     ltvValueCents: n.ltvValueCents,
     loanAmountCents: n.loanCents,
     downPaymentCents: n.downCents,
+    downPaymentRatio: ratioOf(n.downCents, n.valueCents) ?? 0,
     ltvRatio: ratioCeil(n.loanCents, n.ltvValueCents) ?? 0,
     product: n.product,
     prepay: n.prepay,

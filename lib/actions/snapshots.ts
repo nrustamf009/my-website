@@ -132,7 +132,7 @@ export async function createSnapshot(_p: FormState, fd: FormData): Promise<FormS
       brokerId: broker.id,
       ownerUserId: user?.id ?? broker.primaryUserId ?? "",
       realtorId,
-      token: randomToken(10),
+      token: randomToken(),
       template: d.template,
       address: normalizeAddress(d.address).line,
       state,

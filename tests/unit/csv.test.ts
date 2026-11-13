@@ -58,3 +58,13 @@ describe("Money List CSV import", () => {
     expect(parseProduct("")).toBe("FIXED");
   });
 });
+
+import { randomToken, PUBLIC_TOKEN_LENGTH } from "@/lib/tokens";
+describe("public tokens", () => {
+  it("are ≥128 bits and URL-safe", () => {
+    expect(PUBLIC_TOKEN_LENGTH * Math.log2(54)).toBeGreaterThanOrEqual(128);
+    const t = randomToken();
+    expect(t).toMatch(/^[A-Za-z2-9]{24}$/);
+    expect(new Set(Array.from({ length: 200 }, () => randomToken())).size).toBe(200);
+  });
+});

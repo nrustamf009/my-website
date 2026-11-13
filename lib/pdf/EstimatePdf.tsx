@@ -48,7 +48,7 @@ function EstimateDoc({ brand, address, investor, a, compare }: { brand: PublicBr
           <View style={{ flex: 1 }}>
             <Text style={s.h2}>Deal</Text>
             <Kv label={purchase ? "Purchase price" : "Estimated value"} value={usd(a.valueCents)} />
-            {purchase && <Kv label={`Down payment (${pct(10_000 - a.ltvRatio)})`} value={usd(a.downPaymentCents)} />}
+            {purchase && <Kv label={`Down payment (${pct(a.downPaymentRatio)})`} value={usd(a.downPaymentCents)} />}
             <Kv label={`Loan amount (LTV ${pct(a.ltvRatio)})`} value={usd(a.loanAmountCents)} />
             <Kv label="Estimated rate" value={rate(a.rateMilli)} />
             <Kv label="Product" value={t.productShort[a.product]} />
@@ -102,7 +102,7 @@ function EstimateDoc({ brand, address, investor, a, compare }: { brand: PublicBr
             </View>
             {compare.map((r) => (
               <View key={r.downPaymentCents} style={s.tableRow}>
-                <Text style={{ flex: 1 }}>{pct(10_000 - r.ltvRatio)}</Text>
+                <Text style={{ flex: 1 }}>{pct(r.downPaymentRatio)}</Text>
                 <Text style={{ flex: 1 }}>{usd(r.loanAmountCents)}</Text>
                 <Text style={{ flex: 1 }}>{usd(r.pitiaCents)}</Text>
                 <Text style={{ flex: 1, fontWeight: 600 }}>{dscr(r.dscrRatio)}</Text>

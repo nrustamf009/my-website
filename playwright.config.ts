@@ -10,7 +10,7 @@ export default defineConfig({
   use: { baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000", trace: "off" },
   projects: [
     { name: "mobile", use: { ...devices["Pixel 7"] } },
-    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testMatch: /(admin|auth|settings)\.spec\.ts/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testMatch: /(admin|moneylist|leads)\.spec\.ts/ },
   ],
   webServer: process.env.E2E_BASE_URL ? undefined : { command: "npm run dev", url: "http://localhost:3000/login", reuseExistingServer: true, timeout: 120_000 },
 });

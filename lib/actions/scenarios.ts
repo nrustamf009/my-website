@@ -57,7 +57,7 @@ export async function saveScenario(input: ScenarioInput): Promise<SaveResult> {
       ...data,
       brokerId: broker.id,
       ownerUserId: lead?.ownerUserId ?? user?.id ?? broker.primaryUserId ?? "",
-      token: randomToken(14),
+      token: randomToken(),
       status: "DRAFT",
       origin: lead ? "LEAD" : "MANUAL",
       leadId: lead?.id ?? null,
@@ -127,7 +127,7 @@ export async function duplicateScenario(id: string) {
   if (!s) return;
   const { id: _id, token: _t, createdAt: _c, updatedAt: _u, options, firstOpenedAt: _f, lastNotifiedAt: _l, interestedAt: _ia, interestedOptionId: _io, interestQuestion: _iq, revokedAt: _r, ...rest } = s;
   const copy = await db.scenario.create({
-    data: { ...rest, token: randomToken(14), status: "DRAFT", expiresAt: expiryFrom(), ownerUserId: user?.id ?? s.ownerUserId, options: { create: options.map(({ id: _oid, scenarioId: _sid, ...o }) => o) } },
+    data: { ...rest, token: randomToken(), status: "DRAFT", expiresAt: expiryFrom(), ownerUserId: user?.id ?? s.ownerUserId, options: { create: options.map(({ id: _oid, scenarioId: _sid, ...o }) => o) } },
   });
   await emit(db, "scenario.created", "Scenario", copy.id, { origin: "DUPLICATE" }, user?.id);
   redirect(`/dashboard/scenarios/${copy.id}/edit`);

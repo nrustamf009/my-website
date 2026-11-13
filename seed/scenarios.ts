@@ -1,4 +1,5 @@
 import type { Broker, PrismaClient, User } from "@prisma/client";
+import { randomToken } from "../lib/tokens";
 import { DEFAULT_CONTEXT, estimateEscrow, loanForLtv, normalizeGrid, priceScenarioOption, type FicoBucket, type Mode, type Prepay, type Product, type UsState } from "../lib/dscr";
 
 type Seed = { investor: string; email: string; phone: string; address: string; state: UsState; mode: Mode; value: number; balance?: number; rent: number; fico: FicoBucket; ltv: number; opts: [Product, Prepay, number][]; opens: number[]; pick?: number; question?: string; daysAgo: number; status?: string };
@@ -29,7 +30,7 @@ export async function seedScenarios(prisma: PrismaClient, broker: Broker, users:
       data: {
         brokerId: broker.id,
         ownerUserId: owner.id,
-        token: `demo${broker.slug.slice(0, 3)}${i}${Math.random().toString(36).slice(2, 10)}`,
+        token: randomToken(),
         status: x.status ?? "SHARED",
         mode: x.mode,
         investorName: x.investor,

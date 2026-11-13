@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: file:./ci.db
+      AUTH_SECRET: ci-only-secret-not-for-production-use-1234567890
+      APP_URL: http://localhost:3100
+      CRON_SECRET: ci-cron-secret
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Database (SQLite) + seed
+        run: npx prisma db push --skip-generate && npx tsx prisma/seed.ts
+      - name: Guards (banned words, money math only in lib/dscr, tenant scoping)
+        run: npm run lint
+      - run: npm run typecheck
+      - name: Unit, golden, property and cross-tenant tests
+        run: npm test
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: E2E on a production build (mobile + desktop)
+        run: npm run test:e2e:prod
+      - name: Upload Playwright results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: node_modules/.cache/playwright-results
+          retention-days: 7

@@ -4,7 +4,9 @@ import { randomBytes } from "node:crypto";
 import { execSync } from "node:child_process";
 
 if (!existsSync(".env")) {
-  const env = readFileSync(".env.example", "utf8").replace("change-me-to-a-long-random-string", randomBytes(32).toString("base64"));
+  const env = readFileSync(".env.example", "utf8")
+    .replace("change-me-to-a-long-random-string", randomBytes(32).toString("base64"))
+    .replace('CRON_SECRET="change-me"', `CRON_SECRET="${randomBytes(24).toString("hex")}"`);
   writeFileSync(".env", env);
   console.log("Created .env from .env.example");
 }

@@ -50,3 +50,10 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **Crons are idempotent by timestamp**: weekly ROI skips brokers mailed in the last 6 days, the agency rollup and Money List digest skip anything sent in the last 25 days. Safe to retry or run more often.
 - **Webhook retries run every 10 minutes** (`/api/cron/webhooks`). Vercel Hobby only allows daily crons; on Hobby, retries happen daily (documented in the README).
 - **Cron routes require `Authorization: Bearer $CRON_SECRET` whenever the secret is set**; without a secret they run only outside production.
+
+## Tooling and security
+- **`npm run lint` is a project guard script (`scripts/lint.mjs`), not ESLint.** ESLint + `eslint-config-next` would be new dependencies (CLAUDE.md: ask first). The guards enforce the non-negotiables that matter most: banned words, money math only in `lib/dscr`, no raw Prisma on tenant tables, server-action exports. TypeScript strict mode covers the rest. Adding ESLint is a one-line decision for the owner.
+- **Public tokens are 24 characters from a 54-char alphabet (≈138 bits), rejection-sampled** (the first version used 10–14 characters and modulo sampling, below the spec's 128 bits).
+- **The engine exposes `downPaymentRatio`, `escrowCents`, `cashToBorrowerCents` and `penaltyTodayCents`** so PDFs and pages never subtract or multiply money themselves.
+- **`design:css` and `design:gallery` scripts are part of the design-system phase** (src/design), which starts after the plan is approved.
+- **Lighthouse (mobile, production build, 2026-11-13):** `/b/harborline/check` perf 90 · a11y 100 · best practices 96 · SEO 100; listing page 96/100/96; scenario page 96/100/93. Listing and scenario pages score SEO 66 on purpose: they are private links with `noindex`. Fixed after the run: missing favicon (console 404) and 11px fine print on public pages (now 12px).

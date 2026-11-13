@@ -1,7 +1,7 @@
 import { Document, Page, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import type { PublicBrand } from "@/lib/broker";
 import type { ComputedOption } from "@/lib/scenarios";
-import { dscr, pct, points, rate, shortDate, usd } from "@/lib/format";
+import { dscr, pct, points, rate, shortDate, usd, usdMagnitude } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import { C, PdfFooter, PdfHeader, registerFonts, s } from "./common";
 
@@ -24,7 +24,7 @@ function Doc(p: ScenarioPdfProps) {
     ["Product", (r) => t.productShort[r.input.product]],
     ["Loan amount", (r) => `${usd(r.input.loanAmountCents)} (${pct(r.result.ltvRatio)} LTV)`],
     ["Rate", (r) => rate(r.input.rateMilli), true],
-    ["Points / credit", (r) => (r.input.pointsRatio === 0 ? "None" : r.input.pointsRatio > 0 ? `${points(r.input.pointsRatio)} (${usd(r.result.pointsCents)})` : `${points(-r.input.pointsRatio)} credit (${usd(-r.result.pointsCents)})`)],
+    ["Points / credit", (r) => (r.input.pointsRatio === 0 ? "None" : `${points(r.input.pointsRatio)} (${usdMagnitude(r.result.pointsCents)})`)],
     ["Lender fees", (r) => usd(r.input.feesCents)],
     ["Prepayment penalty", (r) => t.prepay[r.input.prepay]],
     ["Monthly payment (PITIA)", (r) => usd(r.result.pitiaCents), true],

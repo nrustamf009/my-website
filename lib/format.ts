@@ -6,6 +6,11 @@ export function usd(cents: number | null | undefined, opts: { cents?: boolean } 
 }
 
 /** Signed money: "+$412" / "−$85". */
+/** Absolute amount, for labels that already say "credit" or "penalty". */
+export function usdMagnitude(cents: number | null | undefined): string {
+  return cents == null ? "—" : usd(Math.abs(cents));
+}
+
 export function usdSigned(cents: number | null | undefined): string {
   if (cents == null) return "—";
   return (cents < 0 ? "−" : "+") + usd(Math.abs(cents));

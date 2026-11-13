@@ -1,4 +1,5 @@
 import type { Broker, PrismaClient, User } from "@prisma/client";
+import { randomToken } from "../lib/tokens";
 import { DEFAULT_CONTEXT, estimateEscrow, gridRate, normalizeGrid, type UsState } from "../lib/dscr";
 
 const REALTORS: Record<string, { name: string; brokerage: string; email: string; phone: string }[]> = {
@@ -37,7 +38,7 @@ export async function seedSnapshots(prisma: PrismaClient, broker: Broker, users:
         brokerId: broker.id,
         ownerUserId: users[i % users.length]!.id,
         realtorId: realtors[i % realtors.length]!.id,
-        token: `demo${broker.slug.slice(0, 4)}${i}${Math.random().toString(36).slice(2, 8)}`,
+        token: randomToken(),
         template: l.template ?? "CLASSIC",
         address: l.address,
         state: l.state,

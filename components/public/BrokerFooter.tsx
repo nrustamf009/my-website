@@ -38,7 +38,7 @@ export function BrokerFooter({ brand, compact = false }: { brand: PublicBrand; c
             {brand.privacyPolicyUrl && <a className="underline" href={brand.privacyPolicyUrl} target="_blank" rel="noopener noreferrer">{t.footer.privacy}</a>}
           </div>
         </div>
-        <p className="mt-4 max-w-4xl text-[11px] leading-relaxed text-muted" data-testid="disclaimer">
+        <p className="mt-4 max-w-4xl text-xs leading-relaxed text-muted" data-testid="disclaimer">
           {brand.disclaimer.text} <span className="whitespace-nowrap">({t.footer.disclaimerVersion(brand.disclaimer.version)})</span>
         </p>
       </div>

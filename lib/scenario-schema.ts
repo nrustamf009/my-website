@@ -32,7 +32,7 @@ export const ScenarioInputSchema = z
     insuranceAnnualCents: cents,
     hoaMonthlyCents: cents,
     ficoBucket: z.enum(FICO_BUCKETS as [string, ...string[]]),
-    note: z.string().trim().max(1_000).refine((v) => !BANNED_WORDS.test(v), "Avoid words like approved, pre-qualified or guaranteed"),
+    note: z.string().trim().max(1_000).refine((v) => !BANNED_WORDS.test(v), "Remove wording that sounds like a loan decision (see the compliance guide)"),
     options: z.array(OptionSchema).min(2, "Add at least two options").max(3, "Up to three options"),
   })
   .refine((d) => d.options.every((o) => o.loanAmountCents <= d.valueCents), { message: "A loan amount is higher than the value", path: ["options"] });

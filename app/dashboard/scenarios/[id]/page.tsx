@@ -57,7 +57,7 @@ export default async function ScenarioPage({ params }: { params: Promise<{ id: s
                   ["Product", (r) => t.productShort[r.input.product]],
                   ["Loan", (r) => usd(r.input.loanAmountCents)],
                   ["Rate", (r) => rate(r.input.rateMilli)],
-                  ["Points", (r) => (r.input.pointsRatio === 0 ? "—" : r.input.pointsRatio > 0 ? points(r.input.pointsRatio) : `${points(-r.input.pointsRatio)} credit`)],
+                  ["Points", (r) => (r.input.pointsRatio === 0 ? "—" : points(r.input.pointsRatio))],
                   ["Prepay", (r) => t.prepay[r.input.prepay]],
                   ["Payment", (r) => `${usd(r.result.pitiaCents)}/mo`],
                   ["DSCR", (r) => dscr(r.result.dscrRatio)],

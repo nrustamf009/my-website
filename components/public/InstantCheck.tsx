@@ -365,7 +365,7 @@ function Results({ a, ctx }: { a: DealAnalysis; ctx: EngineContext }) {
           {a.reasons.map((r) => <li key={r}>• {t.reason[r]}</li>)}
         </ul>
       )}
-      <p className="border-t border-line px-5 py-3 text-[11px] leading-relaxed text-muted">{t.check.estimateOnly}</p>
+      <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">{t.check.estimateOnly}</p>
     </Card>
   );
 }

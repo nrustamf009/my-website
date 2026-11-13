@@ -89,7 +89,7 @@ export async function convertNotes(input: { review: NotesReview; saveText: boole
     data: {
       brokerId: broker.id,
       ownerUserId: user?.id ?? broker.primaryUserId ?? "",
-      token: randomToken(14),
+      token: randomToken(),
       status: "DRAFT",
       origin: "NOTES",
       expiresAt: expiryFrom(),

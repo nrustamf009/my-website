@@ -29,9 +29,6 @@ export const env = {
   get transcribeKey() {
     return e("TRANSCRIBE_API_KEY");
   },
-  get blobToken() {
-    return e("BLOB_READ_WRITE_TOKEN");
-  },
   get cronSecret() {
     return e("CRON_SECRET");
   },

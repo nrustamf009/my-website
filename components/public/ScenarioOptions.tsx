@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { dscr, pct, points, rate, usd } from "@/lib/format";
+import { dscr, pct, points, rate, usd, usdMagnitude } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import type { Prepay, Product, ScenarioOptionResult } from "@/lib/dscr";
 import { Button, Textarea, cx } from "@/components/ui";
@@ -103,7 +103,7 @@ export function ScenarioOptions({ slug, token, options, mode, loFirstName, initi
                 <div><dt className="text-xs text-muted">{cashLabel}</dt><dd className="num font-semibold">{cashValue}</dd></div>
                 <div><dt className="text-xs text-muted">5-year cost</dt><dd className="num font-semibold">{usd(r.fiveYearCostCents)}</dd></div>
               </dl>
-              <p className="mt-3 text-xs text-muted">{t.prepay[o.prepay]}{o.pointsRatio > 0 ? ` · ${points(o.pointsRatio)} to buy the rate down` : o.pointsRatio < 0 ? ` · ${points(-o.pointsRatio)} lender credit` : ""}</p>
+              <p className="mt-3 text-xs text-muted">{t.prepay[o.prepay]}{o.pointsRatio > 0 ? ` · ${points(o.pointsRatio)} to buy the rate down` : o.pointsRatio < 0 ? ` · ${points(o.pointsRatio)}` : ""}</p>
               {o.vsFirst?.breakevenMonths && <p className="mt-1 text-xs text-ink-2">Costs {usd(o.vsFirst.extraUpfrontCents)} more upfront than A, saves {usd(o.vsFirst.monthlySavingsCents)}/mo: pays for itself in about {o.vsFirst.breakevenMonths} months.</p>}
 
               <button type="button" onClick={() => expand(o.id)} aria-expanded={open === o.id} className="mt-4 flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-sm font-medium text-ink-2">
@@ -121,7 +121,7 @@ export function ScenarioOptions({ slug, token, options, mode, loFirstName, initi
                       ...(purchase ? ([["Down payment", usd(r.downPaymentCents)]] as [string, string][]) : []),
                       ["Closing costs (est.)", usd(r.closingCostsCents)],
                       ["Prepaids & escrow (est.)", usd(r.prepaidsCents)],
-                      ...(r.pointsCents ? ([[r.pointsCents > 0 ? "Points" : "Lender credit", usd(Math.abs(r.pointsCents))]] as [string, string][]) : []),
+                      ...(r.pointsCents ? ([[r.pointsCents > 0 ? "Points" : "Lender credit", usdMagnitude(r.pointsCents)]] as [string, string][]) : []),
                     ] as [string, string][]).map(([k, v]) => <div key={k} className="flex justify-between gap-2"><dt className="text-muted">{k}</dt><dd className="num">{v}</dd></div>)}
                   </dl>
                   <div>

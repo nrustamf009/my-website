@@ -141,7 +141,7 @@ export function LeadForm(p: LeadFormProps) {
       <Turnstile siteKey={p.turnstileSiteKey} onToken={onToken} />
       {formError && <p className="text-sm text-bad" role="alert">{formError}</p>}
       <Button type="submit" variant="accent" size="lg" className="w-full" disabled={pending}>{pending ? "Sending…" : p.submitLabel}</Button>
-      <p className="text-center text-[11px] text-muted">{t.form.noSsn(p.loFirstName)}</p>
+      <p className="text-center text-xs text-muted">{t.form.noSsn(p.loFirstName)}</p>
     </form>
   );
 }
