@@ -4,7 +4,11 @@
  *  1. a banned word appears in UI/PDF/email/AI-draft code or strings,
  *  2. money math happens outside lib/dscr (formatting and boundary parsing are allowed),
  *  3. tenant models are queried through the raw Prisma client instead of forBroker(),
- *  4. a "use server" module exports something other than async functions and types.
+ *  4. a "use server" module exports something other than async functions and types,
+ *  5. design values (hex colors, font names, px constants) appear outside src/design/,
+ *  6. code outside the six variant components branches on the theme id.
+ * Files still being migrated to the design system are listed in scripts/design-legacy.json;
+ * the list may only shrink (a listed file that is already clean fails the lint).
  * Run: npm run lint   (CLAUDE.md non-negotiables; see docs/ARCHITECTURE.md)
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -54,8 +58,37 @@ for (const f of files) {
     for (const { n, l } of lines) if (/^export\s+(const|let|var|class|default\s+(?!async))/.test(l)) report(f, n, "use-server-export", l);
 }
 
+// 5–6. Design system (DESIGN.md §2.1, §6).
+const HEX = /(?<![\w&#])#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})(?![\w])/;
+const FONT = /\b(Fraunces|Instrument Serif|Hanken Grotesk|IBM Plex|Inter Tight|Georgia|Helvetica)\b|font-family|fontFamily/;
+const PX = /\b\d+(?:\.\d+)?px\b|-\[\d+(?:\.\d+)?px\]/;
+const BRANCH = /data-theme|useTheme\(|\.(?:id|theme)\s*[!=]==?\s*["'](?:maison|terminal|atelier)["']/;
+const DESIGN_DIRS = ["app", "components", "lib"];
+const legacy = new Set(JSON.parse(readFileSync(join(ROOT, "scripts/design-legacy.json"), "utf8")).files);
+const designFiles = files.filter((f) => DESIGN_DIRS.some((d) => f.startsWith(d + "/")) && !f.startsWith("lib/dscr/"));
+const cssFiles = [];
+DESIGN_DIRS.forEach((d) => {
+  const w = (dir) => readdirSync(dir).forEach((f) => { const p = join(dir, f); if (statSync(p).isDirectory()) w(p); else if (f.endsWith(".css")) cssFiles.push(relative(ROOT, p)); });
+  w(join(ROOT, d));
+});
+const designHits = new Map();
+for (const f of [...designFiles, ...cssFiles]) {
+  const hits = [];
+  for (const { n, l, comment } of codeLines(readFileSync(f, "utf8"))) {
+    if (comment) continue;
+    if (HEX.test(l)) hits.push([n, "design-hex", l]);
+    if (FONT.test(l)) hits.push([n, "design-font", l]);
+    if (PX.test(l)) hits.push([n, "design-px", l]);
+    if (BRANCH.test(l)) hits.push([n, "theme-branch", l]);
+  }
+  if (hits.length) designHits.set(f, hits);
+}
+for (const [f, hits] of designHits) if (!legacy.has(f)) for (const [n, rule, l] of hits) report(f, n, rule, l);
+for (const f of legacy) if (!designHits.has(f)) report(f, 0, "design-legacy", "is clean now: remove it from scripts/design-legacy.json");
+const legacyLeft = [...legacy].filter((f) => designHits.has(f)).length;
+
 if (problems.length) {
   console.error(`✗ ${problems.length} problem${problems.length === 1 ? "" : "s"}:\n` + problems.join("\n"));
   process.exit(1);
 }
-console.log(`✓ guards passed (${files.length} files): banned words, money math in lib/dscr only, tenant scoping, server actions`);
+console.log(`✓ guards passed (${files.length} files): banned words, money math in lib/dscr only, tenant scoping, server actions, design tokens (${legacyLeft} legacy file${legacyLeft === 1 ? "" : "s"} left to migrate)`);

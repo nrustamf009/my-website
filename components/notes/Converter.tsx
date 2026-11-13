@@ -89,7 +89,7 @@ export function NotesConverter({ samples }: { samples: { id: string; label: stri
       <Card className="p-5">
         <h2 className="mb-3 font-display text-xl">Deal</h2>
         <div className="mb-3 flex gap-1 rounded-xl bg-paper p-1 text-sm">
-          {(["PURCHASE", "RATE_TERM", "CASH_OUT"] as const).map((m) => <button key={m} type="button" aria-pressed={r.mode === m} onClick={() => set("mode", m)} className={cx("flex-1 rounded-lg px-3 py-2 font-medium", r.mode === m ? "bg-white shadow-sm" : "text-muted")}>{t.mode[m]}</button>)}
+          {(["PURCHASE", "RATE_TERM", "CASH_OUT"] as const).map((m) => <button key={m} type="button" aria-pressed={r.mode === m} onClick={() => set("mode", m)} className={cx("flex-1 rounded-lg px-3 py-2 font-medium", r.mode === m ? "bg-surface shadow-sm" : "text-muted")}>{t.mode[m]}</button>)}
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Property address" htmlFor="nr-address" error={err("propertyAddress")}><Input id="nr-address" value={r.propertyAddress} onChange={(e) => { set("propertyAddress", e.target.value); const s = normalizeAddress(e.target.value).state; if (s) set("state", s); }} /></Field>

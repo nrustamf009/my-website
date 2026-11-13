@@ -57,3 +57,11 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **The engine exposes `downPaymentRatio`, `escrowCents`, `cashToBorrowerCents` and `penaltyTodayCents`** so PDFs and pages never subtract or multiply money themselves.
 - **`design:css` and `design:gallery` scripts are part of the design-system phase** (src/design), which starts after the plan is approved.
 - **Lighthouse (mobile, production build, 2026-11-13):** `/b/harborline/check` perf 90 · a11y 100 · best practices 96 · SEO 100; listing page 96/100/96; scenario page 96/100/93. Listing and scenario pages score SEO 66 on purpose: they are private links with `noindex`. Fixed after the run: missing favicon (console 404) and 11px fine print on public pages (now 12px).
+
+## Design system
+- **Theme stored as a validated string** (`Broker.theme`, `Agency.defaultTheme`), like every other enum-like column; `db push` workflow kept.
+- **Platform pages (landing, sign-in) use maison with an ink accent; the agency admin uses terminal with an ink accent** (DESIGN §3.3 default).
+- **Token contract additions:** `positive`, `negative`, `focus`, `dim`, derived `*Tint` colors, a full type-role scale, `radius.cta`/`radius.logo`, `shadow`. Without them components would hard-code status colors or branch on theme for type sizes.
+- **Tailwind's radius and shadow scales are remapped to theme tokens**, so existing `rounded-2xl` cards become square in maison/atelier and 12px in terminal without touching feature code. Accent *text* always uses `accentText` (`.text-accent` override), never the raw fill color.
+- **Font loading:** all five families are declared with `next/font/google`, `preload: false`; only the active theme's variable classes are applied, so the browser downloads only that theme's files.
+- **Migration guard:** `scripts/design-legacy.json` lists files that still contain hex/font/px literals; `npm run lint` fails on any new offender and on any listed file that is already clean, so the list can only shrink.

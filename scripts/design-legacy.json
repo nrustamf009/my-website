@@ -1,0 +1,31 @@
+{
+  "_comment": "Files not yet migrated to src/design (docs/DESIGN-PLAN.md). This list may only shrink; it must be empty when the design system ships.",
+  "files": [
+    "app/admin/audit/page.tsx",
+    "app/admin/page.tsx",
+    "app/dashboard/leads/page.tsx",
+    "app/dashboard/money-list/[id]/page.tsx",
+    "app/dashboard/money-list/page.tsx",
+    "app/dashboard/scenarios/[id]/page.tsx",
+    "app/dashboard/scenarios/page.tsx",
+    "app/dashboard/snapshots/page.tsx",
+    "app/embed.js/route.ts",
+    "app/globals.css",
+    "app/login/page.tsx",
+    "app/page.tsx",
+    "components/dashboard/Nav.tsx",
+    "components/moneylist/LoanActions.tsx",
+    "components/public/DscrGauge.tsx",
+    "components/public/InstantCheck.tsx",
+    "components/public/MoneyInput.tsx",
+    "components/public/Turnstile.tsx",
+    "components/settings/EmbedPanel.tsx",
+    "components/ui.tsx",
+    "lib/auth/config.ts",
+    "lib/emails/index.tsx",
+    "lib/emails/layout.tsx",
+    "lib/pdf/EstimatePdf.tsx",
+    "lib/pdf/SnapshotPdf.tsx",
+    "lib/pdf/common.tsx"
+  ]
+}

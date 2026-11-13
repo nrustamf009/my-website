@@ -126,9 +126,9 @@ export function InstantCheck(p: InstantCheckProps) {
         <form method="get" onSubmit={(e) => e.preventDefault()} className="space-y-5" aria-label="Deal details">
           {p.loSlug && <input type="hidden" name="lo" value={p.loSlug} />}
           {!p.listing && (
-            <div role="radiogroup" aria-label="Loan purpose" className="grid grid-cols-2 gap-1 rounded-xl bg-black/5 p-1">
+            <div role="radiogroup" aria-label="Loan purpose" className="grid grid-cols-2 gap-1 rounded-xl bg-ink/5 p-1">
               {(["PURCHASE", "CASH_OUT"] as const).map((m) => (
-                <button key={m} type="button" role="radio" aria-checked={f.mode === m} onClick={() => set("mode", m)} className={cx("h-10 rounded-lg text-sm font-semibold transition", f.mode === m ? "bg-white text-ink shadow-sm" : "text-ink-2")}>
+                <button key={m} type="button" role="radio" aria-checked={f.mode === m} onClick={() => set("mode", m)} className={cx("h-10 rounded-lg text-sm font-semibold transition", f.mode === m ? "bg-surface text-ink shadow-sm" : "text-ink-2")}>
                   {m === "PURCHASE" ? "Buying" : "Cash-out refi"}
                 </button>
               ))}
@@ -173,7 +173,7 @@ export function InstantCheck(p: InstantCheckProps) {
                 <input id="ic-down" name="downPct" type="range" min={1_000} max={5_000} step={50} value={f.downPaymentRatio ?? 2_500} onChange={(e) => set("downPaymentRatio", Number(e.target.value))} className="range-accent w-full" aria-valuetext={pct(f.downPaymentRatio)} />
                 <div className="mt-2 flex gap-2">
                   {DOWN_CHIPS.map((d) => (
-                    <button key={d} type="button" onClick={() => set("downPaymentRatio", d)} className={cx("h-9 flex-1 rounded-lg border text-sm transition", f.downPaymentRatio === d ? "border-accent bg-accent-soft font-semibold text-accent-deep" : "border-line bg-white text-ink-2 hover:bg-paper")}>{pct(d)}</button>
+                    <button key={d} type="button" onClick={() => set("downPaymentRatio", d)} className={cx("h-9 flex-1 rounded-lg border text-sm transition", f.downPaymentRatio === d ? "border-accent bg-accent-soft font-semibold text-accent-deep" : "border-line bg-surface text-ink-2 hover:bg-paper")}>{pct(d)}</button>
                   ))}
                 </div>
               </div>
@@ -240,7 +240,7 @@ export function InstantCheck(p: InstantCheckProps) {
               <Select id="ic-prepay" name="prepay" value={f.prepay} onChange={(e) => set("prepay", e.target.value)}>{PREPAYS.map((x) => <option key={x} value={x}>{t.prepay[x]}</option>)}</Select>
             </div>
           </div>
-          <noscript><button type="submit" className="h-11 w-full rounded-lg bg-ink text-sm font-semibold text-white">{t.check.calculate}</button></noscript>
+          <noscript><button type="submit" className="h-11 w-full rounded-lg bg-ink text-sm font-semibold text-page">{t.check.calculate}</button></noscript>
         </form>
       </Card>
 
@@ -269,7 +269,7 @@ export function InstantCheck(p: InstantCheckProps) {
       </div>
 
       {!p.embed && !p.listing && a && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
           <div className="flex items-center gap-3">
             <div className="num font-display text-3xl">{dscr(a.dscrRatio)}</div>
             <span className={cx("rounded-full px-2.5 py-1 text-xs font-semibold", VERDICT_STYLE[a.verdict])}>{t.verdict[a.verdict]}</span>
@@ -346,7 +346,7 @@ function Results({ a, ctx }: { a: DealAnalysis; ctx: EngineContext }) {
       {best && (
         <div className="border-t border-line bg-paper/70 px-5 py-4" data-testid="what-to-change">
           <div className="text-xs font-semibold uppercase tracking-wider text-muted">{a.verdict === "BORDERLINE" ? "To look strong" : "What would change it"}</div>
-          <div className="mt-2 rounded-xl border border-accent-line bg-white p-3">
+          <div className="mt-2 rounded-xl border border-accent-line bg-surface p-3">
             <div className="text-xs font-semibold text-accent">Simplest path</div>
             <div className="font-semibold text-ink">{leverTitle(best)}</div>
             <div className="text-sm text-muted">{t.leverNote[best.lever](usd(best.cashCostCents))}</div>

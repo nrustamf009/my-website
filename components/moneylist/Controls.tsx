@@ -12,7 +12,7 @@ export function MarketRateForm({ current, canManage }: { current: number | null;
   return (
     <form action={action} className="mt-1">
       <div className="flex items-center gap-1.5">
-        <input name="marketRate" aria-label="Market rate (%)" defaultValue={shown} inputMode="decimal" className="num h-10 w-24 rounded-lg border border-line bg-white px-2 font-display text-2xl text-ink focus-accent" />
+        <input name="marketRate" aria-label="Market rate (%)" defaultValue={shown} inputMode="decimal" className="num h-10 w-24 rounded-lg border border-line bg-surface px-2 font-display text-2xl text-ink focus-accent" />
         <span className="font-display text-2xl text-ink">%</span>
         <Button size="sm" variant="secondary" disabled={pending}>{pending ? "…" : "Save"}</Button>
       </div>

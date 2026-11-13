@@ -32,7 +32,7 @@ export function DraftPanel({ loanId, initial, hasEmail, hasPhone }: { loanId: st
       <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
         <div className="flex rounded-lg bg-paper p-0.5 text-sm" role="tablist">
           {(["email", "sms"] as const).map((k) => (
-            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cx("rounded-md px-3 py-1.5 font-medium transition", tab === k ? "bg-white text-ink shadow-sm" : "text-muted")}>
+            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cx("rounded-md px-3 py-1.5 font-medium transition", tab === k ? "bg-surface text-ink shadow-sm" : "text-muted")}>
               {k === "email" ? "Email" : "Text"}
             </button>
           ))}

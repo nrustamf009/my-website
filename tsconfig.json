@@ -25,6 +25,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@design/*": [
+        "./src/design/*"
+      ],
+      "@design": [
+        "./src/design/index.ts"
       ]
     }
   },

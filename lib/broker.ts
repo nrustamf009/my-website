@@ -2,7 +2,7 @@ import type { Broker, DisclaimerVersion, User } from "@prisma/client";
 import { forBroker, prisma } from "@/lib/db";
 import { DEFAULT_MONEY_LIST_RULES, STATE_DEFAULTS, normalizeGrid, type EngineContext, type MoneyListRules, type StateDefault, type UsState } from "@/lib/dscr";
 import { DEFAULT_DISCLAIMER } from "@/lib/compliance/disclaimers";
-import { paletteFor } from "@/lib/brand/palette";
+import { getTheme, type ThemeId } from "@design";
 
 export function parseJson<T>(raw: string | null | undefined, fallback: T): T {
   if (!raw) return fallback;
@@ -65,6 +65,8 @@ export const notificationEmails = (b: Pick<Broker, "notificationEmails" | "email
 export interface PublicBrand {
   brokerId: string;
   slug: string;
+  /** Visual theme (src/design). Every public page, PDF and email follows it. */
+  theme: ThemeId;
   companyName: string;
   companyNmlsId: string;
   logoUrl: string | null;
@@ -82,10 +84,12 @@ export interface PublicBrand {
 }
 
 export function toPublicBrand(b: Broker, lo: User | null, disclaimer: DisclaimerVersion | null): PublicBrand {
-  const p = paletteFor(b.accentColor);
+  const th = getTheme(b.theme, b.accentColor);
+  const p = { accent: th.color.accent, accentText: th.color.accentText, onAccent: th.color.onAccent };
   return {
     brokerId: b.id,
     slug: b.slug,
+    theme: th.id,
     companyName: b.companyName,
     companyNmlsId: b.companyNmlsId,
     logoUrl: b.logoUrl,

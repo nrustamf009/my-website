@@ -1,31 +1,67 @@
 @import "tailwindcss";
+/* Theme tokens (generated). Values live only in src/design/; this file maps names. */
+@import "../src/design/theme.css";
+@import "../src/design/base.css";
 
-@theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
-  --color-ink: #17150f;
-  --color-ink-2: #3d3a33;
-  --color-muted: #6f6a60;
-  --color-line: #e6e2d9;
-  --color-paper: #faf8f3;
-  --color-card: #ffffff;
-  --color-good: #157a4a;
-  --color-good-soft: #e3f3ea;
-  --color-warn: #a15c07;
-  --color-warn-soft: #fbefd9;
-  --color-bad: #b42318;
-  --color-bad-soft: #fde8e6;
+@theme inline {
+  /* Semantic tokens (DESIGN.md §3.2) */
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --color-on-inverse-muted: var(--on-inverse-muted);
+  --color-inverse-rule: var(--inverse-rule);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-dim: var(--dim);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-warn: var(--warn);
+  --color-on-warn: var(--on-warn);
+  --color-warn-tint: var(--warn-tint);
+  --color-positive: var(--positive);
+  --color-positive-tint: var(--positive-tint);
+  --color-negative: var(--negative);
+  --color-negative-tint: var(--negative-tint);
+  --color-focus: var(--focus);
+
+  /* Legacy names (v2 UI), mapped onto the semantic tokens until each surface is migrated. */
+  --color-line: var(--rule);
+  --color-paper: var(--surface-alt);
+  --color-card: var(--surface);
+  --color-good: var(--positive);
+  --color-good-soft: var(--positive-tint);
+  --color-warn-soft: var(--warn-tint);
+  --color-bad: var(--negative);
+  --color-bad-soft: var(--negative-tint);
+
+  /* Radii and elevation follow the theme (maison/atelier are square, terminal is rounded). */
+  --radius-sm: var(--radius-badge);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-control);
+  --radius-xl: var(--radius-tile);
+  --radius-2xl: var(--radius-card);
+  --radius-3xl: var(--radius-card);
+  --shadow-xs: var(--shadow);
+  --shadow-sm: var(--shadow);
+  --shadow-md: var(--shadow);
+  --shadow-lg: var(--shadow);
 }
 
-:root {
-  /* Overridden per broker by paletteVars() (lib/brand/palette.ts), which guarantees AA contrast. */
-  --accent: #1f4e79;
-  --accent-ink: #ffffff;
-  --accent-text: #1f4e79;
-  --accent-soft: #e9edf2;
-  --accent-faint: #f4f6f8;
-  --accent-line: #b9c8d6;
-  --accent-deep: #173b5b;
+@utility font-display {
+  font-family: var(--font-display);
+}
+@utility font-sans {
+  font-family: var(--font-body);
+}
+@utility font-mono {
+  font-family: var(--font-mono);
 }
 
 html {
@@ -33,10 +69,9 @@ html {
 }
 
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
 }
 
 /* Grid/flex children must be allowed to shrink, or long truncated text widens the page on phones. */
@@ -48,44 +83,17 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.bg-accent { background-color: var(--accent); }
-.bg-accent-soft { background-color: var(--accent-soft); }
-.bg-accent-faint { background-color: var(--accent-faint); }
-.bg-accent-deep { background-color: var(--accent-deep); }
+/* Accent text always uses the contrast-checked accentText, never the raw fill color. */
 .text-accent { color: var(--accent-text); }
-.text-accent-deep { color: var(--accent-deep); }
-.bg-accent-line { background-color: var(--accent-line); }
-.text-on-accent { color: var(--accent-ink); }
-.border-accent { border-color: var(--accent); }
-.border-accent-line { border-color: var(--accent-line); }
-.ring-accent { --tw-ring-color: var(--accent); }
+/* Legacy accent helpers (v2 UI). */
+.bg-accent-soft,
+.bg-accent-faint { background-color: var(--accent-tint); }
+.bg-accent-deep { background-color: var(--accent-text); }
+.text-accent-deep { color: var(--accent-text); }
+.bg-accent-line { background-color: color-mix(in oklab, var(--accent) 35%, var(--bg)); }
+.border-accent-line { border-color: color-mix(in oklab, var(--accent) 35%, var(--bg)); }
 .fill-accent { fill: var(--accent); }
 .stroke-accent { stroke: var(--accent); }
-
-.focus-accent:focus-visible,
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--accent-text);
-  outline-offset: 2px;
-}
-
-input[type="range"].range-accent {
-  accent-color: var(--accent);
-}
-
-.grain {
-  background-image: radial-gradient(color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px);
-  background-size: 18px 18px;
-}
-
-@keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
-.animate-rise { animation: rise 0.35s ease-out both; }
 
 @media print {
   .no-print { display: none !important; }

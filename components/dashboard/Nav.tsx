@@ -44,7 +44,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
             href={it.href}
             className={cx(
               "flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition",
-              active ? "bg-white text-ink shadow-sm ring-1 ring-line" : "text-ink-2 hover:bg-black/5",
+              active ? "bg-surface text-ink shadow-sm ring-1 ring-line" : "text-ink-2 hover:bg-ink/5",
             )}
           >
             <span className={active ? "text-accent" : "text-muted"}><Icon name={it.icon} /></span>
@@ -73,7 +73,7 @@ export function MobileBar({ items, header, userLabel, signOut }: { items: NavIte
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-label="Menu"
-          className="relative inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink"
+          className="relative inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink"
         >
           {current?.label ?? "Menu"}
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">{open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
@@ -83,7 +83,7 @@ export function MobileBar({ items, header, userLabel, signOut }: { items: NavIte
       {open && (
         <div className="animate-rise border-t border-line pb-3 pt-2">
           <SideNav items={items} />
-          <div className="mx-3 mt-3 flex items-center justify-between rounded-lg bg-black/5 px-3 py-2 text-xs text-muted">
+          <div className="mx-3 mt-3 flex items-center justify-between rounded-lg bg-ink/5 px-3 py-2 text-xs text-muted">
             <span className="truncate">{userLabel}</span>
             <form action={signOut}><button className="font-medium text-ink">Sign out</button></form>
           </div>

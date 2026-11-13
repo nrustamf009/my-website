@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { PublicBrand } from "@/lib/broker";
-import { paletteVars } from "@/lib/brand/palette";
+import { ThemeScope } from "@design/ThemeScope";
 import { BrokerAvatar } from "@/components/brand/BrokerAvatar";
 import { BrokerFooter } from "./BrokerFooter";
 
@@ -8,8 +8,8 @@ import { BrokerFooter } from "./BrokerFooter";
 export function PublicShell({ brand, children, compact = false }: { brand: PublicBrand; children: ReactNode; compact?: boolean }) {
   const tel = brand.lo.phone?.replace(/[^\d+]/g, "");
   return (
-    <div className="flex min-h-screen flex-col" style={paletteVars(brand.accentColor) as React.CSSProperties}>
-      {brand.isDemo && !compact && <div className="bg-ink px-4 py-1.5 text-center text-xs text-white">Demo data · fictional broker for illustration</div>}
+    <ThemeScope theme={brand.theme} accent={brand.accentColor} paintRoot className="flex flex-col">
+      {brand.isDemo && !compact && <div className="bg-ink px-4 py-1.5 text-center text-xs text-page">Demo data · fictional broker for illustration</div>}
       {!compact && (
         <header className="sticky top-0 z-30 border-b border-line/80 bg-paper/90 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
@@ -37,7 +37,7 @@ export function PublicShell({ brand, children, compact = false }: { brand: Publi
       )}
       <main className="flex-1">{children}</main>
       <BrokerFooter brand={brand} compact={compact} />
-    </div>
+    </ThemeScope>
   );
 }
 

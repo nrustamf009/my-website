@@ -3,12 +3,13 @@ import type { ReactNode } from "react";
 import { MobileBar, SideNav, type NavItem } from "./Nav";
 import { signOutAction } from "@/lib/actions/auth";
 import { ProductMark } from "@/components/brand/Logo";
-import { paletteVars } from "@/lib/brand/palette";
+import { ThemeScope } from "@design/ThemeScope";
 
 export function Shell({
   items,
   header,
   banner,
+  theme,
   accent,
   userLabel,
   children,
@@ -16,12 +17,13 @@ export function Shell({
   items: NavItem[];
   header: ReactNode;
   banner?: ReactNode;
-  accent?: string;
+  theme: string;
+  accent?: string | null;
   userLabel: string;
   children: ReactNode;
 }) {
   return (
-    <div style={accent ? (paletteVars(accent) as React.CSSProperties) : undefined} className="min-h-screen">
+    <ThemeScope theme={theme} accent={accent} paintRoot>
       {banner}
       <MobileBar items={items} header={header} userLabel={userLabel} signOut={signOutAction} />
       <div className="md:flex">
@@ -40,6 +42,6 @@ export function Shell({
         </aside>
         <main className="min-w-0 flex-1 animate-rise px-4 py-6 sm:px-8 sm:py-8">{children}</main>
       </div>
-    </div>
+    </ThemeScope>
   );
 }

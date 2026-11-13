@@ -104,7 +104,7 @@ export function LeadForm(p: LeadFormProps) {
         {tel && (
           <div className="mt-4 flex justify-center gap-2">
             <a href={`tel:${tel}`} className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent">Call {p.loFirstName} now</a>
-            <a href={`sms:${tel}?&body=${encodeURIComponent(`Hi ${p.loFirstName}, I just ran a DSCR estimate and would like to talk.`)}`} className="inline-flex h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold text-ink">Text</a>
+            <a href={`sms:${tel}?&body=${encodeURIComponent(`Hi ${p.loFirstName}, I just ran a DSCR estimate and would like to talk.`)}`} className="inline-flex h-10 items-center rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink">Text</a>
           </div>
         )}
       </div>
@@ -112,7 +112,7 @@ export function LeadForm(p: LeadFormProps) {
   }
 
   const box = (name: string, text: React.ReactNode, required = false) => (
-    <label className={cx("flex items-start gap-2.5 rounded-xl border p-3 text-xs leading-relaxed text-ink-2", errors[name] ? "border-bad bg-bad-soft" : "border-line bg-white")}>
+    <label className={cx("flex items-start gap-2.5 rounded-xl border p-3 text-xs leading-relaxed text-ink-2", errors[name] ? "border-bad bg-bad-soft" : "border-line bg-surface")}>
       <input type="checkbox" name={name} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]" aria-required={required || undefined} />
       <span>{text}</span>
     </label>

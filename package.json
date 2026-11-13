@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "node scripts/prisma-provider.mjs && prisma generate && next build",
     "start": "next start",
-    "lint": "node scripts/lint.mjs",
+    "lint": "node scripts/lint.mjs && tsx scripts/design-css.ts --check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,7 +17,9 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "design:css": "tsx scripts/design-css.ts",
+    "design:gallery": "node scripts/design-gallery.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
@@ -37,6 +39,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.6",

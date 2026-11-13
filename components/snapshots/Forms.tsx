@@ -96,7 +96,7 @@ export function TemplatePicker({ value, onChange }: { value: "CLASSIC" | "MODERN
   return (
     <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Flyer template">
       {opts.map((o) => (
-        <button key={o.v} type="button" role="radio" aria-checked={value === o.v} onClick={() => onChange(o.v)} className={cx("rounded-xl border p-4 text-left transition", value === o.v ? "border-accent bg-accent-soft" : "border-line bg-white hover:border-ink/30")}>
+        <button key={o.v} type="button" role="radio" aria-checked={value === o.v} onClick={() => onChange(o.v)} className={cx("rounded-xl border p-4 text-left transition", value === o.v ? "border-accent bg-accent-soft" : "border-line bg-surface hover:border-ink/30")}>
           <div className="font-medium text-ink">{o.title}</div>
           <div className="text-sm text-muted">{o.body}</div>
         </button>

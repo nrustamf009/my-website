@@ -3,7 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import type { Broker, User } from "@prisma/client";
 import { saveBranding, saveLicensing, saveNotifications, saveProgram, saveWebhook, sendTestNotification, sendTestWebhook, type SettingsState } from "@/lib/actions/settings";
-import { contrast, paletteFor } from "@/lib/brand/palette";
+import { checkAccent, getThemeDefinition } from "@design";
 import { US_STATES, STATE_NAMES, type ProgramGrid } from "@/lib/dscr";
 import { dscr, pct, rate, usd } from "@/lib/format";
 import { Button, Card, CardHeader, Field, Input, Notice, Select, Textarea, cx } from "@/components/ui";
@@ -53,12 +53,12 @@ export function ImageInput({ name, initial, max = 400, label, round = false }: {
   }
   return (
     <div className="flex items-center gap-4">
-      <div className={cx("grid h-16 w-16 shrink-0 place-items-center overflow-hidden border border-line bg-white", round ? "rounded-full" : "rounded-xl")}>
+      <div className={cx("grid h-16 w-16 shrink-0 place-items-center overflow-hidden border border-line bg-surface", round ? "rounded-full" : "rounded-xl")}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {value ? <img src={value} alt="" className="h-full w-full object-contain" /> : <span className="text-xs text-muted">None</span>}
       </div>
       <div className="space-y-1 text-sm">
-        <label className="inline-flex cursor-pointer items-center rounded-lg border border-line bg-white px-3 py-1.5 font-medium hover:bg-paper">
+        <label className="inline-flex cursor-pointer items-center rounded-lg border border-line bg-surface px-3 py-1.5 font-medium hover:bg-paper">
           {label}
           <input type="file" accept="image/png,image/jpeg,image/svg+xml" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
         </label>
@@ -75,7 +75,8 @@ export function BrandingForm({ broker, step }: { broker: Broker; step?: number }
   const [color, setColor] = useState(broker.accentColor);
   const e = state.fieldErrors ?? {};
   const valid = /^#[0-9a-f]{6}$/i.test(color);
-  const p = paletteFor(valid ? color : "#1f4e79");
+  const def = getThemeDefinition(broker.theme);
+  const p = checkAccent(def.id, valid ? color : def.defaultAccent);
   return (
     <form action={action}>
       <Card>
@@ -83,17 +84,17 @@ export function BrandingForm({ broker, step }: { broker: Broker; step?: number }
         <div className="grid gap-5 p-5 sm:grid-cols-2">
           <div className="sm:col-span-2"><ImageInput name="logoUrl" initial={broker.logoUrl} label="Upload logo" /></div>
           <Field label="Company name" error={e.companyName}><Input name="companyName" defaultValue={broker.companyName} /></Field>
-          <Field label="Accent color" error={e.accentColor} hint={valid ? (p.adjusted ? `Contrast ${contrast(color, "#ffffff").toFixed(1)}:1 on white. Text and links will use a darker shade (${p.accentText}) to pass WCAG AA.` : "Passes WCAG AA as text on white.") : undefined}>
+          <Field label="Accent color" error={e.accentColor} hint={valid ? (p.ok ? `Text on accent ${p.ratios.onAccent}:1 · accent text on page ${p.ratios.accentTextOnBg}:1${p.accentText !== p.accent ? ` (text uses ${p.accentText})` : ""}` : p.reason) : undefined}>
             <div className="flex gap-2">
-              <input type="color" value={valid ? color : "#1f4e79"} onChange={(ev) => setColor(ev.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-line bg-white p-1" aria-label="Pick accent color" />
+              <input type="color" value={valid ? color : def.defaultAccent} onChange={(ev) => setColor(ev.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1" aria-label="Pick accent color" />
               <Input name="accentColor" value={color} onChange={(ev) => setColor(ev.target.value)} />
             </div>
           </Field>
           <div className="flex flex-wrap items-center gap-2 sm:col-span-2" aria-hidden>
             <span className="rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: p.accent, color: p.onAccent }}>Button</span>
-            <span className="rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: p.tint100, color: p.shade700 }}>Badge</span>
+            <span className="rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: p.accentTint, color: p.accentText }}>Badge</span>
             <span className="text-sm font-semibold underline" style={{ color: p.accentText }}>Link text</span>
-            {[p.tint50, p.tint100, p.tint200, p.accent, p.shade700].map((c) => <span key={c} className="h-6 w-6 rounded" style={{ background: c }} />)}
+            {def.presets.map((c) => <button key={c} type="button" aria-label={`Use preset ${c}`} onClick={() => setColor(c)} className="h-6 w-6 rounded border border-line" style={{ background: c }} />)}
           </div>
           <Field label="Public email" error={e.email}><Input name="email" type="email" defaultValue={broker.email} /></Field>
           <Field label="Main phone" error={e.phone}><Input name="phone" defaultValue={broker.phone ?? ""} /></Field>
@@ -267,7 +268,7 @@ export function WebhookForm({ broker, step }: { broker: Broker; step?: number })
         <div className="grid gap-4 p-5">
           <Field label="Webhook URL" error={e.webhookUrl}><Input name="webhookUrl" defaultValue={broker.webhookUrl ?? ""} placeholder="https://hooks.zapier.com/hooks/catch/…" /></Field>
           <div><TestButton run={sendTestWebhook} label="Send test event" /></div>
-          <p className="text-xs text-muted">Signing secret: <code className="rounded bg-black/5 px-1">{broker.webhookSecret.slice(0, 12)}…</code> (full secret and delivery log in Settings → Integrations). Verify with HMAC-SHA256 of the raw body against the <code>X-DSCR-Signature</code> header.</p>
+          <p className="text-xs text-muted">Signing secret: <code className="rounded bg-ink/5 px-1">{broker.webhookSecret.slice(0, 12)}…</code> (full secret and delivery log in Settings → Integrations). Verify with HMAC-SHA256 of the raw body against the <code>X-DSCR-Signature</code> header.</p>
         </div>
         <Bar pending={pending} step={step} state={state} label="Save webhook" />
       </Card>

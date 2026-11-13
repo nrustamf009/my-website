@@ -40,10 +40,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       </div>
       <form className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto]" method="get">
         {sp.status && <input type="hidden" name="status" value={sp.status} />}
-        <input name="q" defaultValue={sp.q ?? ""} placeholder="Search name, email, phone or address" aria-label="Search leads" className="h-10 rounded-lg border border-line bg-white px-3 text-sm" />
+        <input name="q" defaultValue={sp.q ?? ""} placeholder="Search name, email, phone or address" aria-label="Search leads" className="h-10 rounded-lg border border-line bg-surface px-3 text-sm" />
         <Select name="source" defaultValue={sp.source ?? ""} aria-label="Source"><option value="">All sources</option>{LEAD_SOURCES.map((s) => <option key={s} value={s}>{LEAD_SOURCE_LABEL[s]}</option>)}</Select>
         <Select name="owner" defaultValue={sp.owner ?? "all"} aria-label="Owner"><option value="all">Everyone</option><option value="me">Mine</option>{users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}</Select>
-        <button className="h-10 rounded-lg bg-ink px-4 text-sm font-medium text-white">Filter</button>
+        <button className="h-10 rounded-lg bg-ink px-4 text-sm font-medium text-page">Filter</button>
       </form>
       {leads.length === 0 ? (
         <EmptyState title={total ? "No leads match" : "No leads yet"} body={total ? "Try clearing a filter." : "Share your Instant Check link (Share & embed) or put a listing snapshot in front of a realtor's buyers."} action={!total ? <LinkButton href="/dashboard/share" variant="accent">Share & embed</LinkButton> : undefined} />
@@ -76,5 +76,5 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 }
 
 function pill(active: boolean) {
-  return cx("inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm", active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-2");
+  return cx("inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm", active ? "border-ink bg-ink text-page" : "border-line bg-surface text-ink-2");
 }

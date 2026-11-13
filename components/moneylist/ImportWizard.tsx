@@ -48,7 +48,7 @@ export function ImportWizard() {
   return (
     <div className="space-y-5">
       <label
-        className={cx("flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line bg-white/60 px-6 py-10 text-center transition hover:border-accent/50", pending && "opacity-60")}
+        className={cx("flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line bg-surface/60 px-6 py-10 text-center transition hover:border-accent/50", pending && "opacity-60")}
         onDragOver={(e) => e.preventDefault()}
         onDrop={async (e) => {
           e.preventDefault();
@@ -98,7 +98,7 @@ export function ImportWizard() {
               {preview.errorCount > 0 && <span className="rounded-full bg-bad-soft px-3 py-1 text-bad">{preview.errorCount} problem{preview.errorCount === 1 ? "" : "s"}</span>}
             </div>
             {preview.errors.length > 0 && (
-              <div className="mt-3 max-h-64 overflow-auto rounded-xl border border-bad/20 bg-white">
+              <div className="mt-3 max-h-64 overflow-auto rounded-xl border border-bad/20 bg-surface">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-bad-soft text-left text-xs uppercase tracking-wider text-bad">
                     <tr><th className="px-3 py-2">Row</th><th className="px-3 py-2">Field</th><th className="px-3 py-2">Value</th><th className="px-3 py-2">Fix</th></tr>
@@ -113,7 +113,7 @@ export function ImportWizard() {
               </div>
             )}
             {preview.sample.length > 0 && (
-              <ul className="mt-3 divide-y divide-line rounded-xl border border-line bg-white text-sm">
+              <ul className="mt-3 divide-y divide-line rounded-xl border border-line bg-surface text-sm">
                 {preview.sample.map((s, i) => (
                   <li key={i} className="flex flex-wrap justify-between gap-2 px-3 py-2">
                     <span className="font-medium">{s.borrowerName}</span>

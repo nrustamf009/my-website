@@ -32,10 +32,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white">
+      <section className="border-t border-line bg-surface">
         <div className="mx-auto grid max-w-6xl gap-px bg-line sm:grid-cols-2 lg:grid-cols-5">
           {modules.map((m) => (
-            <div key={m.n} className="bg-white p-6">
+            <div key={m.n} className="bg-surface p-6">
               <div className="num font-display text-3xl text-[#c9a24a]">{m.n}</div>
               <h3 className="mt-4 font-semibold text-ink">{m.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{m.body}</p>

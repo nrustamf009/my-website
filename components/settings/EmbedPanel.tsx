@@ -27,7 +27,7 @@ export function EmbedPanel({ slug, loSlug }: { slug: string; loSlug?: string | n
         ].map(([label, code]) => (
           <div key={label}>
             <div className="mb-1 flex items-center justify-between gap-2 text-sm font-medium text-ink-2">{label}<CopyButton text={code!} /></div>
-            <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-lg bg-ink p-3 text-xs text-white">{code}</pre>
+            <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-lg bg-ink p-3 text-xs text-page">{code}</pre>
           </div>
         ))}
         <div>

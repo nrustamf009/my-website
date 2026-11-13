@@ -27,7 +27,7 @@ async function reset() {
 
 async function main() {
   await reset();
-  const agency = await prisma.agency.create({ data: { name: "Northbeam Growth Partners", slug: "northbeam", accentColor: "#17150F" } });
+  const agency = await prisma.agency.create({ data: { name: "Northbeam Growth Partners", slug: "northbeam", accentColor: "#17150F", defaultTheme: "maison" } });
   const admin = await prisma.user.create({ data: { email: "admin@northbeam.example", name: "Alex Rivera", role: "AGENCY_ADMIN", agencyId: agency.id } });
 
   const brokers = [];
@@ -40,6 +40,7 @@ async function main() {
         features: JSON.stringify(ALL_FEATURES),
         companyName: d.companyName,
         companyNmlsId: d.companyNmlsId,
+        theme: d.theme,
         accentColor: d.accentColor,
         logoUrl: d.logoUrl,
         email: d.email,

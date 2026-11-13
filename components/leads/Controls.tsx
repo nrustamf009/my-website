@@ -20,7 +20,7 @@ export function StatusPicker({ id, status }: { id: string; status: string }) {
           aria-checked={value === s}
           disabled={pending}
           onClick={() => { setValue(s); start(async () => { await setLeadStatus(id, s as LeadStatus); router.refresh(); }); }}
-          className={cx("rounded-full border px-3 py-1.5 text-sm transition", value === s ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-2 hover:border-ink/30")}
+          className={cx("rounded-full border px-3 py-1.5 text-sm transition", value === s ? "border-ink bg-ink text-page" : "border-line bg-surface text-ink-2 hover:border-ink/30")}
         >
           {LEAD_STATUS_LABEL[s]}
         </button>

@@ -18,7 +18,7 @@ export default async function Integrations() {
       <Card>
         <CardHeader title="Webhook signing secret & delivery log" subtitle="Failed deliveries retry automatically (about 1 s, 5 s, 2 min, 10 min, 1 h, 6 h)." />
         <div className="flex flex-wrap items-center gap-2 px-5 py-4 text-sm">
-          <code className="rounded bg-black/5 px-2 py-1 text-xs">{broker.webhookSecret.slice(0, 12)}••••••••</code>
+          <code className="rounded bg-ink/5 px-2 py-1 text-xs">{broker.webhookSecret.slice(0, 12)}••••••••</code>
           <CopyButton text={broker.webhookSecret} label="Copy secret" />
           <form action={rotateWebhookSecret}><Button size="sm" variant="ghost">Rotate</Button></form>
         </div>

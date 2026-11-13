@@ -12,7 +12,7 @@ function EhoMark() {
 /** The ONE compliance footer for every public surface (pages, embeds). PDFs and emails mirror it. */
 export function BrokerFooter({ brand, compact = false }: { brand: PublicBrand; compact?: boolean }) {
   return (
-    <footer className={compact ? "px-1 py-4" : "mt-14 border-t border-line bg-white"} data-testid="broker-footer">
+    <footer className={compact ? "px-1 py-4" : "mt-14 border-t border-line bg-surface"} data-testid="broker-footer">
       <div className={compact ? "" : "mx-auto max-w-6xl px-4 py-8 sm:px-6"}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-3">

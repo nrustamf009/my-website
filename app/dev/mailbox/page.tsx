@@ -20,12 +20,12 @@ export default async function Mailbox({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-line bg-white px-5 py-3">
+      <header className="flex items-center justify-between border-b border-line bg-surface px-5 py-3">
         <div className="flex items-center gap-3"><ProductMark /><span className="rounded-full bg-warn-soft px-2 py-0.5 text-xs font-medium text-warn">Dev mailbox · mock email mode</span></div>
         <Link href="/login" className="text-sm text-muted hover:text-ink">Back to sign in</Link>
       </header>
       <div className="grid min-h-0 flex-1 md:grid-cols-[340px_1fr]">
-        <aside className="min-h-0 overflow-y-auto border-r border-line bg-white">
+        <aside className="min-h-0 overflow-y-auto border-r border-line bg-surface">
           {emails.length === 0 && <p className="p-5 text-sm text-muted">No emails yet.</p>}
           {emails.map((e) => (
             <Link key={e.id} href={`/dev/mailbox?id=${e.id}`} className={cx("block border-b border-line px-4 py-3 hover:bg-paper", selected?.id === e.id && "bg-paper")}>
@@ -38,7 +38,7 @@ export default async function Mailbox({ searchParams }: { searchParams: Promise<
         <section className="flex min-h-0 flex-col bg-paper">
           {selected ? (
             <>
-              <div className="border-b border-line bg-white px-5 py-3">
+              <div className="border-b border-line bg-surface px-5 py-3">
                 <div className="text-sm font-semibold">{selected.subject}</div>
                 <div className="text-xs text-muted">To: {selected.to}</div>
                 {attachments.map((a) => (
@@ -47,7 +47,7 @@ export default async function Mailbox({ searchParams }: { searchParams: Promise<
                   </a>
                 ))}
               </div>
-              <iframe title="Email preview" srcDoc={selected.html} className="min-h-0 w-full flex-1 bg-white" sandbox="allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" />
+              <iframe title="Email preview" srcDoc={selected.html} className="min-h-0 w-full flex-1 bg-surface" sandbox="allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" />
             </>
           ) : (
             <div className="p-10 text-sm text-muted">Select an email.</div>

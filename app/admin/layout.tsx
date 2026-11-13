@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth/session";
 import { Shell } from "@/components/dashboard/Shell";
+import { ADMIN_THEME } from "@design";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { session, agency } = await requireAdmin();
   return (
     <Shell
-      accent={agency.accentColor}
+      theme={ADMIN_THEME.id}
+      accent={ADMIN_THEME.accent}
       userLabel={session.user.email}
       items={[
         { href: "/admin", label: "Overview", icon: "chart" },

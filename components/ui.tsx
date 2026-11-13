@@ -6,11 +6,11 @@ export const cx = clsx;
 
 type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-ink text-white hover:bg-ink-2 shadow-sm",
+  primary: "bg-ink text-page hover:bg-ink-2 shadow-sm",
   accent: "bg-accent text-on-accent hover:brightness-110 shadow-sm",
-  secondary: "bg-white text-ink border border-line hover:bg-paper",
-  ghost: "text-ink-2 hover:bg-black/5",
-  danger: "bg-white text-bad border border-bad/30 hover:bg-bad-soft",
+  secondary: "bg-surface text-ink border border-line hover:bg-paper",
+  ghost: "text-ink-2 hover:bg-ink/5",
+  danger: "bg-surface text-bad border border-bad/30 hover:bg-bad-soft",
 };
 const sizes = { sm: "h-8 px-3 text-sm", md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-base" };
 
@@ -56,7 +56,7 @@ export function Label({ className, ...props }: ComponentProps<"label">) {
 }
 
 const inputBase =
-  "block w-full rounded-lg border border-line bg-white px-3 text-[15px] text-ink placeholder:text-muted/70 shadow-[inset_0_1px_0_rgba(0,0,0,0.02)] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-line)]";
+  "block w-full rounded-lg border border-line bg-surface px-3 text-[15px] text-ink placeholder:text-muted/70 transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40";
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cx(inputBase, "h-11", className)} {...props} />;
@@ -99,7 +99,7 @@ export function Field({ label, hint, error, children, htmlFor }: { label: string
 
 type Tone = "neutral" | "good" | "warn" | "bad" | "accent";
 const tones: Record<Tone, string> = {
-  neutral: "bg-black/5 text-ink-2",
+  neutral: "bg-ink/5 text-ink-2",
   good: "bg-good-soft text-good",
   warn: "bg-warn-soft text-warn",
   bad: "bg-bad-soft text-bad",
@@ -134,7 +134,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
 
 export function EmptyState({ title, body, action }: { title: string; body: ReactNode; action?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-line bg-white/60 px-6 py-12 text-center">
+    <div className="rounded-2xl border border-dashed border-line bg-surface/60 px-6 py-12 text-center">
       <h3 className="font-display text-xl text-ink">{title}</h3>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted">{body}</p>
       {action && <div className="mt-5 flex justify-center">{action}</div>}

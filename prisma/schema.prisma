@@ -71,6 +71,7 @@ model Agency {
   slug        String     @unique
   logoUrl     String?
   accentColor String     @default("#17150F")
+  defaultTheme String    @default("maison") // maison | terminal | atelier (src/design ThemeId)
   brokers     Broker[]
   users       User[]
   audits      AuditLog[]
@@ -88,7 +89,9 @@ model Broker {
   companyName         String
   companyNmlsId       String
   logoUrl             String?
-  accentColor         String   @default("#1F4E79")
+  theme               String   @default("maison") // maison | terminal | atelier (src/design ThemeId)
+  accentColor         String   @default("#7D5E22")
+  logoOnDarkUrl       String?
   phone               String?
   email               String
   websiteUrl          String?

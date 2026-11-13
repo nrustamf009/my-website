@@ -32,7 +32,7 @@ export function MoneyInput({ value, onChange, id, name, placeholder, suffix, cla
           onChange(cents);
         }}
         className={cx(
-          "num block h-12 w-full rounded-xl border bg-white pl-7 pr-3 text-[17px] text-ink transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-line)]",
+          "num block h-12 w-full rounded-xl border bg-surface pl-7 pr-3 text-[17px] text-ink transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40",
           suffix && "pr-14",
           invalid ? "border-bad" : "border-line",
         )}

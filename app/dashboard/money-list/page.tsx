@@ -71,7 +71,7 @@ export default async function MoneyListPage({ searchParams }: { searchParams: Pr
           <form method="get" className="mt-2 flex items-center gap-2 text-xs text-muted">
             {filter && <input type="hidden" name="t" value={filter} />}
             <label htmlFor="whatif">What if</label>
-            <input id="whatif" name="rate" defaultValue={sp.rate ?? ""} placeholder="6.50" inputMode="decimal" className="h-7 w-16 rounded-md border border-line bg-white px-2 text-ink" />
+            <input id="whatif" name="rate" defaultValue={sp.rate ?? ""} placeholder="6.50" inputMode="decimal" className="h-7 w-16 rounded-md border border-line bg-surface px-2 text-ink" />
             <span>%</span>
             <button className="rounded-md px-1.5 py-0.5 text-accent hover:bg-accent-soft" type="submit">Try</button>
           </form>
@@ -158,5 +158,5 @@ export default async function MoneyListPage({ searchParams }: { searchParams: Pr
 }
 
 function chip(active: boolean) {
-  return cx("inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition", active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink-2 hover:border-ink/30");
+  return cx("inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition", active ? "border-ink bg-ink text-page" : "border-line bg-surface text-ink-2 hover:border-ink/30");
 }

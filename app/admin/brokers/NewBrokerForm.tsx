@@ -2,14 +2,15 @@
 
 import { useActionState, useState } from "react";
 import { createBroker, type FormState } from "@/lib/actions/admin";
-import { contrast } from "@/lib/brand/palette";
-import { Button, Card, CardHeader, Field, Input, Notice } from "@/components/ui";
+import { THEMES, checkAccent, themeIds, type ThemeId } from "@design";
+import { Button, Card, CardHeader, Field, Input, Notice, Select } from "@/components/ui";
 
-export function NewBrokerForm() {
+export function NewBrokerForm({ defaultTheme }: { defaultTheme: ThemeId }) {
   const [state, action, pending] = useActionState<FormState, FormData>(createBroker, {});
-  const [color, setColor] = useState("#1F4E79");
+  const [theme, setTheme] = useState<ThemeId>(defaultTheme);
+  const [color, setColor] = useState(THEMES[defaultTheme].defaultAccent);
   const e = state.fieldErrors ?? {};
-  const aa = /^#[0-9a-f]{6}$/i.test(color) ? contrast(color, "#ffffff") : 0;
+  const check = /^#[0-9a-f]{6}$/i.test(color) ? checkAccent(theme, color) : null;
   return (
     <form action={action} className="space-y-6">
       {state.error && <Notice tone="bad">{state.error}</Notice>}
@@ -22,9 +23,14 @@ export function NewBrokerForm() {
           <Field label="Phone"><Input name="phone" placeholder="(555) 010-0000" /></Field>
           <Field label="Licensed states" hint="Comma-separated, e.g. TX, FL"><Input name="licensedStates" /></Field>
           <Field label="Public URL slug" hint="Pages live at /b/your-slug" error={e.slug}><Input name="slug" placeholder="auto from company name" /></Field>
-          <Field label="Accent color" hint={aa && aa < 4.5 ? `Light color (contrast ${aa.toFixed(1)}:1). Text will use an automatically darkened shade.` : "Passes WCAG AA as text on white."} error={e.accentColor}>
+          <Field label="Theme" hint={THEMES[theme].tagline}>
+            <Select name="theme" value={theme} onChange={(ev) => { const t = ev.target.value as ThemeId; setTheme(t); setColor(THEMES[t].defaultAccent); }}>
+              {themeIds.map((t) => <option key={t} value={t}>{THEMES[t].name}</option>)}
+            </Select>
+          </Field>
+          <Field label="Accent color" hint={check ? (check.ok ? `Text on accent ${check.ratios.onAccent}:1 · passes WCAG AA` : check.reason) : undefined} error={e.accentColor}>
             <div className="flex gap-2">
-              <input type="color" value={color} onChange={(ev) => setColor(ev.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-line bg-white p-1" aria-label="Pick color" />
+              <input type="color" value={color} onChange={(ev) => setColor(ev.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1" aria-label="Pick color" />
               <Input name="accentColor" value={color} onChange={(ev) => setColor(ev.target.value)} />
             </div>
           </Field>

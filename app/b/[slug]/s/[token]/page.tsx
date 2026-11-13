@@ -71,8 +71,8 @@ export default async function PublicScenario({ params }: Props) {
           </ol>
           <div className="mt-4 flex flex-wrap gap-2">
             {tel && <a href={`tel:${tel}`} className="inline-flex h-11 items-center rounded-full bg-accent px-5 text-sm font-semibold text-on-accent">Call {first}</a>}
-            {tel && <a href={`sms:${tel}`} className="inline-flex h-11 items-center rounded-full border border-line bg-white px-5 text-sm font-semibold text-ink">Text</a>}
-            <a href={`/api/public/${slug}/s/${token}/pdf`} className="inline-flex h-11 items-center rounded-full border border-line bg-white px-5 text-sm font-semibold text-ink" data-testid="scenario-pdf">Download PDF</a>
+            {tel && <a href={`sms:${tel}`} className="inline-flex h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink">Text</a>}
+            <a href={`/api/public/${slug}/s/${token}/pdf`} className="inline-flex h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink" data-testid="scenario-pdf">Download PDF</a>
           </div>
         </div>
         <details className="rounded-2xl border border-line bg-card p-5">

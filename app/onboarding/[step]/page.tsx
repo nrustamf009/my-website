@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireBroker } from "@/lib/auth/session";
 import { engineContext, licensedStates, notificationEmails } from "@/lib/broker";
-import { paletteVars } from "@/lib/brand/palette";
+import { ThemeScope } from "@design/ThemeScope";
 import { finishOnboarding } from "@/lib/actions/settings";
 import { ProductMark } from "@/components/brand/Logo";
 import { Button, Card, cx } from "@/components/ui";
@@ -19,7 +19,7 @@ export default async function Onboarding({ params }: { params: Promise<{ step: s
   if (!Number.isInteger(n) || n < 1 || n > 6) notFound();
   const { broker, user } = await requireBroker({ manage: true, onboarding: true });
   return (
-    <div className="min-h-screen bg-paper" style={paletteVars(broker.accentColor) as React.CSSProperties}>
+    <ThemeScope theme={broker.theme} accent={broker.accentColor} paintRoot>
       <header className="flex items-center justify-between px-5 py-4"><ProductMark /><Link href="/dashboard" className="text-sm text-muted hover:text-ink">Skip for now</Link></header>
       <main className="mx-auto max-w-3xl px-4 pb-16">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Setup · about 10 minutes</p>
@@ -49,6 +49,6 @@ export default async function Onboarding({ params }: { params: Promise<{ step: s
           </div>
         )}
       </main>
-    </div>
+    </ThemeScope>
   );
 }

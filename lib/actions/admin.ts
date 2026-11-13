@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
+import { THEME_IDS, checkAccent, isThemeId } from "@design";
 import { prisma, forBroker } from "@/lib/db";
 import { requireAdmin, signImpersonation, verifyImpersonation, IMPERSONATE_COOKIE } from "@/lib/auth/session";
 import { auth } from "@/lib/auth/config";
@@ -45,7 +46,8 @@ const BrokerInput = z.object({
   companyNmlsId: z.string().trim().regex(/^\d{3,10}$/, "Company NMLS ID should be 3–10 digits"),
   email: z.email("Enter a valid email"),
   phone: z.string().trim().optional(),
-  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a hex color like #1F4E79"),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a 6-digit hex color (for example, the one from your brand guide)"),
+  theme: z.enum(THEME_IDS).optional(),
   licensedStates: z.string().trim().optional(),
   loName: z.string().trim().min(2, "Enter the loan officer's name"),
   loEmail: z.email("Enter a valid login email"),
@@ -62,6 +64,9 @@ export async function createBroker(_prev: FormState, formData: FormData): Promis
   if (await prisma.broker.findUnique({ where: { slug } })) return { fieldErrors: { slug: "That URL slug is taken" } };
   const loEmail = d.loEmail.toLowerCase();
   if (await prisma.user.findUnique({ where: { email: loEmail } })) return { fieldErrors: { loEmail: "A user with this email already exists" } };
+  const theme = d.theme ?? (isThemeId(agency.defaultTheme) ? agency.defaultTheme : "maison");
+  const acc = checkAccent(theme, d.accentColor);
+  if (!acc.ok) return { fieldErrors: { accentColor: acc.reason ?? "Pick a color with more contrast." } };
   const states = (d.licensedStates ?? "").toUpperCase().split(/[\s,]+/).filter((s) => /^[A-Z]{2}$/.test(s));
 
   const broker = await prisma.broker.create({
@@ -74,6 +79,7 @@ export async function createBroker(_prev: FormState, formData: FormData): Promis
       companyNmlsId: d.companyNmlsId,
       email: d.email,
       phone: d.phone || null,
+      theme,
       accentColor: d.accentColor,
       licensedStates: JSON.stringify(states),
       notificationEmails: JSON.stringify([loEmail]),

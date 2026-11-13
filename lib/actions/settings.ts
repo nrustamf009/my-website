@@ -13,6 +13,7 @@ import { queueWebhook, deliverNow, redeliver as redeliverDelivery } from "@/lib/
 import { sendBrandEmail } from "@/lib/emails";
 import { sendBrokerInvite } from "@/lib/invite";
 import { emit } from "@/lib/events";
+import { checkAccent } from "@design";
 
 export type SettingsState = { ok?: boolean; error?: string; fieldErrors?: Record<string, string>; message?: string };
 const fe = (e: z.ZodError) => Object.fromEntries(e.issues.map((i) => [String(i.path[0]), i.message]));
@@ -35,7 +36,7 @@ export async function saveBranding(_p: SettingsState, fd: FormData): Promise<Set
   const parsed = z
     .object({
       companyName: z.string().trim().min(2, "Enter the company name").max(100),
-      accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a hex color like #1F4E79"),
+      accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a 6-digit hex color (for example, the one from your brand guide)"),
       logoUrl: z.string().max(360_000, "Logo must be under 256 KB").refine((v) => v === "" || /^data:image\/(png|jpeg|svg\+xml);base64,/.test(v) || /^https:\/\//.test(v), "Use a PNG, JPG or SVG"),
       websiteUrl: optionalUrl,
       privacyPolicyUrl: optionalUrl,
@@ -44,6 +45,8 @@ export async function saveBranding(_p: SettingsState, fd: FormData): Promise<Set
     })
     .safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { fieldErrors: fe(parsed.error) };
+  const acc = checkAccent(broker.theme, parsed.data.accentColor);
+  if (!acc.ok) return { fieldErrors: { accentColor: acc.reason ?? "Pick a color with more contrast." } };
   const d = parsed.data;
   await prisma.broker.update({ where: { id: broker.id }, data: { ...d, logoUrl: d.logoUrl || null, websiteUrl: d.websiteUrl || null, privacyPolicyUrl: d.privacyPolicyUrl || null, phone: d.phone || null } });
   return finish(broker.id, fd, broker.onboardingStep);

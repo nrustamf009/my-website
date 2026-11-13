@@ -144,7 +144,7 @@ export function ScenarioBuilder({ ctx, initial, feesDefaultCents }: { ctx: Engin
         <h2 className="mb-3 font-display text-xl">Property</h2>
         <div className="mb-3 flex gap-1 rounded-xl bg-paper p-1 text-sm" role="tablist">
           {(["PURCHASE", "RATE_TERM", "CASH_OUT"] as const).map((m) => (
-            <button key={m} type="button" role="tab" aria-selected={f.mode === m} onClick={() => set("mode", m)} className={cx("flex-1 rounded-lg px-3 py-2 font-medium transition", f.mode === m ? "bg-white text-ink shadow-sm" : "text-muted")}>{t.mode[m]}</button>
+            <button key={m} type="button" role="tab" aria-selected={f.mode === m} onClick={() => set("mode", m)} className={cx("flex-1 rounded-lg px-3 py-2 font-medium transition", f.mode === m ? "bg-surface text-ink shadow-sm" : "text-muted")}>{t.mode[m]}</button>
           ))}
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
