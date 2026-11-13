@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atelier — Money List dashboard</title>
+
+</head>
+<body>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B0B0B}a:hover{color:#55554F}
+</style>
+
+<div style="min-height: 100vh; box-sizing: border-box; background: #FFFFFF; color: #0B0B0B; font-family: 'Inter Tight', 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column">
+
+  <nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 32px; padding: 0 40px; min-height: 60px; border-bottom: 2px solid #0B0B0B">
+    <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">Alder &amp; Vane Capital</span>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; font-size: 15px">
+      <a href="#overview" style="min-height: 44px; display: flex; align-items: center; text-decoration: none">Overview</a>
+      <a href="#leads" style="min-height: 44px; display: flex; align-items: center; text-decoration: none">Leads</a>
+      <a href="#scenarios" style="min-height: 44px; display: flex; align-items: center; text-decoration: none">Scenario Sheets</a>
+      <a href="#money" aria-current="page" style="min-height: 44px; display: flex; align-items: center; font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px">Money List</a>
+      <a href="#snapshots" style="min-height: 44px; display: flex; align-items: center; text-decoration: none">Listing Snapshots</a>
+      <a href="#notes" style="min-height: 44px; display: flex; align-items: center; text-decoration: none">Notes to Scenario</a>
+      <a href="#settings" style="min-height: 44px; display: flex; align-items: center; text-decoration: none">Settings</a>
+    </div>
+    <span style="font-size: 14px; color: #55554F">Dana Whitlock</span>
+  </nav>
+
+  <section style="padding: 36px 40px 32px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 28px 40px">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 28px">
+      <span style="margin-left: -10px; font-size: 208px; font-weight: 700; line-height: 156px; letter-spacing: -0.07em; color: #2233E6">11</span>
+      <div style="display: flex; flex-direction: column; gap: 8px; max-width: 420px; padding-bottom: 4px">
+        <h1 style="margin: 0; font-size: 44px; font-weight: 700; line-height: 44px; letter-spacing: -0.045em">clients worth a call today</h1>
+        <span style="font-size: 15px; line-height: 22px; color: #2A2A27">Found among your 60 closed loans on November 12, 2026, ranked by estimated benefit to the client.</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 20px; border: 2px solid #0B0B0B; padding: 8px 16px">
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; line-height: 16px; color: #55554F">Market rate, set by you</span>
+          <span style="font-size: 24px; font-weight: 700; line-height: 28px; letter-spacing: -0.03em">6.875%</span>
+        </div>
+        <a href="#rate" style="min-height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 600; text-underline-offset: 4px">Edit</a>
+      </div>
+      <button type="button" style="min-height: 64px; padding: 0 22px; background: #0B0B0B; border: 0; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Send my digest now</button>
+    </div>
+  </section>
+
+  <div style="padding: 0 40px 40px; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+
+    <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="overflow-x: auto">
+        <table style="width: 100%; min-width: 720px; border-collapse: collapse; font-size: 15px; line-height: 20px">
+          <thead>
+            <tr style="height: 40px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em">
+              <th scope="col" style="text-align: left; padding: 0 16px 0 0; font-weight: 700; border-top: 2px solid #0B0B0B; border-bottom: 2px solid #0B0B0B">Client</th>
+              <th scope="col" style="text-align: left; padding: 0 16px; font-weight: 700; border-top: 2px solid #0B0B0B; border-bottom: 2px solid #0B0B0B">Loan today</th>
+              <th scope="col" style="text-align: left; padding: 0 16px; font-weight: 700; border-top: 2px solid #0B0B0B; border-bottom: 2px solid #0B0B0B">Why now</th>
+              <th scope="col" style="text-align: right; padding: 0 16px; font-weight: 700; border-top: 2px solid #0B0B0B; border-bottom: 2px solid #0B0B0B">Est. benefit</th>
+              <th scope="col" style="text-align: left; padding: 0 0 0 16px; font-weight: 700; border-top: 2px solid #0B0B0B; border-bottom: 2px solid #0B0B0B">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #0B0B0B"><div style="display: flex; align-items: center; gap: 8px; font-weight: 700"><span style="width: 10px; height: 10px; background: #2233E6; flex-shrink: 0"></span>Priya Venkataraman</div><div style="font-size: 13px; line-height: 18px; color: #55554F">77 Dock St #4, Savannah, GA</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">8.875%</div><div style="font-size: 13px; line-height: 18px; color: #55554F">$528,500 balance</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">Prepay ended October 22</div><div style="font-size: 13px; line-height: 18px; color: #55554F">Rate is 2.000 above market</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B; text-align: right"><div style="font-size: 28px; font-weight: 700; line-height: 30px; letter-spacing: -0.04em; color: #2233E6">$13,845</div><div style="font-size: 13px; line-height: 18px; color: #55554F">36 months · even in month 20</div></td>
+              <td style="padding: 14px 0 14px 16px; border-bottom: 1px solid #0B0B0B; font-size: 14px">Not contacted</td>
+            </tr>
+            <tr>
+              <td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 700">Rafael Castellanos</div><div style="font-size: 13px; line-height: 18px; color: #55554F">418 Linden Ave, Dayton, OH</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">8.625%</div><div style="font-size: 13px; line-height: 18px; color: #55554F">$305,200 balance</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">Prepay ends in 27 days</div><div style="font-size: 13px; line-height: 18px; color: #55554F">Rate is 1.750 above market</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B; text-align: right"><div style="font-size: 28px; font-weight: 700; line-height: 30px; letter-spacing: -0.04em">$6,036</div><div style="font-size: 13px; line-height: 18px; color: #55554F">36 months · even in month 22</div></td>
+              <td style="padding: 14px 0 14px 16px; border-bottom: 1px solid #0B0B0B; font-size: 14px">Not contacted</td>
+            </tr>
+            <tr>
+              <td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 700">Marcus Oyelaran</div><div style="font-size: 13px; line-height: 18px; color: #55554F">2209 Pruitt Rd, Memphis, TN</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">8.250%</div><div style="font-size: 13px; line-height: 18px; color: #55554F">$184,300 balance</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">12-month seasoning reached</div><div style="font-size: 13px; line-height: 18px; color: #55554F">Cash-out can use appraised value</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B; text-align: right"><div style="font-size: 28px; font-weight: 700; line-height: 30px; letter-spacing: -0.04em">$39,200</div><div style="font-size: 13px; line-height: 18px; color: #55554F">equity in reach · 4% prepay applies</div></td>
+              <td style="padding: 14px 0 14px 16px; border-bottom: 1px solid #0B0B0B; font-size: 14px; color: #55554F">Snoozed to Dec 15</td>
+            </tr>
+            <tr>
+              <td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 700">Lucinda Abara</div><div style="font-size: 13px; line-height: 18px; color: #55554F">31 Harbor Row, Chattanooga, TN</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">5.750% · 5/6 ARM</div><div style="font-size: 13px; line-height: 18px; color: #55554F">$396,400 balance</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">ARM resets in 5 months</div><div style="font-size: 13px; line-height: 18px; color: #55554F">First adjustment April 2027</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B; text-align: right"><div style="font-size: 20px; font-weight: 700; line-height: 30px; letter-spacing: -0.02em">Review</div><div style="font-size: 13px; line-height: 18px; color: #55554F">payment may change at reset</div></td>
+              <td style="padding: 14px 0 14px 16px; border-bottom: 1px solid #0B0B0B; font-size: 14px">Not contacted</td>
+            </tr>
+            <tr>
+              <td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 700">Helen and Tomas Brandt</div><div style="font-size: 13px; line-height: 18px; color: #55554F">915 Sycamore Ct, Indianapolis, IN</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">8.000%</div><div style="font-size: 13px; line-height: 18px; color: #55554F">$258,900 balance</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B"><div style="font-weight: 600">Rate is 1.125 above market</div><div style="font-size: 13px; line-height: 18px; color: #55554F">Prepay ends February 14, 2027</div></td>
+              <td style="padding: 14px 16px; border-bottom: 1px solid #0B0B0B; text-align: right"><div style="font-size: 28px; font-weight: 700; line-height: 30px; letter-spacing: -0.04em">$729</div><div style="font-size: 13px; line-height: 18px; color: #55554F">if they wait · a loss of $1,860 today</div></td>
+              <td style="padding: 14px 0 14px 16px; border-bottom: 1px solid #0B0B0B; font-size: 14px; color: #55554F">Contacted Nov 6</td>
+            </tr>
+            <tr>
+              <td style="padding: 14px 16px 14px 0; border-bottom: 2px solid #0B0B0B"><div style="font-weight: 700">Dmitri Kessler</div><div style="font-size: 13px; line-height: 18px; color: #55554F">1206 Alder Bend, Columbus, OH</div></td>
+              <td style="padding: 14px 16px; border-bottom: 2px solid #0B0B0B"><div style="font-weight: 600">7.250%</div><div style="font-size: 13px; line-height: 18px; color: #55554F">$342,000 balance</div></td>
+              <td style="padding: 14px 16px; border-bottom: 2px solid #0B0B0B"><div style="font-weight: 600">One-year anniversary</div><div style="font-size: 13px; line-height: 18px; color: #55554F">Closed November 18, 2025</div></td>
+              <td style="padding: 14px 16px; border-bottom: 2px solid #0B0B0B; text-align: right"><div style="font-size: 20px; font-weight: 700; line-height: 30px; letter-spacing: -0.02em">Check in</div><div style="font-size: 13px; line-height: 18px; color: #55554F">next purchase conversation</div></td>
+              <td style="padding: 14px 0 14px 16px; border-bottom: 2px solid #0B0B0B; font-size: 14px">Not contacted</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <span style="font-size: 13px; line-height: 18px; color: #55554F">Showing 6 of 11. Benefit is estimated savings over the period, less closing costs and any prepayment charge still owed.</span>
+    </div>
+
+    <aside aria-label="Message draft" style="flex: 1 1 340px; box-sizing: border-box; background: #F2F2EF; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; line-height: 18px; color: #2233E6">Draft message</span>
+          <span style="font-size: 26px; font-weight: 700; line-height: 28px; letter-spacing: -0.035em">To Priya Venkataraman</span>
+        </div>
+      </div>
+      <div style="display: flex; border: 2px solid #0B0B0B; align-self: flex-start">
+        <button type="button" aria-pressed="true" style="height: 44px; padding: 0 20px; background: #0B0B0B; border: 0; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Email</button>
+        <button type="button" aria-pressed="false" style="height: 44px; padding: 0 20px; background: transparent; border: 0; color: #0B0B0B; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Text length</button>
+      </div>
+      <div style="background: #FFFFFF; padding: 20px; display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 23px; color: #2A2A27">
+        <p style="margin: 0">Hi Priya,</p>
+        <p style="margin: 0; text-wrap: pretty">The prepayment charge on your Dock St loan ended on October 22, and investor rates have come down since you closed at 8.875%.</p>
+        <p style="margin: 0; text-wrap: pretty">On today's numbers a refinance could lower your payment by about $825 a month, and the closing costs would be earned back in roughly 20 months.</p>
+        <p style="margin: 0; text-wrap: pretty">Would it help if I ran exact figures for you? No obligation either way.</p>
+        <p style="margin: 0">Dana</p>
+        <p style="margin: 0; padding-top: 12px; border-top: 1px solid #0B0B0B; font-size: 12px; line-height: 17px; color: #55554F; text-wrap: pretty">Dana Whitlock, NMLS #1234567 · Alder &amp; Vane Capital, NMLS #7654321. An estimate, not a commitment to lend. Equal Housing Opportunity.</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+        <button type="button" style="height: 52px; padding: 0 28px; background: #2233E6; border: 0; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Copy</button>
+        <button type="button" style="height: 52px; padding: 0 20px; background: transparent; border: 2px solid #0B0B0B; color: #0B0B0B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Mark contacted</button>
+        <a href="#snooze" style="min-height: 44px; display: flex; align-items: center; padding: 0 8px; font-size: 15px; font-weight: 500; text-underline-offset: 4px">Snooze</a>
+      </div>
+      <span style="font-size: 12px; line-height: 17px; color: #55554F">Written in your tone: warm and direct. Every figure comes from the calculation engine; the footer is added automatically.</span>
+    </aside>
+  </div>
+</div>
+
+
+</body>
+</html>

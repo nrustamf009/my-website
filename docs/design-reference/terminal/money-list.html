@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Terminal — Money List dashboard</title>
+
+</head>
+<body>
+
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#E9EDF0}a:hover{color:#FFFFFF}
+</style>
+
+<div style="min-height: 100vh; box-sizing: border-box; background: #0A0C0F; color: #E9EDF0; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap">
+
+  <nav aria-label="Main" style="flex: 1 1 208px; box-sizing: border-box; border-right: 1px solid #232A32; padding: 20px 12px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 32px; height: 32px; box-sizing: border-box; border-radius: 6px; background: #E9EDF0; color: #0A0C0F; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 500; line-height: 1">AV</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 14px; font-weight: 600; line-height: 18px">Alder &amp; Vane</span>
+        <span style="font-size: 12px; line-height: 16px; color: #8D97A1">Dana Whitlock</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <a href="#overview" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #C5CCD3; text-decoration: none">Overview</a>
+      <a href="#leads" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #C5CCD3; text-decoration: none">Leads</a>
+      <a href="#scenarios" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #C5CCD3; text-decoration: none">Scenario Sheets</a>
+      <a href="#money" aria-current="page" style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #E9EDF0; background: #1A2129; text-decoration: none"><span>Money List</span><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 500; padding: 1px 7px; border-radius: 4px; background: #5FE3B3; color: #0A0C0F">11</span></a>
+      <a href="#snapshots" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #C5CCD3; text-decoration: none">Listing Snapshots</a>
+      <a href="#notes" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #C5CCD3; text-decoration: none">Notes to Scenario</a>
+      <a href="#settings" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #C5CCD3; text-decoration: none">Settings</a>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 24px 28px 32px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; line-height: 16px; color: #8D97A1">MONEY LIST · NOV 12, 2026</span>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 600; line-height: 32px; letter-spacing: -0.015em">Opportunities in your closed loans</h1>
+      </div>
+      <button type="button" style="height: 44px; padding: 0 16px; background: #12161B; border: 1px solid #3A434D; border-radius: 8px; color: #E9EDF0; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Send my digest now</button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px">
+      <div style="background: #12161B; border: 1px solid #232A32; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; line-height: 16px; color: #8D97A1">OPPORTUNITIES</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 28px; font-weight: 500; line-height: 34px">11</span>
+        <span style="font-size: 12px; line-height: 16px; color: #8D97A1">of 60 closed loans</span>
+      </div>
+      <div style="background: #12161B; border: 1px solid #232A32; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; line-height: 16px; color: #8D97A1">NOT YET CONTACTED</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 28px; font-weight: 500; line-height: 34px">8</span>
+        <span style="font-size: 12px; line-height: 16px; color: #8D97A1">2 contacted · 1 snoozed</span>
+      </div>
+      <div style="background: #12161B; border: 1px solid #232A32; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; line-height: 16px; color: #8D97A1">MARKET RATE · SET BY YOU</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 28px; font-weight: 500; line-height: 34px">6.875%</span>
+          <span style="font-size: 12px; line-height: 16px; color: #8D97A1">Updated Nov 10</span>
+        </div>
+        <a href="#rate" style="min-height: 44px; display: flex; align-items: center; font-size: 13px; font-weight: 600; text-underline-offset: 4px">Edit</a>
+      </div>
+      <div style="background: #12161B; border: 1px solid #232A32; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; line-height: 16px; color: #8D97A1">RATE-GAP TRIGGER</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 28px; font-weight: 500; line-height: 34px">≥ 0.750</span>
+        <span style="font-size: 12px; line-height: 16px; color: #8D97A1">points above market</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+
+      <div style="flex: 999 1 640px; min-width: 0; background: #12161B; border: 1px solid #232A32; border-radius: 12px; overflow: hidden">
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 760px; border-collapse: collapse; font-size: 13px; line-height: 18px">
+            <thead>
+              <tr style="height: 40px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; color: #8D97A1">
+                <th scope="col" style="text-align: left; padding: 0 14px; font-weight: 400">CLIENT</th>
+                <th scope="col" style="text-align: right; padding: 0 10px; font-weight: 400">RATE</th>
+                <th scope="col" style="text-align: right; padding: 0 10px; font-weight: 400">BALANCE</th>
+                <th scope="col" style="text-align: left; padding: 0 10px; font-weight: 400">TRIGGERS</th>
+                <th scope="col" style="text-align: right; padding: 0 10px; font-weight: 400">NET BENEFIT</th>
+                <th scope="col" style="text-align: right; padding: 0 10px; font-weight: 400">EVEN</th>
+                <th scope="col" style="text-align: left; padding: 0 14px 0 10px; font-weight: 400">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background: #1A2129">
+                <td style="padding: 12px 14px; border-top: 1px solid #232A32"><div style="font-size: 14px; font-weight: 600; line-height: 20px">Priya Venkataraman</div><div style="font-size: 12px; line-height: 16px; color: #8D97A1">77 Dock St #4, Savannah GA</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">8.875%</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$528,500</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32"><div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px"><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">PREPAY ENDED</span><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">RATE +2.000</span></div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 500; color: #5FE3B3">$13,845</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #C5CCD3">mo 20</td>
+                <td style="padding: 12px 14px 12px 10px; border-top: 1px solid #232A32"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #E9EDF0"></span>New</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 14px; border-top: 1px solid #232A32"><div style="font-size: 14px; font-weight: 600; line-height: 20px">Rafael Castellanos</div><div style="font-size: 12px; line-height: 16px; color: #8D97A1">418 Linden Ave, Dayton OH</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">8.625%</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$305,200</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32"><div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px"><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">PREPAY 27D</span><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">RATE +1.750</span></div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 500">$6,036</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #C5CCD3">mo 22</td>
+                <td style="padding: 12px 14px 12px 10px; border-top: 1px solid #232A32"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #E9EDF0"></span>New</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 14px; border-top: 1px solid #232A32"><div style="font-size: 14px; font-weight: 600; line-height: 20px">Marcus Oyelaran</div><div style="font-size: 12px; line-height: 16px; color: #8D97A1">2209 Pruitt Rd, Memphis TN</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">8.250%</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$184,300</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32"><div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px"><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">SEASONED 12M</span><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">PREPAY 4%</span></div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right"><div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 500; line-height: 20px">$39,200</div><div style="font-size: 11px; line-height: 14px; color: #8D97A1">equity in reach</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #8D97A1">n/a</td>
+                <td style="padding: 12px 14px 12px 10px; border-top: 1px solid #232A32"><span style="display: flex; align-items: center; gap: 8px; color: #8D97A1"><span style="width: 8px; height: 8px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid #8D97A1"></span>Snoozed to Dec 15</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 14px; border-top: 1px solid #232A32"><div style="font-size: 14px; font-weight: 600; line-height: 20px">Lucinda Abara</div><div style="font-size: 12px; line-height: 16px; color: #8D97A1">31 Harbor Row, Chattanooga TN</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">5.750%</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$396,400</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32"><div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px"><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">ARM RESET 5M</span></div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right"><div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; line-height: 20px">Review</div><div style="font-size: 11px; line-height: 14px; color: #8D97A1">resets Apr 2027</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #8D97A1">n/a</td>
+                <td style="padding: 12px 14px 12px 10px; border-top: 1px solid #232A32"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #E9EDF0"></span>New</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 14px; border-top: 1px solid #232A32"><div style="font-size: 14px; font-weight: 600; line-height: 20px">Helen and Tomas Brandt</div><div style="font-size: 12px; line-height: 16px; color: #8D97A1">915 Sycamore Ct, Indianapolis IN</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">8.000%</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$258,900</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32"><div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px"><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">RATE +1.125</span><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">PREPAY TO FEB 14</span></div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right"><div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 500; line-height: 20px">$729</div><div style="font-size: 11px; line-height: 14px; color: #8D97A1">if they wait · −$1,860 now</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #C5CCD3">mo 33</td>
+                <td style="padding: 12px 14px 12px 10px; border-top: 1px solid #232A32"><span style="display: flex; align-items: center; gap: 8px; color: #8D97A1"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5A646E"></span>Contacted Nov 6</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 14px; border-top: 1px solid #232A32"><div style="font-size: 14px; font-weight: 600; line-height: 20px">Dmitri Kessler</div><div style="font-size: 12px; line-height: 16px; color: #8D97A1">1206 Alder Bend, Columbus OH</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">7.250%</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$342,000</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32"><div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px"><span style="padding: 2px 7px; border: 1px solid #5A646E; border-radius: 4px">ANNIVERSARY NOV 18</span></div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right"><div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; line-height: 20px">Check in</div><div style="font-size: 11px; line-height: 14px; color: #8D97A1">next purchase</div></td>
+                <td style="padding: 12px 10px; border-top: 1px solid #232A32; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #8D97A1">n/a</td>
+                <td style="padding: 12px 14px 12px 10px; border-top: 1px solid #232A32"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #E9EDF0"></span>New</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding: 12px 14px; border-top: 1px solid #232A32; font-size: 12px; line-height: 17px; color: #8D97A1">Showing 6 of 11, ranked by net benefit. Net benefit is 36 months of estimated savings, less closing costs and any prepayment charge still owed.</div>
+      </div>
+
+      <aside aria-label="Message draft" style="flex: 1 1 320px; box-sizing: border-box; background: #12161B; border: 1px solid #232A32; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; line-height: 16px; color: #8D97A1">DRAFT</span>
+            <span style="font-size: 16px; font-weight: 600; line-height: 22px">To Priya Venkataraman</span>
+          </div>
+          <div style="display: flex; padding: 3px; background: #0A0C0F; border: 1px solid #232A32; border-radius: 8px">
+            <button type="button" aria-pressed="true" style="height: 38px; padding: 0 12px; background: #232A32; border: 0; border-radius: 6px; color: #E9EDF0; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer">Email</button>
+            <button type="button" aria-pressed="false" style="height: 38px; padding: 0 12px; background: transparent; border: 0; border-radius: 6px; color: #C5CCD3; font-family: inherit; font-size: 13px; cursor: pointer">Text</button>
+          </div>
+        </div>
+        <div style="background: #0A0C0F; border: 1px solid #232A32; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 21px; color: #D5DBE0">
+          <p style="margin: 0">Hi Priya,</p>
+          <p style="margin: 0; text-wrap: pretty">The prepayment charge on your Dock St loan ended on October 22, and investor rates have come down since you closed at 8.875%.</p>
+          <p style="margin: 0; text-wrap: pretty">On today's numbers a refinance could lower your payment by about $825 a month, and the closing costs would be earned back in roughly 20 months.</p>
+          <p style="margin: 0; text-wrap: pretty">Would it help if I ran exact figures for you? No obligation either way.</p>
+          <p style="margin: 0">Dana</p>
+          <p style="margin: 0; padding-top: 10px; border-top: 1px solid #232A32; font-size: 12px; line-height: 17px; color: #8D97A1; text-wrap: pretty">Dana Whitlock, NMLS #1234567 · Alder &amp; Vane Capital, NMLS #7654321. An estimate, not a commitment to lend. Equal Housing Opportunity.</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <button type="button" style="flex-grow: 1; height: 44px; padding: 0 16px; background: #5FE3B3; border: 0; border-radius: 8px; color: #0A0C0F; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Copy</button>
+          <button type="button" style="flex-grow: 1; height: 44px; padding: 0 16px; background: transparent; border: 1px solid #3A434D; border-radius: 8px; color: #E9EDF0; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Mark contacted</button>
+          <button type="button" style="height: 44px; padding: 0 16px; background: transparent; border: 1px solid #3A434D; border-radius: 8px; color: #E9EDF0; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Snooze</button>
+        </div>
+        <span style="font-size: 12px; line-height: 17px; color: #8D97A1">Tone: warm and direct. Figures come from the calculation engine; the footer is added automatically.</span>
+      </aside>
+    </div>
+  </main>
+</div>
+
+
+</body>
+</html>
