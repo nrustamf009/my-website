@@ -240,6 +240,7 @@ model Scenario {
   propertyType         String           @default("SFR")
   use                  String           @default("LTR")
   valueCents           Int
+  currentBalanceCents  Int?
   rentCents            Int
   taxesAnnualCents     Int
   insuranceAnnualCents Int

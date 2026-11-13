@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { analyzeDeal, FICO_BUCKETS, PREPAYS, PRODUCTS, PROPERTY_TYPES, US_STATES, STATE_NAMES, type DealAnalysis, type EngineContext } from "@/lib/dscr";
+import { analyzeDeal, estimateEscrow, FICO_BUCKETS, PREPAYS, PRODUCTS, PROPERTY_TYPES, US_STATES, STATE_NAMES, type DealAnalysis, type EngineContext, type UsState } from "@/lib/dscr";
 import { isAnalyzable, isSubmittable, toDealInput, type CheckForm } from "@/lib/check/form";
 import { normalizeAddress } from "@/lib/providers/address";
 import { dscr, pct, points, rate, usd } from "@/lib/format";
@@ -116,6 +116,8 @@ export function InstantCheck(p: InstantCheckProps) {
   }, [a, p.slug, p.listing]);
 
   const getForm = () => (isSubmittable(f) ? f : null);
+  const estValue = purchase ? f.priceCents : f.valueCents;
+  const est = f.state && estValue && (US_STATES as string[]).includes(f.state) ? estimateEscrow(f.state as UsState, estValue, p.ctx) : null;
 
   return (
     <div className={cx("grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8", !p.embed && !p.listing && "pb-24 lg:pb-0")}>
@@ -217,12 +219,12 @@ export function InstantCheck(p: InstantCheckProps) {
           <div className={cx("grid gap-4 sm:grid-cols-2", !advanced && "hidden")}>
             <div>
               <Label htmlFor="ic-tax">Property taxes per year</Label>
-              <MoneyInput id="ic-tax" name="taxesAnnual" value={f.taxesAnnualCents ?? null} onChange={(v) => { set("taxesAnnualCents", v); setTaxSource("manual"); }} placeholder={a ? usd(a.taxesMonthlyCents * 12).replace("$", "") : "est. from state"} />
+              <MoneyInput id="ic-tax" name="taxesAnnual" value={f.taxesAnnualCents ?? null} onChange={(v) => { set("taxesAnnualCents", v); setTaxSource("manual"); }} placeholder={est ? usd(est.taxesAnnualCents).replace("$", "") : "est. from state"} />
               <p className="mt-1 text-xs text-muted">{taxSource === "record" ? "From public property records" : taxSource === "manual" ? "Your number" : `Estimated for ${f.state ? STATE_NAMES[f.state as keyof typeof STATE_NAMES] : "the state"}`}</p>
             </div>
             <div>
               <Label htmlFor="ic-ins">Insurance per year</Label>
-              <MoneyInput id="ic-ins" name="insuranceAnnual" value={f.insuranceAnnualCents ?? null} onChange={(v) => set("insuranceAnnualCents", v)} placeholder={a ? usd(a.insuranceMonthlyCents * 12).replace("$", "") : "est. from state"} />
+              <MoneyInput id="ic-ins" name="insuranceAnnual" value={f.insuranceAnnualCents ?? null} onChange={(v) => set("insuranceAnnualCents", v)} placeholder={est ? usd(est.insuranceAnnualCents).replace("$", "") : "est. from state"} />
             </div>
             <div><Label htmlFor="ic-hoa">HOA per month</Label><MoneyInput id="ic-hoa" name="hoaMonthly" value={f.hoaMonthlyCents ?? null} onChange={(v) => set("hoaMonthlyCents", v ?? 0)} placeholder="0" /></div>
             <div>

@@ -26,3 +26,11 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **A scan is counted in the browser** (a beacon after the page renders), once per visitor per listing per 6 hours, and never for the broker's own staff. — Link-preview bots and prefetches don't run JavaScript, so they don't inflate realtor stats.
 - **RESPA language is a co-marketing statement, not legal advice**: "independent companies; no fee or thing of value is paid for referrals; you may choose any lender." Shown on the flyer, the investor page and the realtor stats email.
 - **Modern template drops the rows already shown in its DSCR cards** to stay on one Letter page.
+
+## Scenario Sheet
+- **Option rates default to the program grid, re-priced on the option's own DSCR bucket** (`priceScenarioOption`, ≤3 passes). The LO types the lender's real rate to override; "Price from grid" restores it.
+- **Default options: A 30-yr fixed (recommended), B 30-yr with 10-yr IO, C 30-yr fixed with 1 point** (same prepay), so C is a true buydown with a visible breakeven vs A.
+- **Refinance cash to the investor is shown only when the LO enters the payoff**; without it, refis show cash to close (prepaids + points), as before.
+- **Opens are tracked per page load** (visit key) with visible-time pings every 15 s; first open and any open 24 h+ after the previous visit notify the owning LO by email and send `scenario.viewed`. Staff previews are never tracked.
+- **The investor can switch their pick**; each pick notifies again. The question is optional and capped at 1,000 characters.
+- **Expired links (30 days) show an "ask your LO" page; re-sharing an expired scenario restarts the 30 days.** Revoked links can't be re-shared; duplicate instead.

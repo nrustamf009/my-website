@@ -266,6 +266,20 @@ describe("G19 scenario option", () => {
   });
 });
 
+describe("G19b cash-out scenario with a known payoff", () => {
+  it("$500,000 value, $250,000 payoff, $375,000 loan: closing 3.5% = 13,125; prepaids 2,400 + 1,500; cash to borrower 375,000 − 250,000 − 13,125 − 3,900 = $107,975", () => {
+    const r = computeScenarioOption(
+      { mode: "CASH_OUT", valueCents: 500_000_00, rentCents: 3_400_00, taxesAnnualCents: 6_000_00, insuranceAnnualCents: 2_400_00, hoaMonthlyCents: 0, currentBalanceCents: 250_000_00 },
+      { product: "FIXED30", loanAmountCents: 375_000_00, rateMilli: 7_250, pointsRatio: 0, feesCents: 0, prepay: "5-4-3-2-1" },
+      DEFAULT_GRID,
+    );
+    expect(r.closingCostsCents).toBe(13_125_00);
+    expect(r.cashToBorrowerCents).toBe(107_975_00);
+    expect(r.cashToCloseCents).toBe(0);
+    expect(r.ltvRatio).toBe(7_500);
+  });
+});
+
 describe("G20 solvers", () => {
   it("min rent for DSCR 1.00 at the re-priced rate equals PITIA at 7.375% ($2,672.03)", () => {
     expect(minRentForDscr(purchase(), ctx, 10_000)).toBe(2_672_03);
