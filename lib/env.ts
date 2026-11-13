@@ -29,12 +29,6 @@ export const env = {
   get transcribeKey() {
     return e("TRANSCRIBE_API_KEY");
   },
-  get transcribeBaseUrl() {
-    return (e("TRANSCRIBE_BASE_URL") ?? "https://api.openai.com/v1").replace(/\/$/, "");
-  },
-  get transcribeModel() {
-    return e("TRANSCRIBE_MODEL") ?? "whisper-1";
-  },
   get blobToken() {
     return e("BLOB_READ_WRITE_TOKEN");
   },

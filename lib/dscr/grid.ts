@@ -4,6 +4,15 @@ import { roundHalfUp, type Milli, type Ratio } from "./units";
 
 export const FICO_BUCKET_MIN: Record<FicoBucket, number> = { "740+": 740, "700-739": 700, "680-699": 680, "660-679": 660, "<660": 0 };
 
+/** Credit score → pricing bucket. */
+export function ficoBucketOf(score: number): FicoBucket {
+  if (score >= 740) return "740+";
+  if (score >= 700) return "700-739";
+  if (score >= 680) return "680-699";
+  if (score >= 660) return "660-679";
+  return "<660";
+}
+
 export function dscrBucketOf(dscr: Ratio | null): DscrBucket {
   if (dscr === null) return ">=1.20";
   if (dscr >= 12_000) return ">=1.20";

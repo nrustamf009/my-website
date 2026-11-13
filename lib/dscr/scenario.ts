@@ -137,3 +137,9 @@ export function priceScenarioOption(p: ScenarioPropertyInput, o: Omit<ScenarioOp
 export function loanForLtv(valueCents: Cents, ltvRatio: Ratio): Cents {
   return applyRatio(valueCents, ltvRatio);
 }
+
+/** Starting loan for a new scenario: purchase from the down payment (default 25%), refis at 75% (cash-out) or 70% LTV; clamped to 50–80% LTV. */
+export function defaultScenarioLoan(mode: Mode, valueCents: Cents, downPaymentRatio: Ratio | null): Cents {
+  const ltv = mode === "PURCHASE" ? 10_000 - (downPaymentRatio ?? 2_500) : mode === "CASH_OUT" ? 7_500 : 7_000;
+  return applyRatio(valueCents, Math.max(5_000, Math.min(8_000, ltv)));
+}

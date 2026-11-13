@@ -16,3 +16,4 @@ Broker: That's helpful. I'll run a 3-2-1 prepay option and a no-prepay option so
 Investor: Perfect. When can I see them?
 Broker: I'll send you options by Thursday. I'll need your LLC docs and the two leases.
 Investor: Sounds good. Email is marcus.bellweather@example.com.
+

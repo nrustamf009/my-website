@@ -67,3 +67,8 @@ export function monthly(annualCents: Cents): Cents {
 export const dollars = (d: number): Cents => roundHalfUp(d * 100);
 export const pctRatio = (pct: number): Ratio => roundHalfUp(pct * 100);
 export const pctMilli = (pct: number): Milli => roundHalfUp(pct * 1000);
+
+/** Monthly → annual (exact; used when notes state monthly taxes or insurance). */
+export function annual(monthlyCents: Cents): Cents {
+  return monthlyCents * 12;
+}

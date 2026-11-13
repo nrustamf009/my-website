@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { computeScenarioOption, estimateEscrow, FICO_BUCKETS, loanForLtv, PREPAYS, priceScenarioOption, PRODUCTS, PROPERTY_TYPES, ratioCeil, US_STATES, type EngineContext, type FicoBucket, type Mode, type Prepay, type Product, type ScenarioPropertyInput, type UsState } from "@/lib/dscr";
+import { computeScenarioOption, defaultScenarioLoan, estimateEscrow, FICO_BUCKETS, PREPAYS, priceScenarioOption, PRODUCTS, PROPERTY_TYPES, ratioCeil, US_STATES, type EngineContext, type FicoBucket, type Mode, type Prepay, type Product, type ScenarioPropertyInput, type UsState } from "@/lib/dscr";
 import { saveScenario } from "@/lib/actions/scenarios";
 import type { ScenarioInput } from "@/lib/scenario-schema";
 import { normalizeAddress } from "@/lib/providers/address";
@@ -68,8 +68,7 @@ export function ScenarioBuilder({ ctx, initial, feesDefaultCents }: { ctx: Engin
   // Seed three options the first time the property is complete.
   const seed = () => {
     if (!property) return;
-    const ltv = f.mode === "PURCHASE" ? 10_000 - (f.downRatio ?? 2_500) : f.mode === "CASH_OUT" ? 7_500 : 7_000;
-    const loan = loanForLtv(property.valueCents, ltv);
+    const loan = defaultScenarioLoan(f.mode, property.valueCents, f.downRatio ?? null);
     const mk = (product: Product, prepay: Prepay, pointsRatio: number, recommended: boolean): BuilderOption => ({
       product,
       prepay,

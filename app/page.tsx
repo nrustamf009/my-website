@@ -7,7 +7,7 @@ const modules = [
   { n: "02", title: "Listing Snapshot", body: "A one-page co-branded PDF for realtors with payment, DSCR at 20% and 25% down, and a QR code that turns open-house traffic into tagged leads." },
   { n: "03", title: "Money List", body: "Upload closed loans and see who is ready for a refi: expired prepay, seasoning reached, or rates well below their note. AI drafts the outreach." },
   { n: "04", title: "Scenario Sheet", body: "Compare two or three loan options on one mobile-friendly page. Know the moment the investor opens it, and when they pick an option." },
-  { n: "05", title: "Call-to-Scenario", body: "Upload a call or paste notes. Get the deal parameters, a draft scenario, the document checklist and a follow-up email." },
+  { n: "05", title: "Notes-to-Scenario", body: "Paste call notes, an email or a transcript. Review the deal, then get a draft scenario, the document checklist and a follow-up email." },
 ];
 
 export default function Home() {

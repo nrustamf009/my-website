@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MockAi } from "@/lib/providers/ai/mock";
 import { SAMPLE_NOTES } from "@/lib/notes/samples";
-import { dscrChecklist } from "@/lib/notes/checklist";
+import { checklistFactsOf, dscrChecklist } from "@/lib/notes/checklist";
 import { NotesExtractionSchema } from "@/lib/providers/ai/schemas";
 import { checkDraft } from "@/lib/providers/ai/guard";
 
@@ -15,7 +15,7 @@ describe("mock AI extraction on sample notes", () => {
     expect(x.deal.state).toBe("FL");
     expect(x.entity).toBe("LLC");
     expect(x.objections.length).toBeGreaterThan(0);
-    const list = dscrChecklist(x);
+    const list = dscrChecklist(checklistFactsOf(x));
     expect(list.some((l) => l.includes("rent roll"))).toBe(true);
     expect(list.some((l) => l.includes("purchase contract"))).toBe(true);
   });
@@ -27,7 +27,7 @@ describe("mock AI extraction on sample notes", () => {
     expect(x.deal.propertyAddress).toContain("9021 Desert Willow Trl");
     expect(x.deal.prepayPreference).toBe("5-4-3-2-1");
     expect(x.deal.wantsInterestOnly).toBe(false);
-    expect(dscrChecklist(x).some((l) => l.includes("seasoning"))).toBe(true);
+    expect(dscrChecklist(checklistFactsOf(x)).some((l) => l.includes("seasoning"))).toBe(true);
   });
 });
 

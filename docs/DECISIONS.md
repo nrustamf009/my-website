@@ -34,3 +34,11 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **Opens are tracked per page load** (visit key) with visible-time pings every 15 s; first open and any open 24 h+ after the previous visit notify the owning LO by email and send `scenario.viewed`. Staff previews are never tracked.
 - **The investor can switch their pick**; each pick notifies again. The question is optional and capped at 1,000 characters.
 - **Expired links (30 days) show an "ask your LO" page; re-sharing an expired scenario restarts the 30 days.** Revoked links can't be re-shared; duplicate instead.
+
+## Notes-to-Scenario
+- **No audio in v1.** `TranscriptionProvider` exists as a stub behind `TRANSCRIPTION_ENABLED=true`; it throws. Paste-only keeps us out of call-recording consent rules and storage.
+- **Extraction writes nothing.** The review step is client state; the DB is touched only on "Create". The pasted text is kept only if the LO ticks the box, and can be deleted later. Extraction is rate-limited (40/hour per user) and never logged.
+- **Stated monthly taxes/insurance are annualized by the engine** (`annual()`); blanks fall back to the state table.
+- **Option structures follow the conversation**: prefers amortizing → fixed, fixed + 1 point, 7/6 ARM; wants IO → IO, fixed, IO + 1 point; otherwise fixed, IO, fixed + 1 point. Loan from the stated down payment (default 25%), clamped to 50–80% LTV.
+- **The investor becomes a lead with source NOTES** (deduped by email/phone). No web consent is recorded for these; it's the LO's own contact.
+- **Follow-up email footer (NMLS IDs, EHO, estimate language) is appended by code**, same as Money List drafts.
