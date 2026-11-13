@@ -57,6 +57,6 @@ export const maison: ThemeDefinition = {
     shadow: "none",
   },
   variants: { meter: "linear", verdict: "italic", options: "stacked", shell: "sidebar-dark", iconStroke: 1.5, monogram: "outline-square", numberedSections: false },
-  pdf: { paper: "#FFFFFF", ink: "#10241D", muted: "#4A5A53", rule: "#D5D9D1", panel: "#F3F4F0", band: "#10241D", onBand: "#F3F4F0" },
+  pdf: { paper: "#FFFFFF", ink: "#10241D", muted: "#4A5A53", rule: "#D5D9D1", panel: "#F3F4F0", band: "#10241D", onBand: "#F3F4F0", headerBand: false, compareBlock: false },
   email: { dark: false },
 };

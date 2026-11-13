@@ -57,6 +57,6 @@ export const terminal: ThemeDefinition = {
     shadow: "none",
   },
   variants: { meter: "gauge", verdict: "chip", options: "table", shell: "sidebar-bordered", iconStroke: 1.5, monogram: "solid-rounded", numberedSections: false },
-  pdf: { paper: "#FFFFFF", ink: "#0A0C0F", muted: "#5A646E", rule: "#C9CFD5", panel: "#EEF0F2", band: "#0A0C0F", onBand: "#FFFFFF" },
+  pdf: { paper: "#FFFFFF", ink: "#0A0C0F", muted: "#5A646E", rule: "#C9CFD5", panel: "#EEF0F2", band: "#0A0C0F", onBand: "#FFFFFF", headerBand: true, compareBlock: false },
   email: { dark: true },
 };

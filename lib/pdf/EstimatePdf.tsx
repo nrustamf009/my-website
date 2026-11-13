@@ -3,14 +3,15 @@ import type { PublicBrand } from "@/lib/broker";
 import { analyzeDeal, type DealAnalysis, type DealInput, type EngineContext, type Verdict } from "@/lib/dscr";
 import { dscr, pct, points, rate, shortDate, usd } from "@/lib/format";
 import { t } from "@/lib/strings/en";
-import { C, Kv, PdfFooter, PdfHeader, registerFonts, s } from "./common";
+import { Kv, PdfFooter, PdfHeader, withPdfTheme, registerFonts, usePdf } from "./common";
 
-const VC: Record<Verdict, { bg: string; fg: string }> = {
+type Pal = ReturnType<typeof usePdf>["C"];
+const vcOf = (C: Pal): Record<Verdict, { bg: string; fg: string }> => ({
   STRONG: { bg: C.goodSoft, fg: C.good },
   BORDERLINE: { bg: C.warnSoft, fg: C.warn },
   NEEDS_ADJUSTMENT: { bg: C.warnSoft, fg: C.warn },
   NOT_ELIGIBLE: { bg: C.badSoft, fg: C.bad },
-};
+});
 
 export function leverText(w: DealAnalysis["whatToChange"][number]) {
   const to = w.lever === "BUYDOWN" ? points(w.to) : usd(w.to);
@@ -18,6 +19,8 @@ export function leverText(w: DealAnalysis["whatToChange"][number]) {
 }
 
 function EstimateDoc({ brand, address, investor, a, compare }: { brand: PublicBrand; address: string; investor: string; a: DealAnalysis; compare: DealAnalysis[] }) {
+  const { C, s } = usePdf();
+  const VC = vcOf(C);
   const vc = VC[a.verdict];
   const purchase = a.mode === "PURCHASE";
   return (
@@ -28,7 +31,7 @@ function EstimateDoc({ brand, address, investor, a, compare }: { brand: PublicBr
         <View style={[s.row, { gap: 8, marginBottom: 12 }]}>
           <View style={[s.card, { flex: 1.1, backgroundColor: vc.bg, borderColor: vc.bg }]}>
             <Text style={[s.eyebrow, { color: vc.fg }]}>Estimated DSCR</Text>
-            <Text style={{ fontFamily: "Fraunces", fontSize: 28, color: vc.fg, lineHeight: 1.15 }}>{dscr(a.dscrRatio)}</Text>
+            <Text style={[s.numeral, { fontSize: 28, color: vc.fg, lineHeight: 1.15 }]}>{dscr(a.dscrRatio)}</Text>
             <Text style={{ fontWeight: 700, color: vc.fg }}>{t.verdict[a.verdict]}</Text>
             <Text style={{ fontSize: 7.5, color: vc.fg, marginTop: 2 }}>{t.verdictHelp[a.verdict]}</Text>
           </View>
@@ -78,7 +81,7 @@ function EstimateDoc({ brand, address, investor, a, compare }: { brand: PublicBr
             const x = leverText(w);
             return (
               <View key={i} style={[s.row, { marginBottom: 4 }]}>
-                <Text style={{ width: 14, color: brand.accentText, fontWeight: 700 }}>{i + 1}.</Text>
+                <Text style={{ width: 14, color: C.accentText, fontWeight: 700 }}>{i + 1}.</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontWeight: 600 }}>{x.title} → {t.verdict[w.reaches]}</Text>
                   <Text style={s.muted}>{x.note}</Text>
@@ -133,5 +136,5 @@ export async function renderEstimatePdf(p: { brand: PublicBrand; ctx: EngineCont
           .sort((x, y) => x - y)
           .map((d) => analyzeDeal({ ...p.input, downPaymentCents: undefined, downPaymentRatio: d }, p.ctx, { solve: false }))
       : [];
-  return renderToBuffer(<EstimateDoc brand={p.brand} address={p.address} investor={p.investor} a={a} compare={compare} />);
+  return withPdfTheme(p.brand.theme, p.brand.accentColor, () => renderToBuffer(<EstimateDoc brand={p.brand} address={p.address} investor={p.investor} a={a} compare={compare} />));
 }

@@ -4,7 +4,8 @@ import type { PublicBrand } from "@/lib/broker";
 import { listingSnapshot, type EngineContext, type ListingColumn, type ListingInput, type Verdict } from "@/lib/dscr";
 import { dscr, pct, rate, usd } from "@/lib/format";
 import { t } from "@/lib/strings/en";
-import { C, PdfFooter, PdfLogo, registerFonts, s } from "./common";
+import { PdfFooter, PdfLogo, withPdfTheme, registerFonts, usePdf } from "./common";
+import { getPdfTheme } from "@design/pdf/theme";
 
 export interface SnapshotPdfProps {
   brand: PublicBrand;
@@ -18,10 +19,12 @@ export interface SnapshotPdfProps {
   url: string;
 }
 
-const VC: Record<Verdict, string> = { STRONG: C.good, BORDERLINE: C.warn, NEEDS_ADJUSTMENT: C.warn, NOT_ELIGIBLE: C.bad };
+const vcOf = (C: ReturnType<typeof usePdf>["C"]): Record<Verdict, string> => ({ STRONG: C.good, BORDERLINE: C.warn, NEEDS_ADJUSTMENT: C.warn, NOT_ELIGIBLE: C.bad });
 const isRaster = (u: string | null) => !!u && /^data:image\/(png|jpe?g);base64,|^https?:\/\/.+\.(png|jpe?g)(\?|$)/i.test(u);
 
 function Table({ cols, accent, compact = false }: { cols: ListingColumn[]; accent: string; compact?: boolean }) {
+  const { C, s } = usePdf();
+  const VC = vcOf(C);
   const rows: [string, (c: ListingColumn) => string, boolean?][] = [
     ["Down payment", (c) => `${usd(c.downPaymentCents)} (${pct(c.downRatio)})`],
     ["Loan amount", (c) => usd(c.loanAmountCents)],
@@ -62,16 +65,17 @@ function Table({ cols, accent, compact = false }: { cols: ListingColumn[]; accen
 }
 
 function RealtorCard({ r, brand }: { r: SnapshotPdfProps["realtor"]; brand: PublicBrand }) {
+  const { C, s } = usePdf();
   return (
     <View style={[s.row, { alignItems: "center", gap: 10 }]}>
-      {isRaster(r.headshotUrl) ? <Image src={r.headshotUrl!} style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover" }} /> : <PdfLogo url={r.logoUrl} name={r.name} accent={C.ink2} size={40} round />}
+      {isRaster(r.headshotUrl) ? <Image src={r.headshotUrl!} style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover" }} /> : <PdfLogo url={r.logoUrl} name={r.name} size={40} round />}
       <View style={{ flex: 1 }}>
         <Text style={{ fontWeight: 700 }}>{r.name}</Text>
         <Text style={s.small}>{r.brokerage}</Text>
         <Text style={s.small}>{[r.phone, r.email].filter(Boolean).join(" · ")}</Text>
       </View>
       <View style={{ width: 1, alignSelf: "stretch", backgroundColor: C.line, marginHorizontal: 4 }} />
-      <PdfLogo url={brand.lo.headshotUrl ?? brand.logoUrl} name={brand.lo.name} accent={brand.accentColor} size={40} round={!!brand.lo.headshotUrl} />
+      <PdfLogo url={brand.lo.headshotUrl ?? brand.logoUrl} name={brand.lo.name} size={40} round={!!brand.lo.headshotUrl} />
       <View style={{ flex: 1 }}>
         <Text style={{ fontWeight: 700 }}>{brand.lo.name}</Text>
         <Text style={s.small}>{brand.companyName}{brand.lo.nmlsId ? ` · NMLS #${brand.lo.nmlsId}` : ""}</Text>
@@ -82,6 +86,7 @@ function RealtorCard({ r, brand }: { r: SnapshotPdfProps["realtor"]; brand: Publ
 }
 
 function Qr({ dataUrl, accent }: { dataUrl: string; accent: string }) {
+  const { s } = usePdf();
   return (
     <View style={{ alignItems: "center", width: 112 }}>
       <Image src={dataUrl} style={{ width: 96, height: 96 }} />
@@ -91,6 +96,9 @@ function Qr({ dataUrl, accent }: { dataUrl: string; accent: string }) {
 }
 
 function SnapshotDoc(p: SnapshotPdfProps & { cols: ListingColumn[]; qr: string }) {
+  const { C, s, pt } = usePdf();
+  const VC = vcOf(C);
+  const block = pt.flags.compareBlock;
   const { brand, cols } = p;
   const rentNote = p.rentSource === "PROVIDER" ? "Market rent estimate" : "Rent provided by the listing agent";
   const assumptions = t.listing.assumptions("740+", t.productShort[p.listing.product ?? "FIXED30"]);
@@ -100,10 +108,10 @@ function SnapshotDoc(p: SnapshotPdfProps & { cols: ListingColumn[]; qr: string }
     return (
       <Document title={`Investor snapshot – ${p.address}`} author={brand.companyName}>
         <Page size="LETTER" style={[s.page, { padding: 0, paddingBottom: 110 }]}>
-          <View style={{ height: isRaster(p.photoUrl) ? 200 : 118, backgroundColor: brand.accentColor }}>
+          <View style={{ height: isRaster(p.photoUrl) ? 200 : 118, backgroundColor: pt.flags.headerBand ? C.band : C.accent }}>
             {isRaster(p.photoUrl) ? <Image src={p.photoUrl!} style={{ width: "100%", height: 200, objectFit: "cover" }} /> : null}
-            <View style={{ position: "absolute", left: 28, bottom: 18, right: 28, backgroundColor: "#ffffff", borderRadius: 6, padding: 12 }}>
-              <Text style={[s.eyebrow, { color: brand.accentText }]}>{t.listing.eyebrow}</Text>
+            <View style={{ position: "absolute", left: 28, bottom: 18, right: 28, backgroundColor: C.white, borderRadius: pt.radius.card, padding: 12 }}>
+              <Text style={[s.eyebrow, { color: C.accentText }]}>{t.listing.eyebrow}</Text>
               <Text style={[s.display, { fontSize: 20, marginTop: 2 }]}>{p.address}</Text>
               <Text style={s.muted}>List price {usd(p.listing.listPriceCents)} · {rentNote} {usd(p.listing.rentCents)}/mo · Rate {rate(cols[0]!.rateMilli)}</Text>
             </View>
@@ -111,16 +119,16 @@ function SnapshotDoc(p: SnapshotPdfProps & { cols: ListingColumn[]; qr: string }
           <View style={{ paddingHorizontal: 28, paddingTop: 16 }}>
             <View style={[s.row, { gap: 10, marginBottom: 14 }]}>
               {cols.map((c) => (
-                <View key={c.downRatio} style={[s.card, { flex: 1, borderColor: brand.accentColor }]}>
-                  <Text style={[s.eyebrow, { color: brand.accentText }]}>{pct(c.downRatio)} down</Text>
-                  <Text style={{ fontFamily: "Fraunces", fontSize: 24, lineHeight: 1.15, color: VC[c.verdict] }}>DSCR {dscr(c.dscrRatio)}</Text>
-                  <Text style={{ fontWeight: 600 }}>{usd(c.pitiaCents)}/mo · cash flow {usd(c.cashFlowCents)}</Text>
-                  <Text style={s.small}>Cash to close about {usd(c.cashToCloseCents)}</Text>
+                <View key={c.downRatio} style={[s.card, { flex: 1, borderColor: C.accent }, block ? { backgroundColor: C.accent } : {}]}>
+                  <Text style={[s.eyebrow, { color: block ? C.onAccent : C.accentText }]}>{pct(c.downRatio)} down</Text>
+                  <Text style={[s.numeral, { fontSize: block ? 30 : 24, lineHeight: 1.15, color: block ? C.onAccent : VC[c.verdict] }]}>DSCR {dscr(c.dscrRatio)}</Text>
+                  <Text style={{ fontWeight: 600, color: block ? C.onAccent : C.ink }}>{usd(c.pitiaCents)}/mo · cash flow {usd(c.cashFlowCents)}</Text>
+                  <Text style={[s.small, block ? { color: C.onAccent } : {}]}>Cash to close about {usd(c.cashToCloseCents)}</Text>
                 </View>
               ))}
-              <Qr dataUrl={p.qr} accent={brand.accentText} />
+              <Qr dataUrl={p.qr} accent={C.accentText} />
             </View>
-            <Table cols={cols} accent={brand.accentText} compact />
+            <Table cols={cols} accent={C.accentText} compact />
             <View style={[s.card, { marginTop: 12 }]} wrap={false}>
               <RealtorCard r={p.realtor} brand={brand} />
             </View>
@@ -134,20 +142,20 @@ function SnapshotDoc(p: SnapshotPdfProps & { cols: ListingColumn[]; qr: string }
   return (
     <Document title={`Investor snapshot – ${p.address}`} author={brand.companyName}>
       <Page size="LETTER" style={s.page}>
-        <View style={{ height: 5, backgroundColor: brand.accentColor, marginHorizontal: -36, marginTop: -36, marginBottom: 18 }} />
+        <View style={{ height: pt.flags.headerBand ? 14 : 5, backgroundColor: pt.flags.headerBand ? C.band : C.accent, marginHorizontal: -36, marginTop: -36, marginBottom: 18 }} />
         <View style={[s.row, { justifyContent: "space-between", alignItems: "flex-start" }]}>
           <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={[s.eyebrow, { color: brand.accentText }]}>{t.listing.eyebrow}</Text>
+            <Text style={[s.eyebrow, { color: C.accentText }]}>{t.listing.eyebrow}</Text>
             <Text style={[s.display, { marginTop: 3 }]}>{p.address}</Text>
             <Text style={[s.muted, { marginTop: 3 }]}>List price {usd(p.listing.listPriceCents)} · {rentNote} {usd(p.listing.rentCents)}/mo · Rate {rate(cols[0]!.rateMilli)}</Text>
           </View>
-          <Qr dataUrl={p.qr} accent={brand.accentText} />
+          <Qr dataUrl={p.qr} accent={C.accentText} />
         </View>
         {isRaster(p.photoUrl) ? <Image src={p.photoUrl!} style={{ height: 170, objectFit: "cover", borderRadius: 6, marginTop: 10 }} /> : null}
         <View style={{ marginTop: 14 }}>
           <Text style={s.h2}>Financing this property with a DSCR loan</Text>
           <Text style={[s.muted, { marginBottom: 8 }]}>DSCR loans qualify on the property&apos;s rent, not the investor&apos;s personal income. DSCR = rent ÷ monthly payment.</Text>
-          <Table cols={cols} accent={brand.accentText} />
+          <Table cols={cols} accent={C.accentText} />
         </View>
         <View style={[s.card, { marginTop: 16, backgroundColor: C.paper, borderColor: C.paper }]}>
           <RealtorCard r={p.realtor} brand={brand} />
@@ -161,6 +169,8 @@ function SnapshotDoc(p: SnapshotPdfProps & { cols: ListingColumn[]; qr: string }
 export async function renderSnapshotPdf(p: SnapshotPdfProps): Promise<Buffer> {
   registerFonts();
   const cols = listingSnapshot(p.listing, p.ctx);
-  const qr = await QRCode.toDataURL(p.url, { margin: 1, width: 360, errorCorrectionLevel: "M", color: { dark: "#17150f", light: "#ffffff" } });
-  return renderToBuffer(<SnapshotDoc {...p} cols={cols} qr={qr} />);
+  const pt = getPdfTheme(p.brand.theme, p.brand.accentColor);
+  // Quiet zone of 4 modules (DESIGN.md §9).
+  const qr = await QRCode.toDataURL(p.url, { margin: 4, width: 400, errorCorrectionLevel: "M", color: { dark: pt.color.ink, light: pt.color.paper } });
+  return withPdfTheme(p.brand.theme, p.brand.accentColor, () => renderToBuffer(<SnapshotDoc {...p} cols={cols} qr={qr} />));
 }

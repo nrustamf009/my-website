@@ -3,7 +3,7 @@ import type { PublicBrand } from "@/lib/broker";
 import type { ComputedOption } from "@/lib/scenarios";
 import { dscr, pct, points, rate, shortDate, usd, usdMagnitude } from "@/lib/format";
 import { t } from "@/lib/strings/en";
-import { C, PdfFooter, PdfHeader, registerFonts, s } from "./common";
+import { PdfFooter, PdfHeader, withPdfTheme, registerFonts, usePdf } from "./common";
 
 export interface ScenarioPdfProps {
   brand: PublicBrand;
@@ -20,6 +20,7 @@ export interface ScenarioPdfProps {
 
 function Doc(p: ScenarioPdfProps) {
   const { brand, rows } = p;
+  const { C, s } = usePdf();
   const lines: [string, (r: ComputedOption) => string, boolean?][] = [
     ["Product", (r) => t.productShort[r.input.product]],
     ["Loan amount", (r) => `${usd(r.input.loanAmountCents)} (${pct(r.result.ltvRatio)} LTV)`],
@@ -41,7 +42,7 @@ function Doc(p: ScenarioPdfProps) {
         <View style={[s.row, { borderBottomWidth: 1.5, borderBottomColor: C.ink, paddingBottom: 4 }]}>
           <Text style={{ flex: 1.5 }} />
           {rows.map((r) => (
-            <Text key={r.option.id} style={{ flex: 1, textAlign: "right", fontWeight: 700, color: r.option.recommended ? brand.accentText : C.ink }}>
+            <Text key={r.option.id} style={{ flex: 1, textAlign: "right", fontWeight: 700, color: r.option.recommended ? C.accentText : C.ink }}>
               Option {r.option.label}{r.option.recommended ? " (recommended)" : ""}
             </Text>
           ))}
@@ -92,5 +93,5 @@ function Doc(p: ScenarioPdfProps) {
 
 export async function renderScenarioPdf(p: ScenarioPdfProps) {
   registerFonts();
-  return renderToBuffer(<Doc {...p} />);
+  return withPdfTheme(p.brand.theme, p.brand.accentColor, () => renderToBuffer(<Doc {...p} />));
 }

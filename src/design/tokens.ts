@@ -83,6 +83,6 @@ export interface ThemeDefinition {
   tokens: Omit<ThemeTokens, "font">;
   variants: ThemeVariants;
   /** Light "paper" palette for PDFs (terminal prints light on purpose). */
-  pdf: { paper: string; ink: string; muted: string; rule: string; panel: string; band: string; onBand: string };
+  pdf: { paper: string; ink: string; muted: string; rule: string; panel: string; band: string; onBand: string; headerBand: boolean; compareBlock: boolean };
   email: { dark: boolean };
 }

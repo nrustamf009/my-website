@@ -3,9 +3,6 @@
   "files": [
     "lib/auth/config.ts",
     "lib/emails/index.tsx",
-    "lib/emails/layout.tsx",
-    "lib/pdf/EstimatePdf.tsx",
-    "lib/pdf/SnapshotPdf.tsx",
-    "lib/pdf/common.tsx"
+    "lib/emails/layout.tsx"
   ]
 }

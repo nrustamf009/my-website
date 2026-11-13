@@ -57,6 +57,6 @@ export const atelier: ThemeDefinition = {
     shadow: "none",
   },
   variants: { meter: "linear-block", verdict: "sentence", options: "sections", shell: "topbar", iconStroke: 2, monogram: "wordmark", numberedSections: true },
-  pdf: { paper: "#FFFFFF", ink: "#0B0B0B", muted: "#55554F", rule: "#0B0B0B", panel: "#F2F2EF", band: "#0B0B0B", onBand: "#FFFFFF" },
+  pdf: { paper: "#FFFFFF", ink: "#0B0B0B", muted: "#55554F", rule: "#0B0B0B", panel: "#F2F2EF", band: "#0B0B0B", onBand: "#FFFFFF", headerBand: false, compareBlock: true },
   email: { dark: false },
 };

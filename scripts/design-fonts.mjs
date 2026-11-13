@@ -46,7 +46,8 @@ for (const f of FAMILIES) {
     const b = ttf.find((x) => x.weight === w && x.style === st);
     if (!a || !b) throw new Error(`missing ${name}`);
     await save(a.url, `${OUT}/${name}.woff2`);
-    await save(b.url, `${OUT}/${name}.ttf`);
+    // IBM Plex Mono: fontkit (react-pdf) cannot lay it out, PDFs use Courier, so no TTF is kept.
+    if (f.file !== "ibm-plex-mono") await save(b.url, `${OUT}/${name}.ttf`);
   }
 }
 writeFileSync(`${OUT}/LICENSE.md`, "All fonts in this folder are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org): Instrument Serif, Hanken Grotesk, IBM Plex Sans, IBM Plex Mono, Inter Tight. Downloaded from Google Fonts by scripts/design-fonts.mjs.\n");
