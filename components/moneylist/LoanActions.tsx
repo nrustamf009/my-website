@@ -51,7 +51,7 @@ export function DraftPanel({ loanId, initial, hasEmail, hasPhone }: { loanId: st
               <div className="min-w-0 truncate text-sm"><span className="text-muted">Subject: </span><span className="font-medium" data-testid="draft-subject">{draft.subject}</span></div>
               <CopyButton text={draft.subject} label="Copy subject" />
             </div>
-            <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-xl bg-paper p-3 font-sans text-sm leading-relaxed text-ink-2" data-testid="draft-email">{draft.email}</pre>
+            <pre className="max-h-105 overflow-auto whitespace-pre-wrap rounded-xl bg-paper p-3 font-sans text-sm leading-relaxed text-ink-2" data-testid="draft-email">{draft.email}</pre>
             <div className="mt-3 flex flex-wrap gap-2">
               <CopyButton text={draft.email} label="Copy email" variant="primary" size="md" />
               {hasEmail ? null : <span className="self-center text-xs text-muted">No email on file for this borrower.</span>}

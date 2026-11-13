@@ -43,3 +43,22 @@ export async function buildMoneyList(db: ScopedDb, broker: Broker, opts: ListOpt
   const rows = rankMoneyList(active.map((loan) => ({ loan, evaluation: evaluateLoan(loan, broker, opts) })));
   return { rows, total: loans.length, loans };
 }
+
+/**
+ * The Money List board (DESIGN.md §7.4): every loan with a trigger that is still in play
+ * (open, snoozed or contacted), ranked by estimated benefit. Not-interested and won loans drop off.
+ */
+export async function buildMoneyBoard(db: ScopedDb, broker: Broker, opts: ListOpts = {}) {
+  const loans = await db.closedLoan.findMany({ orderBy: { closingDate: "desc" } });
+  const live = loans.filter((l) => l.status === "OPEN" || l.status === "SNOOZED" || l.status === "CONTACTED");
+  const rows = rankMoneyList(live.map((loan) => ({ loan, evaluation: evaluateLoan(loan, broker, opts) })));
+  const now = new Date();
+  return {
+    rows,
+    total: loans.length,
+    loans,
+    notContacted: rows.filter((r) => isActive(r.loan, now)).length,
+    contacted: rows.filter((r) => r.loan.status === "CONTACTED").length,
+    snoozed: rows.filter((r) => r.loan.status === "SNOOZED" && !isActive(r.loan, now)).length,
+  };
+}

@@ -144,6 +144,7 @@
   --icon-stroke: 1.5;
   --color-scheme: light;
   --section-number-display: none;
+  --dashboard-count-display: none;
   --monogram-display: grid;
   --monogram-bg: transparent;
   --monogram-fg: var(--ink);
@@ -295,6 +296,7 @@
   --icon-stroke: 1.5;
   --color-scheme: dark;
   --section-number-display: none;
+  --dashboard-count-display: none;
   --monogram-display: grid;
   --monogram-bg: var(--accent);
   --monogram-fg: var(--on-accent);
@@ -446,6 +448,7 @@
   --icon-stroke: 2;
   --color-scheme: light;
   --section-number-display: inline;
+  --dashboard-count-display: block;
   --monogram-display: none;
   --monogram-bg: transparent;
   --monogram-fg: var(--ink);

@@ -16,12 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/brokers", label: "Brokers", icon: "building" },
         { href: "/admin/audit", label: "Audit log", icon: "layers" },
       ]}
-      header={
-        <div>
-          <div className="text-xs font-medium uppercase tracking-wider text-muted">Agency admin</div>
-          <div className="mt-0.5 truncate text-sm font-semibold">{agency.name}</div>
-        </div>
-      }
+      brand={{ name: agency.name, subtitle: "Agency admin", logoUrl: agency.logoUrl }}
     >
       {children}
     </Shell>

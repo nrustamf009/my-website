@@ -50,7 +50,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px]" data-testid="lead-table">
+            <table className="w-full min-w-180" data-testid="lead-table">
               <thead className="border-b border-line"><tr><Th>Lead</Th><Th>Status</Th><Th>Source</Th><Th>Estimate</Th><Th>Owner</Th><Th>When</Th></tr></thead>
               <tbody className="divide-y divide-line">
                 {leads.map((l) => {

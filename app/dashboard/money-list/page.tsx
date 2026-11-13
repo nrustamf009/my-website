@@ -1,44 +1,55 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireBroker } from "@/lib/auth/session";
-import { features, moneyListRules } from "@/lib/broker";
-import { buildMoneyList, evaluateLoan } from "@/lib/moneylist/list";
+import { features, moneyListRules, parseJson } from "@/lib/broker";
+import { buildMoneyBoard } from "@/lib/moneylist/list";
 import { describeOpportunity, triggerShort } from "@/lib/moneylist/describe";
-import { parseRateToMilli, pct, rate, relativeTime, shortDate, usd } from "@/lib/format";
+import { parseRateToMilli, pct, rate, shortDate, usd } from "@/lib/format";
 import { summarizeMoneyList, type TriggerKind } from "@/lib/dscr";
-import { Badge, Card, EmptyState, LinkButton, PageHeader, Stat, cx } from "@/components/ui";
-import { STATUS_LABEL, STATUS_TONE, TRIGGER_NAME, TRIGGER_TONE } from "@/components/moneylist/labels";
+import { EmptyState, LinkButton, cx } from "@/components/ui";
+import { Eyebrow } from "@design/components/primitives";
+import { TRIGGER_NAME } from "@/components/moneylist/labels";
 import { MarketRateForm, DigestButton } from "@/components/moneylist/Controls";
+import { DraftPanel, StatusActions, type Draft } from "@/components/moneylist/LoanActions";
 
 export const metadata = { title: "Money List" };
 
 const KINDS: TriggerKind[] = ["PREPAY", "SEASONING", "RATE", "ARM_RESET", "ANNIVERSARY"];
+const NUMBER_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
+const PRODUCT: Record<string, string> = { FIXED: "", IO: " · IO", ARM: " · ARM" };
 
-export default async function MoneyListPage({ searchParams }: { searchParams: Promise<{ t?: string; rate?: string; view?: string }> }) {
+export default async function MoneyListPage({ searchParams }: { searchParams: Promise<{ t?: string; rate?: string; view?: string; loan?: string }> }) {
   const { broker, db, canManage } = await requireBroker();
   if (!features(broker).moneyList) redirect("/dashboard");
   const sp = await searchParams;
   const whatIf = sp.rate ? parseRateToMilli(sp.rate) : null;
   const whatIfValid = whatIf != null && whatIf >= 2_000 && whatIf <= 15_000 ? whatIf : null;
-  const { rows, total, loans } = await buildMoneyList(db, broker, { rateMilli: whatIfValid });
-  const horizon = moneyListRules(broker).horizonMonths;
+  const board = await buildMoneyBoard(db, broker, { rateMilli: whatIfValid });
+  const { rows, total } = board;
+  const rules = moneyListRules(broker);
+  const horizon = rules.horizonMonths;
   const filter = KINDS.includes(sp.t as TriggerKind) ? (sp.t as TriggerKind) : null;
   const shown = filter ? rows.filter((r) => r.evaluation.triggers.some((x) => x.kind === filter)) : rows;
   const counts = Object.fromEntries(KINDS.map((k) => [k, rows.filter((r) => r.evaluation.triggers.some((x) => x.kind === k)).length]));
   const summary = summarizeMoneyList(rows.map((r) => r.evaluation));
-  const contacted30 = loans.filter((l) => l.status === "CONTACTED" && l.updatedAt > new Date(Date.now() - 30 * 86_400_000)).length;
   const qs = (patch: Record<string, string | null>) => {
     const p = new URLSearchParams();
-    const merged = { t: filter, rate: whatIfValid ? sp.rate! : null, view: sp.view ?? null, ...patch };
+    const merged = { t: filter, rate: whatIfValid ? sp.rate! : null, view: sp.view ?? null, loan: sp.loan ?? null, ...patch };
     for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
     const s = p.toString();
     return s ? `?${s}` : "";
   };
+  const selected = shown.find((r) => r.loan.id === sp.loan) ?? shown[0] ?? null;
+  const selDraft = selected ? parseJson<{ subject: string; body: string } | null>(selected.loan.draftEmail, null) : null;
+  const draft: Draft | null = selected && selDraft && selected.loan.draftSms ? { subject: selDraft.subject, email: selDraft.body, sms: selected.loan.draftSms } : null;
+  const statusText = (l: (typeof rows)[number]["loan"]) =>
+    l.status === "CONTACTED" ? `Contacted ${shortDate(l.updatedAt)}` : l.status === "SNOOZED" && l.snoozedUntil && l.snoozedUntil > new Date() ? `Snoozed to ${shortDate(l.snoozedUntil)}` : "Not contacted";
 
   if (!total) {
     return (
       <div className="mx-auto max-w-5xl">
-        <PageHeader title="Money List" subtitle="Your closed loans, re-checked every day for prepay expirations, seasoning milestones, rate drops and ARM resets." />
+        <h1 className="type-h1 text-ink">Money List</h1>
+        <p className="mb-6 mt-2 max-w-2xl text-ink-2">Your closed loans, re-checked every day for prepay expirations, seasoning milestones, rate drops and ARM resets.</p>
         <EmptyState
           title="Import your closed loans"
           body="Upload a CSV from your LOS (or start from our template). We'll rank past clients by how much a call could save them, and draft the email and text for you."
@@ -48,115 +59,118 @@ export default async function MoneyListPage({ searchParams }: { searchParams: Pr
     );
   }
 
+  const count = rows.length;
   return (
-    <div className="mx-auto max-w-6xl">
-      <PageHeader
-        title="Money List"
-        subtitle={`${total} closed loan${total === 1 ? "" : "s"} watched. Ranked by estimated net benefit to the client, then urgency.`}
-        actions={
-          <>
+    <div className="mx-auto max-w-[1400px]">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-end gap-5">
+          <span className="type-dashboard-count num text-accent [display:var(--dashboard-count-display)]" aria-hidden>{count}</span>
+          <div>
+            <Eyebrow>Money List · {shortDate(new Date())}</Eyebrow>
+            <h1 className="type-h1 mt-1 text-ink" style={{ textWrap: "balance" }}>{`${count < NUMBER_WORDS.length ? NUMBER_WORDS[count] : count} client${count === 1 ? "" : "s"} worth a call`}</h1>
+            <p className="mt-2 text-ink-2">Found among your {total} closed loans, ranked by estimated benefit to the client. {board.notContacted} not contacted · {board.contacted} contacted · {board.snoozed} snoozed. {usd(summary.totalBenefitCents)} in estimated benefit.</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-stretch gap-3">
+          <div className="border border-rule bg-surface px-4 py-2">
+            <div className="type-body-small text-muted">Market rate, set by you</div>
+            <MarketRateForm current={broker.marketRateMilli} canManage={canManage} />
+          </div>
+          <div className="flex flex-col justify-center gap-2">
             <DigestButton />
-            <LinkButton href="/dashboard/money-list/import" variant="secondary">Import / add</LinkButton>
-          </>
-        }
-      />
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Worth a call" value={rows.length} hint={`of ${total} loans`} />
-        <Stat label="Est. client benefit" value={usd(summary.totalBenefitCents)} hint={`${summary.withDollarEstimate} with a dollar estimate`} />
-        <Stat label="Contacted (30 days)" value={contacted30} />
-        <div className="rounded-2xl border border-line bg-card p-5">
-          <div className="text-xs font-medium uppercase tracking-wider text-muted">Market rate</div>
-          <MarketRateForm current={broker.marketRateMilli} canManage={canManage} />
-          <form method="get" className="mt-2 flex items-center gap-2 text-xs text-muted">
-            {filter && <input type="hidden" name="t" value={filter} />}
-            <label htmlFor="whatif">What if</label>
-            <input id="whatif" name="rate" defaultValue={sp.rate ?? ""} placeholder="6.50" inputMode="decimal" className="h-7 w-16 rounded-md border border-line bg-surface px-2 text-ink" />
-            <span>%</span>
-            <button className="rounded-md px-1.5 py-0.5 text-accent hover:bg-accent-soft" type="submit">Try</button>
-          </form>
+            <LinkButton href="/dashboard/money-list/import" variant="ghost" size="sm">Import / add</LinkButton>
+          </div>
         </div>
       </div>
 
+      <form method="get" className="mt-4 flex items-center gap-2 text-sm text-muted">
+        {filter && <input type="hidden" name="t" value={filter} />}
+        <label htmlFor="whatif">What if the market rate were</label>
+        <input id="whatif" name="rate" defaultValue={sp.rate ?? ""} placeholder="6.50" inputMode="decimal" className="h-9 w-20 rounded-[var(--radius-control)] border border-rule bg-surface px-2 text-ink" />
+        <span>%</span>
+        <button className="rounded-[var(--radius-control)] border border-rule px-3 py-1.5 text-ink hover:bg-surface" type="submit">Try</button>
+      </form>
       {whatIfValid && (
-        <div className="mt-4 flex items-center justify-between rounded-xl bg-accent-soft px-4 py-2.5 text-sm text-accent-deep" data-testid="whatif-banner">
+        <div className="mt-3 flex items-center justify-between border border-rule bg-accent-tint px-4 py-2.5 text-sm text-ink" data-testid="whatif-banner">
           <span>What-if: showing results at a market rate of <b>{rate(whatIfValid)}</b> (not saved).</span>
           <Link href={qs({ rate: null })} className="font-medium underline">Back to {rate(broker.marketRateMilli)}</Link>
         </div>
       )}
 
-      <div className="mt-6 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filter by trigger">
-        <Link href={qs({ t: null, view: null })} className={chip(!filter && sp.view !== "all")}>All opportunities <span className="num opacity-70">{rows.length}</span></Link>
+      <nav className="mt-6 flex gap-2 overflow-x-auto pb-1" aria-label="Filter by trigger">
+        <Link href={qs({ t: null, loan: null })} aria-current={!filter ? "true" : undefined} className={chip(!filter)}>All reasons <span className="num opacity-70">{rows.length}</span></Link>
         {KINDS.map((k) => (
-          <Link key={k} href={qs({ t: k, view: null })} className={chip(filter === k)} aria-disabled={!counts[k]}>
+          <Link key={k} href={qs({ t: k, loan: null })} aria-current={filter === k ? "true" : undefined} className={chip(filter === k)}>
             {TRIGGER_NAME[k]} <span className="num opacity-70">{counts[k]}</span>
           </Link>
         ))}
-        <Link href={qs({ t: null, view: "all" })} className={chip(sp.view === "all")}>All loans <span className="num opacity-70">{total}</span></Link>
-      </div>
+        <Link href="/dashboard/money-list/all" className={chip(false)}>All loans <span className="num opacity-70">{total}</span></Link>
+      </nav>
 
-      {sp.view === "all" ? (
-        <Card className="mt-3 overflow-hidden">
-          <ul className="divide-y divide-line" data-testid="all-loans">
-            {loans.map((l) => {
-              const ev = evaluateLoan(l, broker, { rateMilli: whatIfValid });
-              return (
-                <li key={l.id}>
-                  <Link href={`/dashboard/money-list/${l.id}`} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-paper/60">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-ink">{l.borrowerName}</div>
-                      <div className="truncate text-xs text-muted">{l.propertyAddress} · closed {shortDate(l.closingDate)} · {usd(l.loanAmountCents)} at {rate(l.rateMilli)}</div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {ev.triggers.length > 0 && <span className="hidden text-xs text-muted sm:inline">{ev.triggers.map(triggerShort).join(" · ")}</span>}
-                      <Badge tone={STATUS_TONE[l.status]}>{l.status === "SNOOZED" && l.snoozedUntil ? `Snoozed to ${shortDate(l.snoozedUntil)}` : STATUS_LABEL[l.status]}</Badge>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
-      ) : shown.length === 0 ? (
-        <div className="mt-3"><EmptyState title={filter ? `No ${TRIGGER_NAME[filter].toLowerCase()} opportunities` : "No one to call right now"} body="We re-check every loan daily. Try a what-if rate to see who a rate drop would help." /></div>
-      ) : (
-        <ol className="mt-3 space-y-3" data-testid="money-list">
-          {shown.map(({ loan, evaluation }, i) => {
-            const op = describeOpportunity(evaluation, horizon);
-            return (
-              <li key={loan.id}>
-                <Link href={`/dashboard/money-list/${loan.id}${qs({ t: null, view: null })}`} className="block rounded-2xl border border-line bg-card p-4 transition hover:border-accent/40 hover:shadow-sm sm:p-5" data-testid="ml-row">
-                  <div className="flex items-start gap-4">
-                    <div className="num hidden w-6 pt-0.5 text-sm text-muted sm:block">{i + 1}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-ink">{loan.borrowerName}</span>
-                        {evaluation.triggers.map((x) => (
-                          <Badge key={x.kind} tone={TRIGGER_TONE[x.kind]}>{triggerShort(x)}</Badge>
-                        ))}
-                        {loan.status === "SNOOZED" && <Badge tone="warn">Back from snooze</Badge>}
-                      </div>
-                      <div className="mt-0.5 truncate text-sm text-muted">{loan.propertyAddress}</div>
-                      <p className="mt-2 text-sm text-ink-2">{op.headline}.</p>
-                      {op.netOf && <p className="mt-0.5 text-xs text-muted">{op.benefit} ({op.netOf}){evaluation.breakevenMonth && op.kind === "SAVINGS" ? ` · breakeven month ${evaluation.breakevenMonth}` : ""}.</p>}
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <div className={cx("num font-display text-2xl", op.kind === "NONE" ? "text-ink-2" : "text-good")} data-testid="ml-benefit">{op.benefitLabel}</div>
-                      <div className="text-xs text-muted">{op.benefitHint}</div>
-                      {loan.draftedAt && <div className="mt-1 text-[11px] text-muted">Draft {relativeTime(loan.draftedAt)}</div>}
-                    </div>
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-      <p className="mt-6 text-xs text-muted">Estimates use your market rate, today&apos;s balance from the original amortization, {pct(moneyListRules(broker).refiClosingCostRatio)} closing costs and a {horizon}-month horizon. Values for cash-out assume modest appreciation after 12 months. Always confirm with a full application.</p>
+      <div className="mt-4 grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div>
+          {shown.length === 0 ? (
+            <EmptyState title={filter ? `No ${TRIGGER_NAME[filter].toLowerCase()} opportunities` : "No one to call right now"} body="We re-check every loan daily. Try a what-if rate to see who a rate drop would help." />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-180 text-sm" data-testid="money-list">
+                <thead>
+                  <tr className="border-b-[length:var(--border-strong)] border-rule-strong text-left">
+                    {["Client", "Loan today", "Why now", "Est. benefit", "Status", ""].map((h, i) => (
+                      <th key={i} scope="col" className={cx("type-eyebrow px-3 pb-2 font-normal text-muted", h === "Est. benefit" && "text-right")}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map(({ loan, evaluation }) => {
+                    const op = describeOpportunity(evaluation, horizon);
+                    const on = selected?.loan.id === loan.id;
+                    return (
+                      <tr key={loan.id} className={cx("border-b border-rule align-top", on ? "bg-surface" : "")} data-testid="ml-row">
+                        <td className="px-3 py-3">
+                          <Link href={`/dashboard/money-list/${loan.id}`} className="font-semibold text-ink hover:underline">{loan.borrowerName}</Link>
+                          <div className="type-body-small text-muted">{loan.propertyAddress}</div>
+                        </td>
+                        <td className="num px-3 py-3 text-ink">
+                          {rate(loan.rateMilli)}{PRODUCT[loan.product]}
+                          <div className="type-body-small text-muted">{usd(evaluation.balanceCents)} balance</div>
+                        </td>
+                        <td className="px-3 py-3 text-ink">
+                          {op.headline}
+                          <div className="type-body-small text-muted">{evaluation.triggers.map(triggerShort).join(" · ")}</div>
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          <div className={cx("type-metric-panel num", op.kind === "NONE" ? "text-ink [font-style:var(--type-option-letter-style)]" : "text-accent")} data-testid="ml-benefit">{op.benefitLabel}</div>
+                          <div className="type-body-small text-muted">{op.benefitHint}</div>
+                        </td>
+                        <td className="px-3 py-3 text-ink-2">{statusText(loan)}</td>
+                        <td className="hidden px-3 py-3 xl:table-cell">
+                          <Link href={qs({ loan: loan.id })} aria-label={`Draft for ${loan.borrowerName}`} className={cx("text-sm underline underline-offset-4", on ? "text-ink" : "text-muted")}>Draft</Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="type-body-small mt-3 text-muted">Showing {shown.length} of {rows.length}. Benefit is estimated savings over {horizon} months less closing costs ({pct(rules.refiClosingCostRatio)}) and any prepayment charge still owed; cash-out rows show cash in reach after costs. Review rows have no dollar figure.</p>
+        </div>
+
+        {selected && (
+          <aside className="hidden h-fit border border-rule bg-surface-alt p-5 xl:sticky xl:top-6 xl:block" aria-label="Draft message">
+            <Eyebrow className="text-accent">Draft message</Eyebrow>
+            <h2 className="type-section mt-1 text-ink">To {selected.loan.borrowerName}</h2>
+            <div className="mt-4"><DraftPanel key={selected.loan.id} loanId={selected.loan.id} initial={draft} hasEmail={!!selected.loan.email} hasPhone={!!selected.loan.phone} /></div>
+            <div className="mt-4"><StatusActions loanId={selected.loan.id} status={selected.loan.status} /></div>
+            <Link href={`/dashboard/money-list/${selected.loan.id}`} className="mt-4 inline-block text-sm text-ink underline underline-offset-4">Open the full loan</Link>
+          </aside>
+        )}
+      </div>
     </div>
   );
 }
 
 function chip(active: boolean) {
-  return cx("inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition", active ? "border-ink bg-ink text-page" : "border-line bg-surface text-ink-2 hover:border-ink/30");
+  return cx("inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border px-4 text-sm transition", active ? "border-ink bg-ink text-page" : "border-rule bg-surface text-ink-2 hover:border-ink");
 }

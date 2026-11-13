@@ -2,7 +2,6 @@ import { requireBroker } from "@/lib/auth/session";
 import { features } from "@/lib/broker";
 import { stopImpersonating } from "@/lib/actions/admin";
 import { Shell } from "@/components/dashboard/Shell";
-import { BrokerAvatar } from "@/components/brand/BrokerAvatar";
 
 export const dynamic = "force-dynamic";
 
@@ -29,24 +28,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
       banner={
         <>
           {impersonating && (
-            <div className="flex items-center justify-center gap-3 bg-ink px-4 py-2 text-sm text-page">
+            <div className="flex items-center justify-center gap-3 bg-inverse px-4 py-2 text-sm text-on-inverse">
               <span>Viewing as <strong>{broker.companyName}</strong> (agency impersonation, logged)</span>
-              <form action={stopImpersonating}><button className="rounded-md bg-page/15 px-2.5 py-1 text-xs font-medium hover:bg-page/25">Stop impersonating</button></form>
+              <form action={stopImpersonating}><button className="rounded-md border border-on-inverse/40 px-2.5 py-1 text-xs font-medium">Stop impersonating</button></form>
             </div>
           )}
-          {broker.status === "SUSPENDED" && <div className="bg-negative px-4 py-2 text-center text-sm text-page">This account is suspended: public pages show “unavailable”. Contact your agency.</div>}
-          {broker.isDemo && !impersonating && <div className="bg-warn-soft px-4 py-1.5 text-center text-xs text-warn">Demo account · all data is fictional</div>}
+          {broker.status === "SUSPENDED" && <div className="bg-negative-tint px-4 py-2 text-center text-sm text-negative">This account is suspended: public pages show “unavailable”. Contact your agency.</div>}
+          {broker.isDemo && !impersonating && <div className="bg-warn-tint px-4 py-1.5 text-center text-xs text-warn">Demo account · all data is fictional</div>}
         </>
       }
-      header={
-        <div className="flex items-center gap-3">
-          <BrokerAvatar broker={broker} size={40} />
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold">{broker.companyName}</div>
-            <div className="truncate text-xs text-muted">{user?.name ?? "Agency admin"}{user?.role === "BROKER_ADMIN" ? " · Admin" : ""}</div>
-          </div>
-        </div>
-      }
+      brand={{ name: broker.companyName, subtitle: `${user?.name ?? "Agency admin"}${user?.role === "BROKER_ADMIN" ? " · Admin" : ""}`, logoUrl: broker.logoUrl }}
     >
       {children}
     </Shell>

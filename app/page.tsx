@@ -21,7 +21,7 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-5 pb-16 pt-10 sm:pt-20">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted">For DSCR loan specialists</p>
         <h1 className="mt-4 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight text-ink sm:text-7xl">
-          Turn rental numbers into <em className="text-[#9a6b12]">booked calls.</em>
+          Turn rental numbers into <em className="text-accent">booked calls.</em>
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
           Five tools that help mortgage brokers win investor deals: instant DSCR checks, realtor snapshots, scenario sheets, a refi opportunity list, and call notes that become quotes. Each broker gets their own brand.
@@ -36,7 +36,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-px bg-line sm:grid-cols-2 lg:grid-cols-5">
           {modules.map((m) => (
             <div key={m.n} className="bg-surface p-6">
-              <div className="num font-display text-3xl text-[#c9a24a]">{m.n}</div>
+              <div className="num font-display text-3xl text-accent">{m.n}</div>
               <h3 className="mt-4 font-semibold text-ink">{m.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{m.body}</p>
             </div>

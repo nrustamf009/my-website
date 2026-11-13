@@ -7,10 +7,12 @@ test("Module 3: import CSV (create, then update), ranked list, filters, what-if,
   const sink = await startWebhookSink(info.project.name === "mobile" ? 4596 : 4597);
   await prisma.broker.update({ where: { slug: "harborline" }, data: { webhookUrl: sink.url, marketRateMilli: 6_625 } });
   const tag = `${info.project.name}${Date.now()}`;
+  const pat = info.project.name === "mobile" ? "Pat Mobilecase" : "Pat Desktopcase";
+  const lee = info.project.name === "mobile" ? "Lee Mobilecase" : "Lee Desktopcase";
   const csv = [
     "Client Name,E-mail,Phone,Subject Property,Loan Amt,Note Rate,Funding Date,Amortization,PPP,Prepay Term (years),Appraised Value",
-    `Pat Testcase,pat.${tag}@example.test,(555) 010-1111,"77 Test Ave, Austin, TX 78701","$410,000",8.25%,${iso(-21)},Fixed,1,1,560000`,
-    `Lee Example,lee.${tag}@example.test,,"9 Sample Ct, Tampa, FL 33611",250000,6.5,${iso(-30)},Interest Only,none,,`,
+    `${pat},pat.${tag}@example.test,(555) 010-1111,"77 Test Ave, Austin, TX 78701","$410,000",8.25%,${iso(-21)},Fixed,1,1,560000`,
+    `${lee},lee.${tag}@example.test,,"9 Sample Ct, Tampa, FL 33611",250000,6.5,${iso(-30)},Interest Only,none,,`,
     `Bad Row,,,"1 Nowhere",abc,7,2099-01-01,fixed,4-3-2-1,,`,
   ].join("\n");
 
@@ -37,7 +39,7 @@ test("Module 3: import CSV (create, then update), ranked list, filters, what-if,
 
   // Ranked list: the 8.25% loan (rate drop) is on it with a dollar estimate.
   await page.goto("/dashboard/money-list");
-  const row = page.getByTestId("ml-row").filter({ hasText: "Pat Testcase" });
+  const row = page.getByTestId("ml-row").filter({ hasText: pat });
   await expect(row).toContainText("Rate −1.625%");
   await expect(row.getByTestId("ml-benefit")).toHaveText(/^\$[\d,]+$/);
   expect(await page.getByTestId("ml-row").count()).toBeGreaterThanOrEqual(8);
@@ -47,11 +49,11 @@ test("Module 3: import CSV (create, then update), ranked list, filters, what-if,
   await expect(page.getByTestId("ml-row").first()).toContainText("ARM resets in");
   await page.goto("/dashboard/money-list?rate=5.5");
   await expect(page.getByTestId("whatif-banner")).toContainText("5.5%");
-  await expect(page.getByTestId("ml-row").filter({ hasText: "Lee Example" })).toBeVisible(); // 6.5% IO only shows up at 5.5%
+  await expect(page.getByTestId("ml-row").filter({ hasText: lee })).toBeVisible(); // 6.5% IO only shows up at 5.5%
 
   // Detail: draft, copy-ready email with the code-appended footer, mark contacted → webhook.
   await page.goto("/dashboard/money-list");
-  await page.getByTestId("ml-row").filter({ hasText: "Pat Testcase" }).click();
+  await page.getByTestId("ml-row").filter({ hasText: pat }).getByRole("link", { name: pat, exact: true }).click();
   await hydrated(page);
   await page.getByRole("button", { name: "Draft message" }).click();
   await expect(page.getByTestId("draft-email")).toContainText("Hi Pat", { timeout: 20_000 });
@@ -62,20 +64,20 @@ test("Module 3: import CSV (create, then update), ranked list, filters, what-if,
   await expect(page.getByTestId("draft-sms")).toContainText("Reply STOP to opt out.");
   await page.getByRole("button", { name: "Mark contacted (email)" }).click();
   await expect(page.getByTestId("loan-history")).toContainText("Contacted by email");
-  await expect.poll(() => sink.received.find((r) => r.headers["x-dscr-event"] === "money_list.contacted")?.body.data.borrowerName, { timeout: 15_000 }).toBe("Pat Testcase");
+  await expect.poll(() => sink.received.find((r) => r.headers["x-dscr-event"] === "money_list.contacted")?.body.data.borrowerName, { timeout: 15_000 }).toBe(pat);
   const hit = sink.received.find((r) => r.headers["x-dscr-event"] === "money_list.contacted")!;
   expect(hit.headers["x-dscr-signature"]).toBe(`sha256=${createHmac("sha256", broker.webhookSecret!).update(hit.raw).digest("hex")}`);
   expect(await prisma.event.count({ where: { brokerId: broker.id, type: "moneylist.contacted" } })).toBeGreaterThan(0);
 
-  // Contacted loans leave the active list; snooze removes another.
+  // Worked loans stay on the board with their status.
   await page.goto("/dashboard/money-list");
-  await expect(page.getByTestId("ml-row").filter({ hasText: "Pat Testcase" })).toHaveCount(0);
-  const lee = await prisma.closedLoan.findFirstOrThrow({ where: { brokerId: broker.id, email: `lee.${tag}@example.test` } });
-  await page.goto(`/dashboard/money-list/${lee.id}`);
+  await expect(page.getByTestId("ml-row").filter({ hasText: pat })).toContainText("Contacted");
+  const leeLoan = await prisma.closedLoan.findFirstOrThrow({ where: { brokerId: broker.id, email: `lee.${tag}@example.test` } });
+  await page.goto(`/dashboard/money-list/${leeLoan.id}`);
   await hydrated(page);
   await page.getByRole("button", { name: "60d" }).click();
   await expect(page.getByTestId("loan-history")).toContainText("Snoozed 60 days");
-  expect((await prisma.closedLoan.findUniqueOrThrow({ where: { id: lee.id } })).status).toBe("SNOOZED");
+  expect((await prisma.closedLoan.findUniqueOrThrow({ where: { id: leeLoan.id } })).status).toBe("SNOOZED");
   await sink.close();
 });
 

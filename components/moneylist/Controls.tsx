@@ -29,7 +29,7 @@ export function DigestButton() {
     <div className="flex items-center gap-2">
       {msg && <span className="text-xs text-muted" role="status">{msg}</span>}
       <Button
-        variant="ghost"
+        variant="secondary"
         disabled={pending}
         onClick={() =>
           start(async () => {
@@ -38,7 +38,7 @@ export function DigestButton() {
           })
         }
       >
-        {pending ? "Sending…" : "Email me the digest"}
+        {pending ? "Sending…" : "Send my digest now"}
       </Button>
     </div>
   );

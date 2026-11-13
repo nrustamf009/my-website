@@ -23,5 +23,5 @@ export function Turnstile({ siteKey, onToken }: { siteKey: string | null; onToke
       document.head.appendChild(s);
     }
   }, [siteKey, onToken]);
-  return siteKey ? <div ref={ref} className="min-h-[65px]" /> : null;
+  return siteKey ? <div ref={ref} className="min-h-16" /> : null;
 }

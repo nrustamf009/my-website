@@ -18,7 +18,7 @@ const PRODUCT: Record<string, string> = { FIXED: "30-year fixed", IO: "Interest-
 function Row({ label, value, strong, hint }: { label: string; value: React.ReactNode; strong?: boolean; hint?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5 text-sm">
-      <dt className="text-muted">{label}{hint && <span className="block text-[11px]">{hint}</span>}</dt>
+      <dt className="text-muted">{label}{hint && <span className="block text-xs">{hint}</span>}</dt>
       <dd className={cx("num text-right", strong ? "font-semibold text-ink" : "text-ink-2")}>{value}</dd>
     </div>
   );

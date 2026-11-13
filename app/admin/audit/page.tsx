@@ -16,7 +16,7 @@ export default async function Audit() {
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Audit log" subtitle="Impersonation, broker creation, status and module changes, invitations." />
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[640px]">
+        <table className="w-full min-w-160">
           <thead className="bg-paper"><tr><Th>When</Th><Th>Who</Th><Th>Action</Th><Th>Broker</Th></tr></thead>
           <tbody className="divide-y divide-line">
             {rows.map((r) => (

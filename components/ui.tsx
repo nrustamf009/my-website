@@ -56,7 +56,7 @@ export function Label({ className, ...props }: ComponentProps<"label">) {
 }
 
 const inputBase =
-  "block w-full rounded-lg border border-line bg-surface px-3 text-[15px] text-ink placeholder:text-muted/70 transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40";
+  "block w-full rounded-lg border border-line bg-surface px-3 text-base text-ink placeholder:text-muted/70 transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40";
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cx(inputBase, "h-11", className)} {...props} />;
@@ -68,7 +68,7 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
 
 export function Select({ className, children, ...props }: ComponentProps<"select">) {
   return (
-    <select className={cx(inputBase, "h-11 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236f6a60%22 stroke-width=%222.5%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-[length:12px] bg-[right_12px_center] bg-no-repeat pr-9", className)} {...props}>
+    <select className={cx(inputBase, "h-11 appearance-none select-chevron pr-9", className)} {...props}>
       {children}
     </select>
   );

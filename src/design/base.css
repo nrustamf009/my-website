@@ -45,3 +45,33 @@ input[type="range"].range-accent {
 .cta { min-height: var(--cta-height); border-radius: var(--radius-cta); }
 .rule-strong { border-color: var(--rule-strong); border-width: var(--border-strong); }
 .icon { stroke-width: var(--icon-stroke); }
+
+/* Font utilities and page defaults (theme stacks come from theme.css). */
+@utility font-display {
+  font-family: var(--font-display);
+}
+@utility font-sans {
+  font-family: var(--font-body);
+}
+@utility font-mono {
+  font-family: var(--font-mono);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+
+/* Select chevron drawn in the theme's muted color. */
+.select-chevron {
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}

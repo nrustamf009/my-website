@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { EMBED_IFRAME_SNIPPET_STYLE } from "@design/embed";
 import { Card, CardHeader } from "@/components/ui";
 import { CopyButton } from "@/components/dashboard/CopyButton";
 
@@ -15,7 +16,7 @@ export function EmbedPanel({ slug, loSlug }: { slug: string; loSlug?: string | n
   const lo = loSlug ? `?lo=${loSlug}` : "";
   const link = `${base}/b/${slug}/check${lo}`;
   const script = `<script src="${base}/embed.js" data-broker="${slug}"${loSlug ? ` data-lo="${loSlug}"` : ""} async></script>`;
-  const iframe = `<iframe src="${base}/b/${slug}/embed/check${lo}" style="width:100%;min-height:1200px;border:0" title="DSCR Instant Check" loading="lazy"></iframe>`;
+  const iframe = `<iframe src="${base}/b/${slug}/embed/check${lo}" style="${EMBED_IFRAME_SNIPPET_STYLE}" title="DSCR Instant Check" loading="lazy"></iframe>`;
   return (
     <Card id="embed">
       <CardHeader title="Your Instant Check" subtitle="Link in bio, email signature, and an embeddable calculator for your website." />

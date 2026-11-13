@@ -50,7 +50,7 @@ export default async function ScenarioPage({ params }: { params: Promise<{ id: s
         <Card className="overflow-hidden">
           <CardHeader title="Options" />
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm">
+            <table className="w-full min-w-130 text-sm">
               <thead><tr className="border-y border-line text-left text-xs uppercase tracking-wider text-muted"><th className="px-4 py-2" />{rows.map((r) => <th key={r.option.id} className="px-4 py-2 text-right">Option {r.option.label}{r.option.recommended ? " ★" : ""}</th>)}</tr></thead>
               <tbody className="divide-y divide-line">
                 {([

@@ -59,7 +59,7 @@ export function describeOpportunity(ev: LoanEvaluation, horizonMonths: number): 
     return {
       headline,
       benefitLabel: usd(ev.estimatedBenefitCents),
-      benefitHint: `est. net over ${horizonMonths} mo`,
+      benefitHint: `${horizonMonths} months${ev.breakevenMonth ? ` · even in month ${ev.breakevenMonth}` : ""}`,
       kind: ev.benefitKind,
       reasons,
       benefit: `Refinancing could lower the payment by about ${usd(ev.monthlySavingsCents)}/mo`,

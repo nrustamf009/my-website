@@ -44,7 +44,7 @@ export default async function AdminHome() {
       <Card className="mt-6 overflow-hidden">
         <CardHeader title="Brokers" subtitle="30-day activity per client: what you show them in the monthly review" />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px]">
+          <table className="w-full min-w-230">
             <thead className="bg-paper"><tr><Th>Broker</Th><Th>Status</Th><Th className="text-right">Leads</Th><Th className="text-right">Opens</Th><Th className="text-right">Scans</Th><Th className="text-right">Contacted</Th><Th className="text-right">Money List</Th><Th>Last activity</Th><Th /></tr></thead>
             <tbody className="divide-y divide-line">
               {brokers.map((b) => {

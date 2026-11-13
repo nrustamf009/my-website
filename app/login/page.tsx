@@ -70,7 +70,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 <form key={u.id} action={demoSignIn}>
                   <input type="hidden" name="email" value={u.email} />
                   <button className="flex w-full items-center gap-3 rounded-lg border border-line px-3 py-2.5 text-left text-sm transition hover:bg-paper">
-                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: u.broker?.accentColor ?? "#17150f" }} />
+                    <span className="h-3 w-3 shrink-0 rounded-full bg-ink" style={u.broker?.accentColor ? { background: u.broker.accentColor } : undefined} />
                     <span className="flex-1">
                       <span className="block font-medium text-ink">{u.name ?? u.email}</span>
                       <span className="block text-xs text-muted">{u.role === "AGENCY_ADMIN" ? "Agency admin" : u.broker?.companyName} · {u.email}</span>

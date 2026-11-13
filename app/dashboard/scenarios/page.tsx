@@ -23,7 +23,7 @@ export default async function ScenariosPage() {
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[680px]" data-testid="scenario-table">
+            <table className="w-full min-w-170" data-testid="scenario-table">
               <thead className="border-b border-line"><tr><Th>Investor · property</Th><Th>Status</Th><Th className="text-right">Opens</Th><Th>Last opened</Th><Th>Picked</Th><Th>LO</Th></tr></thead>
               <tbody className="divide-y divide-line">
                 {list.map((s) => {
@@ -32,7 +32,7 @@ export default async function ScenariosPage() {
                   return (
                     <tr key={s.id} className="hover:bg-paper/60">
                       <Td><Link href={`/dashboard/scenarios/${s.id}`} className="font-medium text-ink hover:text-accent">{s.investorName}</Link><div className="text-xs text-muted">{s.propertyAddress}</div></Td>
-                      <Td><Badge tone={TONE[st]}>{st === "LIVE" ? "Shared" : st[0] + st.slice(1).toLowerCase()}</Badge><div className="mt-0.5 text-[11px] text-muted">{st === "LIVE" ? `until ${shortDate(s.expiresAt)}` : ""}</div></Td>
+                      <Td><Badge tone={TONE[st]}>{st === "LIVE" ? "Shared" : st[0] + st.slice(1).toLowerCase()}</Badge><div className="mt-0.5 text-xs text-muted">{st === "LIVE" ? `until ${shortDate(s.expiresAt)}` : ""}</div></Td>
                       <Td className="num text-right">{s.views.length}</Td>
                       <Td className="text-muted">{s.views[0] ? relativeTime(s.views[0].startedAt) : "—"}</Td>
                       <Td>{picked ? <Badge tone="accent">Option {picked.label}</Badge> : <span className="text-muted">—</span>}</Td>

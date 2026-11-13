@@ -54,26 +54,6 @@
   --shadow-lg: var(--shadow);
 }
 
-@utility font-display {
-  font-family: var(--font-display);
-}
-@utility font-sans {
-  font-family: var(--font-body);
-}
-@utility font-mono {
-  font-family: var(--font-mono);
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-body);
-}
-
 /* Grid/flex children must be allowed to shrink, or long truncated text widens the page on phones. */
 .grid > * {
   min-width: 0;

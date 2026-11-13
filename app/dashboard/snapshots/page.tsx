@@ -32,7 +32,7 @@ export default async function SnapshotsPage() {
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px]" data-testid="snapshot-table">
+            <table className="w-full min-w-160" data-testid="snapshot-table">
               <thead className="border-b border-line"><tr><Th>Listing</Th><Th>Realtor</Th><Th className="text-right">Scans</Th><Th className="text-right">Leads</Th><Th>Created</Th></tr></thead>
               <tbody className="divide-y divide-line">
                 {snaps.map((s) => (
@@ -59,7 +59,7 @@ export default async function SnapshotsPage() {
               <CardHeader title={r.name} subtitle={`${r.brokerage}${r.email ? ` · ${r.email}` : ""}`} action={<EmailStatsButton realtorId={r.id} disabled={!r.email} />} />
               <div className="grid grid-cols-4 gap-2 px-5 pb-4 text-center">
                 {[["Snapshots", st?.snapshots ?? 0], ["Scans", st?.scans ?? 0], ["Scans 30d", st?.scans30 ?? 0], ["Leads", st?.leads ?? 0]].map(([l, v]) => (
-                  <div key={l as string} className="rounded-xl bg-paper/70 py-2"><div className="num font-display text-2xl">{v}</div><div className="text-[11px] text-muted">{l}</div></div>
+                  <div key={l as string} className="rounded-xl bg-paper/70 py-2"><div className="num font-display text-2xl">{v}</div><div className="text-xs text-muted">{l}</div></div>
                 ))}
               </div>
               <div className="flex items-center justify-between border-t border-line px-5 py-3 text-xs text-muted">

@@ -1,3 +1,4 @@
+import { EMBED_IFRAME_CSS } from "@design/embed";
 import { env } from "@/lib/env";
 
 /**
@@ -19,7 +20,7 @@ export function GET() {
   f.src = ${JSON.stringify(env.appUrl)} + "/b/" + encodeURIComponent(slug) + "/embed/check?" + q.toString();
   f.title = "DSCR Instant Check";
   f.loading = "lazy";
-  f.style.cssText = "width:100%;border:0;min-height:1100px;display:block;background:transparent";
+  f.style.cssText = ${JSON.stringify(EMBED_IFRAME_CSS)};
   window.addEventListener("message", function(e){
     if (e.source === f.contentWindow && e.data && e.data.type === "dscr-embed-height") f.style.height = e.data.height + "px";
   });

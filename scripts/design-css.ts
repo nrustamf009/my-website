@@ -53,6 +53,7 @@ function block(def: ThemeDefinition): string {
   v("color-scheme", dark ? "dark" : "light");
   // Variant flags expressed as tokens, so primitives stay branch-free.
   v("section-number-display", def.variants.numberedSections ? "inline" : "none");
+  v("dashboard-count-display", def.variants.shell === "topbar" ? "block" : "none");
   const mono = def.variants.monogram;
   v("monogram-display", mono === "wordmark" ? "none" : "grid");
   v("monogram-bg", mono === "solid-rounded" ? "var(--accent)" : "transparent");

@@ -24,9 +24,9 @@ const ICONS: Record<string, React.ReactNode> = {
   building: <><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1" /></>,
 };
 
-export function Icon({ name, className = "h-[18px] w-[18px]" }: { name: string; className?: string }) {
+export function Icon({ name, className = "size-4.5" }: { name: string; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" className={`icon ${className}`} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       {ICONS[name]}
     </svg>
   );
@@ -49,7 +49,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
           >
             <span className={active ? "text-accent" : "text-muted"}><Icon name={it.icon} /></span>
             <span className="font-medium">{it.label}</span>
-            {it.badge ? <span className="ml-auto rounded-full bg-accent px-1.5 text-[11px] font-semibold text-on-accent">{it.badge}</span> : null}
+            {it.badge ? <span className="ml-auto rounded-full bg-accent px-1.5 text-xs font-semibold text-on-accent">{it.badge}</span> : null}
           </Link>
         );
       })}
@@ -77,7 +77,7 @@ export function MobileBar({ items, header, userLabel, signOut }: { items: NavIte
         >
           {current?.label ?? "Menu"}
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">{open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
-          {badge > 0 && !open && <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[11px] font-semibold text-on-accent">{badge}</span>}
+          {badge > 0 && !open && <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-xs font-semibold text-on-accent">{badge}</span>}
         </button>
       </div>
       {open && (
