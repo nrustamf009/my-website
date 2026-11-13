@@ -18,3 +18,7 @@ export function arcPath(from: number, to: number, radius = 125) {
   const p2 = arcPoint(to, radius);
   return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${radius} ${radius} 0 0 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
 }
+
+/** CSS percentage for a meter position ("45.5%"). */
+export const toPercent = (pos: number) => `${(pos * 100).toFixed(2)}%`;
+export const meterPercent = (value: number | null) => toPercent(meterPosition(value));

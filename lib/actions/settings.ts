@@ -13,7 +13,7 @@ import { queueWebhook, deliverNow, redeliver as redeliverDelivery } from "@/lib/
 import { sendBrandEmail } from "@/lib/emails";
 import { sendBrokerInvite } from "@/lib/invite";
 import { emit } from "@/lib/events";
-import { checkAccent } from "@design";
+import { THEME_IDS, checkAccent, isThemeId } from "@design";
 
 export type SettingsState = { ok?: boolean; error?: string; fieldErrors?: Record<string, string>; message?: string };
 const fe = (e: z.ZodError) => Object.fromEntries(e.issues.map((i) => [String(i.path[0]), i.message]));
@@ -37,6 +37,7 @@ export async function saveBranding(_p: SettingsState, fd: FormData): Promise<Set
     .object({
       companyName: z.string().trim().min(2, "Enter the company name").max(100),
       accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a 6-digit hex color (for example, the one from your brand guide)"),
+      theme: z.enum(THEME_IDS).optional(),
       logoUrl: z.string().max(360_000, "Logo must be under 256 KB").refine((v) => v === "" || /^data:image\/(png|jpeg|svg\+xml);base64,/.test(v) || /^https:\/\//.test(v), "Use a PNG, JPG or SVG"),
       websiteUrl: optionalUrl,
       privacyPolicyUrl: optionalUrl,
@@ -45,7 +46,7 @@ export async function saveBranding(_p: SettingsState, fd: FormData): Promise<Set
     })
     .safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { fieldErrors: fe(parsed.error) };
-  const acc = checkAccent(broker.theme, parsed.data.accentColor);
+  const acc = checkAccent(parsed.data.theme ?? broker.theme, parsed.data.accentColor);
   if (!acc.ok) return { fieldErrors: { accentColor: acc.reason ?? "Pick a color with more contrast." } };
   const d = parsed.data;
   await prisma.broker.update({ where: { id: broker.id }, data: { ...d, logoUrl: d.logoUrl || null, websiteUrl: d.websiteUrl || null, privacyPolicyUrl: d.privacyPolicyUrl || null, phone: d.phone || null } });
@@ -250,4 +251,20 @@ export async function setUserActive(userId: string, active: boolean) {
   if (user?.id === userId) return;
   await prisma.user.updateMany({ where: { id: userId, brokerId: broker.id }, data: { active } });
   revalidatePath("/dashboard/settings/team");
+}
+
+/** Settings → Appearance: theme + accent (+ optional logo for dark panels). Refuses accents that can't reach AA. */
+export async function saveAppearance(input: { theme: string; accentColor: string; logoOnDarkUrl: string }): Promise<{ ok: boolean; error?: string }> {
+  const { broker, user, db } = await requireBroker({ manage: true, onboarding: true });
+  if (!isThemeId(input.theme)) return { ok: false, error: "Choose a theme" };
+  if (!/^#[0-9a-fA-F]{6}$/.test(input.accentColor)) return { ok: false, error: "Use a 6-digit hex color" };
+  const acc = checkAccent(input.theme, input.accentColor);
+  if (!acc.ok) return { ok: false, error: acc.reason };
+  const logo = input.logoOnDarkUrl.trim();
+  if (logo && !/^data:image\/(png|jpeg|svg\+xml);base64,/.test(logo) && !/^https:\/\//.test(logo)) return { ok: false, error: "Use a PNG, JPG or SVG for the dark-background logo" };
+  if (logo.length > 360_000) return { ok: false, error: "Logo must be under 256 KB" };
+  await prisma.broker.update({ where: { id: broker.id }, data: { theme: input.theme, accentColor: input.accentColor.toUpperCase(), logoOnDarkUrl: logo || null } });
+  await emit(db, "settings.appearance", "Broker", broker.id, { theme: input.theme, accent: input.accentColor.toUpperCase(), from: broker.theme }, user?.id);
+  revalidatePath("/", "layout");
+  return { ok: true };
 }

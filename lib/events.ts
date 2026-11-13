@@ -23,7 +23,8 @@ export type EventType =
   | "moneylist.not_interested"
   | "moneylist.won"
   | "notes.converted"
-  | "webhook.test";
+  | "webhook.test"
+  | "settings.appearance";
 
 /** Append-only event log that powers dashboards, ROI emails and agency stats. */
 export async function emit(db: ScopedDb, type: EventType, entityType: string, entityId: string, meta: Record<string, unknown> = {}, actorUserId?: string | null) {

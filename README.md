@@ -10,6 +10,7 @@ A white-label SaaS for US mortgage brokers who do **DSCR loans** (investment-pro
 | **4. Listing Snapshot** | Co-branded one-page flyer for a realtor's listing (2 templates): payment, DSCR, cash flow and cash to close at 20% and 25% down, rent needed for DSCR 1.00/1.20, QR to a live investor page with a financing form. Per-realtor stats and a stats email. RESPA co-marketing note. |
 | **5. Notes-to-Scenario** | Paste call notes, an email or a transcript. Claude extracts the deal into a strict schema, the LO reviews it (nothing saved until confirm), and one click creates a draft scenario, a tailored DSCR document checklist and a follow-up email. |
 | **Leads CRM-lite** | Status, owner, notes, consents, event timeline, CSV export, CCPA deletion. The webhook stays the main integration. |
+| **Themes** | Three complete looks per broker (maison, terminal, atelier) with an AA-checked accent: public pages, embed, dashboard, PDFs and emails. Settings → Appearance with live preview. |
 | **Agency admin** | Create brokers (onboarding wizard), status and per-module flags, team invites, impersonation with an audit log, usage and churn signals, monthly rollup email. |
 
 No MLS, credit bureau or lender data. No SSNs, documents or audio. **Every integration has a working mock, so the whole product runs with zero API keys.**
@@ -27,10 +28,10 @@ Node 20+. In development `/login` has one-click demo accounts:
 | Account | Role |
 |---|---|
 | `admin@northbeam.example` | Agency admin (Northbeam Growth Partners) |
-| `maya@harborline.example` | Broker admin, Harborline Lending (TX, FL, GA, NC) |
+| `maya@harborline.example` | Broker admin, Harborline Lending (TX, FL, GA, NC) · maison theme |
 | `theo@harborline.example` | Loan officer, Harborline Lending |
-| `daniel@cactusridge.example` | Broker admin, Cactus Ridge Mortgage (AZ, NV, NM, UT) |
-| `priya@evergreenkey.example` | Broker admin, Evergreen Key Capital (WA, OR, ID) |
+| `daniel@cactusridge.example` | Broker admin, Cactus Ridge Mortgage (AZ, NV, NM, UT) · terminal theme |
+| `priya@evergreenkey.example` | Broker admin, Evergreen Key Capital (WA, OR, ID) · atelier theme |
 
 Without `RESEND_API_KEY` every email (magic links, PDFs, alerts, digests) lands in the **dev mailbox** at `/dev/mailbox`. Reseed any time with `npm run seed`. The 10-minute demo script is in [docs/DEMO.md](docs/DEMO.md).
 
@@ -45,6 +46,9 @@ Without `RESEND_API_KEY` every email (magic links, PDFs, alerts, digests) lands 
 | `npm run test:e2e` | Playwright against the dev server (mobile Pixel 7 for every module; desktop for admin, Money List, leads) |
 | `npm run test:e2e:prod` | Reseed, production build, `next start`, full Playwright run (what CI does) |
 | `npm run seed` | Reset demo data |
+| `npm run design:css` | Regenerate `src/design/theme.css` from the theme files (CI checks it is current) |
+| `npm run design:gallery` | Screenshot `/dev/design` (every surface × 3 themes × 390/1440 px) into `node_modules/.cache/design-gallery` |
+| `npm run design:fonts` | Re-download the self-hosted theme fonts (already committed) |
 
 CI (`.github/workflows/ci.yml`) runs lint → typecheck → unit → production-build e2e on every push.
 

@@ -15,7 +15,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = process.cwd();
-const SRC = ["app", "components", "lib"];
+const SRC = ["app", "components", "lib", "src"];
 const files = [];
 const walk = (d) => {
   for (const f of readdirSync(d)) {

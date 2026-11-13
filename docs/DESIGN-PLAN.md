@@ -1,6 +1,6 @@
 # Design system plan: 3 switchable themes (maison · terminal · atelier)
 
-Status: **plan only, waiting for "ok".** No design-system code has been written. Source of truth: `docs/DESIGN.md`; visual reference: `docs/design-reference/`.
+Status: **implemented** (approved with defaults: prepaids stay inside cash to close with a breakdown; Money List follows the reference layout with engine ranking; only `@axe-core/playwright` added; `prisma db push` kept). See docs/DECISIONS.md → Design system for what changed during the build. Source of truth: `docs/DESIGN.md`; visual reference: `docs/design-reference/`.
 
 Starting point (v2, done): all five modules, leads, admin, PDFs and emails work on one neutral look with a per-broker accent (`lib/brand/palette.ts`, Tailwind v4 `@theme` tokens in `app/globals.css`). Today 16 files outside the future `src/design/` contain hex colors, 9 reference font names, and 17 use arbitrary `[NNpx]` classes. Those are the migration surface.
 

@@ -5,6 +5,8 @@ import { agencyBrokerStats, periods, roiStats } from "@/lib/stats";
 import { providerModes } from "@/lib/env";
 import { daysSince, relativeTime } from "@/lib/format";
 import { BrokerAvatar } from "@/components/brand/BrokerAvatar";
+import { setAgencyDefaultTheme } from "@/lib/actions/admin";
+import { THEMES, themeIds } from "@design";
 import { Badge, Card, CardHeader, LinkButton, Notice, PageHeader, Stat, Td, Th } from "@/components/ui";
 import { ImpersonateButton } from "./ImpersonateButton";
 
@@ -27,6 +29,13 @@ export default async function AdminHome() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader title="Agency overview" subtitle={`${brokers.length} broker clients. Last 30 days across all of them.`} actions={<LinkButton href="/admin/brokers/new">Add broker</LinkButton>} />
+      <form action={setAgencyDefaultTheme} className="mb-6 flex flex-wrap items-center gap-2 text-sm text-ink-2">
+        <label htmlFor="agency-theme">Default theme for new brokers</label>
+        <select id="agency-theme" name="theme" defaultValue={agency.defaultTheme} className="h-10 border border-rule bg-surface px-3 text-ink">
+          {themeIds.map((t) => <option key={t} value={t}>{THEMES[t].name}</option>)}
+        </select>
+        <button className="h-10 border border-rule px-3 text-ink">Save</button>
+      </form>
       {month && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           <Stat label="Leads" value={month.leads} hint={Object.entries(month.leadsBySource).map(([k, v]) => `${v} ${k.toLowerCase()}`).join(" · ") || "—"} />

@@ -56,6 +56,14 @@ Scenario and snapshot tokens are 24 random characters (≈138 bits, rejection-sa
 
 `lib/providers/ai`: `extractNotes` (strict JSON schema), `draftOutreach`, `draftFollowUp`. Facts passed to the model are pre-formatted strings from the engine; `guard.ts` rejects any `$` or `%` figure not present in the facts and any banned word, retries once, then falls back to a deterministic template. Compliance footers are appended by code. Without an API key a rule-based parser and templates run.
 
-## Branding
+## Design system (`src/design`)
 
-Per-broker accent color goes through `lib/brand/palette.ts` (AA-checked text and on-accent colors, CSS variables). The switchable theme system (maison, terminal, atelier) is specified in [DESIGN.md](DESIGN.md) and is the next phase.
+Three switchable themes per broker (`Broker.theme`: maison, terminal, atelier) plus the broker's accent. See [DESIGN.md](DESIGN.md) and [DESIGN-PLAN.md](DESIGN-PLAN.md).
+
+- `themes/*.ts` hold every design value (colors, type roles, radii, PDF and email palettes, variant flags). `npm run design:css` generates `theme.css` (CSS variables per `[data-theme]`); Tailwind maps the semantic names (`bg-surface`, `text-muted`, `border-rule`, `type-hero-numeral`…).
+- `accent.ts` derives `onAccent`, `accentText` and `accentTint` in OKLCH and refuses accents that can't reach WCAG AA.
+- `ThemeScope` sets `data-theme`, the broker's accent variables and only that theme's fonts (self-hosted in `src/design/fonts`, `next/font/local`).
+- Only six components branch on the theme: `ResultHero`, `CoverageMeter`, `VerdictBadge`, `OptionCompare`, `ImprovementList`, `DashboardShell` (`src/design/variants`). Everything else uses tokens.
+- PDFs: `getPdfTheme` + `src/design/pdf/kit` (scoped per render with AsyncLocalStorage). Emails: `getEmailTheme` + `src/design/email/components`.
+- `/dev/design` renders every surface in every theme from the golden fixture; `npm run design:gallery` screenshots it; `tests/e2e/design.spec.ts` checks fonts, axe and visual snapshots.
+- `npm run lint` fails on hex colors, font names or px constants outside `src/design`, and on theme branching outside the variants.

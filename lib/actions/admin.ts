@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
-import { THEME_IDS, checkAccent, isThemeId } from "@design";
+import { THEME_IDS, THEMES, checkAccent, isThemeId } from "@design";
 import { prisma, forBroker } from "@/lib/db";
 import { requireAdmin, signImpersonation, verifyImpersonation, IMPERSONATE_COOKIE } from "@/lib/auth/session";
 import { auth } from "@/lib/auth/config";
@@ -137,4 +137,26 @@ export async function resendInvite(userId: string): Promise<{ ok: boolean }> {
   const user = await prisma.user.findFirst({ where: { id: userId, broker: { agencyId: agency.id } }, include: { broker: true } });
   if (!user?.broker) return { ok: false };
   return { ok: await sendBrokerInvite({ to: user.email, name: user.name, agencyName: agency.name, companyName: user.broker.companyName, slug: user.broker.slug }) };
+}
+
+/** Agency default theme for new brokers. */
+export async function setAgencyDefaultTheme(formData: FormData) {
+  const { agency } = await requireAdmin();
+  const theme = String(formData.get("theme") ?? "");
+  if (!isThemeId(theme)) return;
+  await prisma.agency.update({ where: { id: agency.id }, data: { defaultTheme: theme } });
+  await audit(agency.id, "AGENCY_DEFAULT_THEME", null, { theme });
+  revalidatePath("/admin");
+}
+
+/** Agency override of a broker's theme (accent snaps to the theme default if it can't reach AA there). */
+export async function setBrokerTheme(brokerId: string, formData: FormData) {
+  const { agency } = await requireAdmin();
+  const theme = String(formData.get("theme") ?? "");
+  const b = await prisma.broker.findFirst({ where: { id: brokerId, agencyId: agency.id } });
+  if (!b || !isThemeId(theme)) return;
+  const accent = checkAccent(theme, b.accentColor).ok ? b.accentColor : THEMES[theme].defaultAccent;
+  await prisma.broker.update({ where: { id: b.id }, data: { theme, accentColor: accent } });
+  await audit(agency.id, "BROKER_THEME", b.id, { from: b.theme, to: theme, accent });
+  revalidatePath(`/admin/brokers/${b.id}`);
 }

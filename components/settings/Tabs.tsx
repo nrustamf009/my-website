@@ -6,6 +6,7 @@ import { cx } from "@/components/ui";
 
 const TABS = [
   ["/dashboard/settings", "Branding & licenses"],
+  ["/dashboard/settings/appearance", "Appearance"],
   ["/dashboard/settings/team", "Team"],
   ["/dashboard/settings/program", "Program grid"],
   ["/dashboard/settings/states", "Taxes & insurance"],

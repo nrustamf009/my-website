@@ -137,4 +137,4 @@ export function deriveAccent(hex: string, t: AccentInput): DerivedAccent {
   };
 }
 
-const round = (n: number) => Math.round(n * 100) / 100;
+const round = (n: number) => Number(n.toFixed(2));

@@ -323,17 +323,17 @@ Subject: 1842 Calloway St, Columbus, OH 43206 · single-family · list price $38
 | Loan | $288,750 | $308,000 |
 | P&I | $1,945 | $2,075 |
 | PITIA | $2,524 | $2,654 |
-| DSCR | 1.17 (Borderline) | 1.11 |
+| DSCR | 1.16 (Borderline; engine rounds DSCR down) | 1.11 |
 | Cash flow | +$426 | +$296 |
-| Cash to close | $107,800 | $88,550 |
+| Cash to close | $110,707 (incl. $2,907 prepaids & escrow) | $91,457 |
 | Rent for 1.00 / 1.20 | $2,524 / $3,029 | $2,654 / $3,185 |
 
-Max loan at 80% LTV: $308,000. Reserves (25% down): $15,144.
+Max loan at 80% LTV: $308,000. Reserves (25% down): $15,146 (6 × PITIA in cents).
 
-Paths to 1.20 at 25% down: rent about $3,029 (+$79) · rate about 6.750% (−0.375) · more down payment of roughly $9.8k. The reference shows "27.5% down"; the solver must round in the direction that actually reaches the target, so the engine will most likely say 27.6%. Trust the engine.
+Paths to 1.20 at 25% down (engine output; it searches rent in $25 steps): rent $3,050 (+$100) · rate about 6.750% (−0.375) · more down payment of roughly $9.8k. The reference shows "27.5% down"; the solver must round in the direction that actually reaches the target, so the engine will most likely say 27.6%. Trust the engine.
 
 Scenario sheet (loan $288,750 at 75% LTV):
-- A: 7.125% 30-year fixed, no points, prepay 3-2-1 → payment $2,524, DSCR 1.17, cash flow +$426.
+- A: 7.125% 30-year fixed, no points, prepay 3-2-1 → payment $2,524, DSCR 1.16, cash flow +$426.
 - B: 7.375% 30-year fixed, 10-year interest-only, no points, prepay 5-4-3-2-1 → payment $2,354, DSCR 1.25, cash flow +$596, payment from year 11 about $2,883.
 - C: 6.750% 30-year fixed, 1.25 points ($3,609), prepay 5-4-3-2-1 → payment $2,452, DSCR 1.20, cash flow +$498.
 

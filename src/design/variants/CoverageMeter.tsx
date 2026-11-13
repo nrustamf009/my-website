@@ -1,6 +1,6 @@
 "use client";
 
-import { arcPath, arcPoint, meterPosition } from "@/lib/charts/meter";
+import { arcPath, arcPoint, meterPosition, toPercent } from "@/lib/charts/meter";
 import { dscr } from "@/lib/format";
 import { useTheme } from "../ThemeContext";
 
@@ -36,8 +36,8 @@ export function CoverageMeter({ value, min, strong, onBlock = false, form, child
             </g>
           ))}
         </svg>
-        <span className="type-eyebrow absolute text-muted" style={{ left: `${(t1.t.x / 310) * 100}%`, top: `${(t1.t.y / 160) * 100}%`, transform: "translate(-50%,-50%)" }}>{dscr(min)}</span>
-        <span className="type-eyebrow absolute text-muted" style={{ left: `${(t2.t.x / 310) * 100}%`, top: `${(t2.t.y / 160) * 100}%`, transform: "translate(-50%,-50%)" }}>{dscr(strong)}</span>
+        <span className="type-eyebrow absolute text-muted" style={{ left: toPercent(t1.t.x / 310), top: toPercent(t1.t.y / 160), transform: "translate(-50%,-50%)" }}>{dscr(min)}</span>
+        <span className="type-eyebrow absolute text-muted" style={{ left: toPercent(t2.t.x / 310), top: toPercent(t2.t.y / 160), transform: "translate(-50%,-50%)" }}>{dscr(strong)}</span>
         <div className="absolute inset-x-0 bottom-0 flex justify-center">{children}</div>
       </div>
     );
@@ -48,21 +48,21 @@ export function CoverageMeter({ value, min, strong, onBlock = false, form, child
     <div role="img" aria-label={label} className="w-full">
       <div className={block ? (onBlock ? "relative h-4 border-2 border-on-accent" : "relative h-4 border-2 border-ink") : "relative h-6"}>
         {block ? (
-          <div className={`absolute inset-y-0 left-0 ${onBlock ? "bg-on-accent" : "bg-ink"}`} style={{ width: `${pos * 100}%` }} />
+          <div className={`absolute inset-y-0 left-0 ${onBlock ? "bg-on-accent" : "bg-ink"}`} style={{ width: toPercent(pos) }} />
         ) : (
           <>
             <div className={`absolute inset-x-0 top-1/2 h-px ${onBlock ? "bg-on-inverse-muted" : "bg-rule-strong"} opacity-60`} />
-            <div className={`absolute left-0 top-1/2 h-0.5 -translate-y-1/2 ${onBlock ? "bg-on-inverse" : "bg-ink"}`} style={{ width: `${pos * 100}%` }} />
-            <div className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${onBlock ? "bg-on-inverse" : "bg-accent"}`} style={{ left: `${pos * 100}%` }} />
+            <div className={`absolute left-0 top-1/2 h-0.5 -translate-y-1/2 ${onBlock ? "bg-on-inverse" : "bg-ink"}`} style={{ width: toPercent(pos) }} />
+            <div className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${onBlock ? "bg-on-inverse" : "bg-accent"}`} style={{ left: toPercent(pos) }} />
           </>
         )}
         {[pMin, pStrong].map((p, i) => (
-          <div key={i} className={`absolute ${block ? "-bottom-2 h-3" : "top-1/2 h-3 -translate-y-1/2"} w-px ${onBlock ? (block ? "bg-on-accent" : "bg-on-inverse") : "bg-ink"}`} style={{ left: `${p * 100}%` }} />
+          <div key={i} className={`absolute ${block ? "-bottom-2 h-3" : "top-1/2 h-3 -translate-y-1/2"} w-px ${onBlock ? (block ? "bg-on-accent" : "bg-on-inverse") : "bg-ink"}`} style={{ left: toPercent(p) }} />
         ))}
       </div>
       <div className="relative mt-2 h-4">
-        <span className={`type-eyebrow absolute -translate-x-1/2 ${onBlock ? (block ? "text-on-accent" : "text-on-inverse-muted") : "text-muted"}`} style={{ left: `${pMin * 100}%` }}>{dscr(min)}</span>
-        <span className={`type-eyebrow absolute -translate-x-1 whitespace-nowrap ${onBlock ? (block ? "text-on-accent" : "text-on-inverse-muted") : "text-muted"}`} style={{ left: `${pStrong * 100}%` }}>{dscr(strong)}{block ? "" : " · strong tier"}</span>
+        <span className={`type-eyebrow absolute -translate-x-1/2 ${onBlock ? (block ? "text-on-accent" : "text-on-inverse-muted") : "text-muted"}`} style={{ left: toPercent(pMin) }}>{dscr(min)}</span>
+        <span className={`type-eyebrow absolute -translate-x-1 whitespace-nowrap ${onBlock ? (block ? "text-on-accent" : "text-on-inverse-muted") : "text-muted"}`} style={{ left: toPercent(pStrong) }}>{dscr(strong)}{block ? "" : " · strong tier"}</span>
       </div>
     </div>
   );

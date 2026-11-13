@@ -3,7 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import type { Broker, User } from "@prisma/client";
 import { saveBranding, saveLicensing, saveNotifications, saveProgram, saveWebhook, sendTestNotification, sendTestWebhook, type SettingsState } from "@/lib/actions/settings";
-import { checkAccent, getThemeDefinition } from "@design";
+import { THEMES, checkAccent, getThemeDefinition, themeIds } from "@design";
 import { US_STATES, STATE_NAMES, type ProgramGrid } from "@/lib/dscr";
 import { dscr, pct, rate, usd } from "@/lib/format";
 import { Button, Card, CardHeader, Field, Input, Notice, Select, Textarea, cx } from "@/components/ui";
@@ -75,7 +75,8 @@ export function BrandingForm({ broker, step }: { broker: Broker; step?: number }
   const [color, setColor] = useState(broker.accentColor);
   const e = state.fieldErrors ?? {};
   const valid = /^#[0-9a-f]{6}$/i.test(color);
-  const def = getThemeDefinition(broker.theme);
+  const [themeId, setThemeId] = useState(getThemeDefinition(broker.theme).id);
+  const def = getThemeDefinition(themeId);
   const p = checkAccent(def.id, valid ? color : def.defaultAccent);
   return (
     <form action={action}>
@@ -84,6 +85,11 @@ export function BrandingForm({ broker, step }: { broker: Broker; step?: number }
         <div className="grid gap-5 p-5 sm:grid-cols-2">
           <div className="sm:col-span-2"><ImageInput name="logoUrl" initial={broker.logoUrl} label="Upload logo" /></div>
           <Field label="Company name" error={e.companyName}><Input name="companyName" defaultValue={broker.companyName} /></Field>
+          <Field label="Theme" hint={def.tagline} error={e.theme}>
+            <Select name="theme" value={themeId} onChange={(ev) => { const t = ev.target.value as typeof themeId; setThemeId(t); if (!checkAccent(t, color).ok) setColor(getThemeDefinition(t).defaultAccent); }}>
+              {themeIds.map((t) => <option key={t} value={t}>{THEMES[t].name}</option>)}
+            </Select>
+          </Field>
           <Field label="Accent color" error={e.accentColor} hint={valid ? (p.ok ? `Text on accent ${p.ratios.onAccent}:1 · accent text on page ${p.ratios.accentTextOnBg}:1${p.accentText !== p.accent ? ` (text uses ${p.accentText})` : ""}` : p.reason) : undefined}>
             <div className="flex gap-2">
               <input type="color" value={valid ? color : def.defaultAccent} onChange={(ev) => setColor(ev.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1" aria-label="Pick accent color" />

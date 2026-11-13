@@ -3,7 +3,8 @@ import { requireAdmin } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { features, FEATURE_LABELS, licensedStates, type FeatureKey } from "@/lib/broker";
-import { setBrokerFeatures, setBrokerStatus } from "@/lib/actions/admin";
+import { setBrokerFeatures, setBrokerStatus, setBrokerTheme } from "@/lib/actions/admin";
+import { THEMES, themeIds } from "@design";
 import { dateTime } from "@/lib/format";
 import { Badge, Button, Card, CardHeader, LinkButton, Notice, PageHeader, cx } from "@/components/ui";
 import { ImpersonateButton } from "../../ImpersonateButton";
@@ -36,6 +37,15 @@ export default async function BrokerDetail({ params, searchParams }: { params: P
             ))}
           </div>
           <div className="border-t border-line px-5 py-3 text-xs text-muted">Onboarding: step {broker.onboardingStep} of 6</div>
+        </Card>
+        <Card>
+          <CardHeader title="Theme" subtitle="The broker can also change it in Settings → Appearance." />
+          <form action={setBrokerTheme.bind(null, broker.id)} className="flex flex-wrap items-center gap-2 p-5">
+            <select name="theme" defaultValue={broker.theme} aria-label="Theme" className="h-10 border border-rule bg-surface px-3 text-sm text-ink">
+              {themeIds.map((t) => <option key={t} value={t}>{THEMES[t].name}</option>)}
+            </select>
+            <Button size="sm" variant="secondary">Apply theme</Button>
+          </form>
         </Card>
         <Card>
           <CardHeader title="Modules (sell tiers)" subtitle="Disabled modules disappear from the dashboard and their public pages." />

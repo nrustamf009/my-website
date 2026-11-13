@@ -7,6 +7,7 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"]],
   outputDir: "node_modules/.cache/playwright-results",
+  snapshotPathTemplate: "tests/e2e/__screenshots__/{arg}-{projectName}{ext}",
   use: { baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000", trace: "off" },
   projects: [
     { name: "mobile", use: { ...devices["Pixel 7"] } },

@@ -5,6 +5,7 @@ import { forBroker, prisma } from "@/lib/db";
 import { listingSnapshot, type PropertyType, type UsState } from "@/lib/dscr";
 import { listingInputOf } from "@/lib/snapshots-pdf";
 import { turnstileSiteKey } from "@/lib/providers/bot";
+import { withPreview } from "@/lib/preview";
 import { dscr, pct, rate, usd, usdSigned } from "@/lib/format";
 import { t } from "@/lib/strings/en";
 import { PublicShell, UnavailablePage } from "@/components/public/PublicShell";
@@ -15,7 +16,7 @@ import { VerdictBadge } from "@design/variants/VerdictBadge";
 import { cx } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
-type Props = { params: Promise<{ slug: string; token: string }> };
+type Props = { params: Promise<{ slug: string; token: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 async function load(slug: string, token: string) {
   const broker = await prisma.broker.findUnique({ where: { slug }, select: { id: true } });
@@ -34,17 +35,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 
-export default async function ListingPage({ params }: Props) {
+export default async function ListingPage({ params, searchParams }: Props) {
   const { slug, token } = await params;
   const r = await load(slug, token);
   if (!r) notFound();
   const { pc, snap } = r;
   if (pc.unavailable) return <UnavailablePage />;
+  const brand = await withPreview(pc.brand, pc.broker, await searchParams);
   const cols = listingSnapshot(listingInputOf(snap), pc.ctx);
   const first = pc.brand.lo.name.split(" ")[0]!;
   const realtor = snap.realtor;
   return (
-    <PublicShell brand={pc.brand} surface="Investor snapshot">
+    <PublicShell brand={brand} surface="Investor snapshot">
       <ScanBeacon slug={slug} token={token} />
       <section className="mx-auto max-w-6xl px-[var(--space-page)] pt-6 sm:px-6 sm:pt-10">
         <div className="overflow-hidden rounded-2xl border border-rule bg-surface">

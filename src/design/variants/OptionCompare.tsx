@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { dscr, rate, usd, usdSigned } from "@/lib/format";
-import { meterPosition } from "@/lib/charts/meter";
+import { meterPercent } from "@/lib/charts/meter";
 import { useTheme } from "../ThemeContext";
 
 export interface CompareOption {
@@ -119,8 +119,8 @@ export function OptionCompare(p: OptionCompareProps) {
               <div key={o.id} className="flex items-center gap-3">
                 <span className="w-4 font-mono text-ink">{o.label}</span>
                 <div className="relative h-3 flex-1 rounded-sm bg-surface-alt">
-                  <div className={`absolute inset-y-0 left-0 rounded-sm ${o.id === selected ? "bg-accent" : "bg-dim"}`} style={{ width: `${meterPosition(o.dscrRatio) * 100}%` }} />
-                  {[p.min, p.strong].map((t) => <div key={t} className="absolute -inset-y-1 w-px bg-ink" style={{ left: `${meterPosition(t) * 100}%` }} />)}
+                  <div className={`absolute inset-y-0 left-0 rounded-sm ${o.id === selected ? "bg-accent" : "bg-dim"}`} style={{ width: meterPercent(o.dscrRatio) }} />
+                  {[p.min, p.strong].map((t) => <div key={t} className="absolute -inset-y-1 w-px bg-ink" style={{ left: meterPercent(t) }} />)}
                 </div>
                 <span className="num w-10 text-right font-mono text-ink">{dscr(o.dscrRatio)}</span>
               </div>

@@ -16,4 +16,6 @@ Setup: `npm run setup && npm run dev`. Use a phone (or devtools mobile view) for
 
 **9:00 · Notes-to-Scenario (40 s).** Notes → **Try: duplex purchase** → Extract → review form (nothing saved yet) → Create → draft scenario + document checklist + follow-up email with the scenario link.
 
+**9:20 · Theme switch (20 s).** Settings → Appearance: pick Terminal, watch the preview, save; open the Instant Check: same numbers, a completely different look. (Cactus Ridge is terminal, Evergreen Key is atelier out of the box.)
+
 **9:40 · Agency view (20 s).** Sign in as `admin@northbeam.example`: brokers with leads, opens, scans, contacted, refi opportunities and a churn flag; impersonate (audited); turn a module off to sell tiers.
