@@ -1,8 +1,4 @@
 {
   "_comment": "Files not yet migrated to src/design (docs/DESIGN-PLAN.md). This list may only shrink; it must be empty when the design system ships.",
-  "files": [
-    "lib/auth/config.ts",
-    "lib/emails/index.tsx",
-    "lib/emails/layout.tsx"
-  ]
+  "files": []
 }

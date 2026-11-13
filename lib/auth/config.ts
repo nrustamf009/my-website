@@ -19,13 +19,16 @@ export function demoLoginEnabled() {
   return process.env.DEMO_LOGIN === "true" || process.env.NODE_ENV !== "production";
 }
 
-function magicLinkHtml(url: string) {
-  return `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f5f5f4;padding:32px">
-<table width="100%"><tr><td align="center"><table style="max-width:480px;background:#fff;border-radius:14px;padding:32px">
-<tr><td><h1 style="font-size:20px;margin:0 0 12px;color:#1c1917">Sign in to DSCR Investor Toolkit</h1>
-<p style="color:#44403c;font-size:15px;line-height:1.5">Click the button below to sign in. This link expires in 24 hours and can be used once.</p>
-<p style="margin:24px 0"><a href="${url}" style="background:#1c1917;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Sign in</a></p>
-<p style="color:#78716c;font-size:12px">If you didn't request this, you can ignore this email.</p></td></tr></table></td></tr></table></body></html>`;
+async function magicLinkHtml(url: string) {
+  const { render } = await import("@react-email/components");
+  const { PlatformEmail } = await import("@design/email/components");
+  return render(
+    PlatformEmail({
+      heading: "Sign in to DSCR Investor Toolkit",
+      paragraphs: ["Click the button below to sign in. This link expires in 24 hours and can be used once.", "If you didn't request this, you can ignore this email."],
+      cta: { label: "Sign in", url },
+    }),
+  );
 }
 
 const config: NextAuthConfig = {
@@ -43,7 +46,7 @@ const config: NextAuthConfig = {
         await getMailer().send({
           to: identifier,
           subject: "Your sign-in link for DSCR Investor Toolkit",
-          html: magicLinkHtml(url),
+          html: await magicLinkHtml(url),
           text: `Sign in to DSCR Investor Toolkit: ${url}\n\nThis link expires in 24 hours.`,
         });
       },

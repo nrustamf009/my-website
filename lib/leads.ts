@@ -77,6 +77,7 @@ export async function createPublicLead(p: {
         to: email,
         subject: `Your DSCR estimate for ${input.form.address.split(",")[0]}`,
         heading: "Your DSCR estimate",
+        hero: { label: "Estimated debt service coverage", value: dscr(a.dscrRatio), note: t.verdict[a.verdict] },
         intro: `Hi ${first}, here's your estimate for ${input.form.address}. The PDF has the full breakdown, the cash you'd need, and what would change the outcome.`,
         rows: [
           { label: "Estimated DSCR", value: `${dscr(a.dscrRatio)} · ${t.verdict[a.verdict]}` },
