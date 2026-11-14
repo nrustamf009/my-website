@@ -72,3 +72,8 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - **Appearance:** a theme change can swap the whole dashboard shell (sidebar ↔ top bar), so the confirmation comes back through `?saved=1` instead of component state. Preview parameters (`previewTheme`, `previewAccent`) are honored only for the broker's users, its agency admins, or demo brokers.
 - **Money List board keeps contacted and snoozed loans** with a status column (DESIGN.md §7.4), instead of hiding them; not-interested and won loans drop off.
 - **Acceptance run (production build, 2026-11-13):** 22/22 Playwright specs (mobile + desktop); axe (WCAG 2 A/AA) zero serious/critical issues on check, listing and scenario pages in all three themes; only the active theme's font families load; Lighthouse mobile on `/b/<slug>/check`: maison 96, terminal 94, atelier 97 performance, 100 accessibility, best practices and SEO.
+
+## Netlify deploy target
+- Added `netlify.toml` and four scheduled functions that call the existing `/api/cron/*` routes with `CRON_SECRET`, so crons work without Vercel. `vercel.json` stays; both hosts are supported.
+- `APP_URL` falls back to Netlify's `URL` env var, then `VERCEL_URL`.
+- `SEED_IF_EMPTY=true` seeds the demo data during the build only when the Postgres database has zero brokers, so a hosted demo comes up populated and later deploys never wipe data. No new dependencies (Netlify applies its Next.js runtime itself).

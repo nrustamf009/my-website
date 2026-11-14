@@ -6,7 +6,7 @@ const e = (k: string) => {
 
 export const env = {
   get appUrl() {
-    return (e("APP_URL") ?? (e("VERCEL_URL") ? `https://${e("VERCEL_URL")}` : "http://localhost:3000")).replace(/\/$/, "");
+    return (e("APP_URL") ?? e("URL") ?? (e("VERCEL_URL") ? `https://${e("VERCEL_URL")}` : "http://localhost:3000")).replace(/\/$/, "");
   },
   get authSecret() {
     return e("AUTH_SECRET") ?? "dev-insecure-secret-change-me";

@@ -5,7 +5,7 @@
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "dev": "next dev",
-    "build": "node scripts/prisma-provider.mjs && prisma generate && next build",
+    "build": "node scripts/prisma-provider.mjs && prisma generate && node scripts/seed-if-empty.mjs && next build",
     "start": "next start",
     "lint": "node scripts/lint.mjs && tsx scripts/design-css.ts --check",
     "typecheck": "tsc --noEmit",

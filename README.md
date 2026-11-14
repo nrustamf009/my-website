@@ -81,6 +81,10 @@ At **200 Instant Checks, 20 scenarios and 10 snapshots a month**:
 
 Check current vendor pricing before quoting a client; the expensive line is rent data, and the 30-day address cache keeps it predictable.
 
+## Deploy to Netlify
+
+See [docs/DEPLOY-NETLIFY.md](docs/DEPLOY-NETLIFY.md): Neon Postgres, import the repo, set 5 env vars, deploy. Crons run as Netlify scheduled functions.
+
 ## Deploy to Vercel
 
 1. Import the repo. Add **Neon Postgres** from the Vercel Marketplace (sets `DATABASE_URL`).
