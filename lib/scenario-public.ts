@@ -1,7 +1,7 @@
 import type { Broker, Scenario, ScenarioOption } from "@prisma/client";
 import { forBroker, prisma } from "@/lib/db";
 import { getPublicContext, notificationEmails, type PublicBrand } from "@/lib/broker";
-import { auth } from "@/lib/auth/config";
+import { getStaffSession } from "@/lib/auth/session";
 import { emit } from "@/lib/events";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { sendBrandEmail } from "@/lib/emails";
@@ -22,7 +22,7 @@ export async function loadPublicScenario(slug: string, token: string) {
 
 /** Broker staff and agency admins previewing a link are never tracked. */
 export async function isStaff(brokerId: string, agencyId: string) {
-  const session = await auth();
+  const session = await getStaffSession();
   return !!session?.user && (session.user.brokerId === brokerId || session.user.agencyId === agencyId);
 }
 

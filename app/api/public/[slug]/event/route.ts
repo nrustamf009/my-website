@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { forBroker } from "@/lib/db";
 import { getPublicContext } from "@/lib/broker";
-import { auth } from "@/lib/auth/config";
+import { getStaffSession } from "@/lib/auth/session";
 import { emit } from "@/lib/events";
 import { clientKey, currentDevice, rateLimit } from "@/lib/request";
 
@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const body = parsed.data;
   const pc = await getPublicContext(slug, { feature: body.type === "snapshot.scanned" ? "snapshot" : "check" });
   if (!pc || pc.unavailable) return NextResponse.json({ ok: false }, { status: 404 });
-  const session = await auth();
+  const session = await getStaffSession();
   if (session?.user && (session.user.brokerId === pc.broker.id || session.user.agencyId === pc.broker.agencyId)) return NextResponse.json({ ok: true, tracked: false });
   const db = forBroker(pc.broker.id);
   const who = await clientKey();

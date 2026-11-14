@@ -19,7 +19,7 @@ Site configuration → Environment variables, before the first deploy:
 | `DATABASE_URL` | the Neon connection string |
 | `AUTH_SECRET` | any random 32+ characters (`openssl rand -base64 32`) |
 | `CRON_SECRET` | another random string |
-| `DEMO_LOGIN` | `true` for a hosted demo: no sign-in, the home page is the module picker |
+| `DEMO_LOGIN` | leave unset for the demo (no sign-in, the home page is the module picker). Set `false` for a real deployment with email sign-in. |
 | `SEED_IF_EMPTY` | `true` to load the demo brokers on the first deploy. It only seeds an empty database and never wipes data. |
 | `APP_URL` | optional; defaults to the Netlify site URL. Set it when you add a custom domain. |
 
@@ -28,4 +28,4 @@ Without them every integration uses its mock.
 
 ## 4. Deploy
 Trigger the deploy. Open `https://<site>.netlify.app/`, pick a demo broker and open any module.
-Without `RESEND_API_KEY` emails are not sent; with `DEMO_LOGIN=true` you do not need them to sign in.
+Check `https://<site>.netlify.app/api/health`: it should show `"db":"ok"` and `"brokers":3`. If it shows an error, the database URL or the seed is the problem.

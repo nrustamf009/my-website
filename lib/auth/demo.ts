@@ -1,10 +1,13 @@
 /**
- * Demo without sign-in (DEMO_LOGIN=true or development). Each demo broker maps to its seeded admin,
+ * Demo without sign-in. Each demo broker maps to its seeded admin,
  * so every dashboard page opens directly; /go signs the visitor in as that account and redirects.
  */
-/** Demo mode: on in development, or when DEMO_LOGIN=true. */
+/**
+ * Demo mode (no sign-in at all) is ON by default. Set DEMO_LOGIN=false for a real deployment with
+ * magic-link sign-in.
+ */
 export function demoLoginEnabled() {
-  return process.env.DEMO_LOGIN === "true" || process.env.NODE_ENV !== "production";
+  return process.env.DEMO_LOGIN !== "false";
 }
 
 export const DEMO_BROKERS = [
@@ -15,6 +18,8 @@ export const DEMO_BROKERS = [
 
 export const DEMO_AGENCY_EMAIL = "admin@northbeam.example";
 export const DEMO_COOKIE = "demo_as";
+/** Same value as IMPERSONATE_COOKIE in session.ts (kept here so client code can import this file). */
+export const IMPERSONATE_COOKIE_NAME = "dscr_impersonate";
 
 export type DemoSlug = (typeof DEMO_BROKERS)[number]["slug"];
 

@@ -64,7 +64,7 @@ CI (`.github/workflows/ci.yml`) runs lint → typecheck → unit → production-
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | no | Notes extraction and outreach/follow-up drafts. Default model `claude-opus-5-5`. Without a key a rule-based parser and templates are used. |
 | `RENTCAST_API_KEY` | no | Rent estimates and property-tax records (cached 30 days per address). Without it: deterministic mock estimates. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | no | Cloudflare Turnstile on public forms (free). Honeypot + timing + rate limits always on. |
-| `DEMO_LOGIN` | no | `true` enables one-click demo sign-in in production (hosted demo only). |
+| `DEMO_LOGIN` | no | Demo (no sign-in, module picker on `/`) is on by default. Set `false` for real email sign-in. |
 | `TRANSCRIPTION_ENABLED` | no | Reserved; audio is off in v1. |
 
 ## Cost per broker (estimate)

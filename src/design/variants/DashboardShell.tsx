@@ -32,15 +32,17 @@ function BrandBlock({ brand, tone }: { brand: ShellBrand; tone: "page" | "invers
  * terminal: bordered 208px sidebar, current item raised with an accent badge · atelier: top bar with a
  * 2px rule and an underlined current item. Phones always get the compact bar + menu.
  */
-export function DashboardShell({ items, brand, userLabel, signOut, banner, children }: { items: NavItem[]; brand: ShellBrand; userLabel: string; signOut: () => Promise<void>; banner?: ReactNode; children: ReactNode }) {
+export function DashboardShell({ items, brand, userLabel, signOut, banner, children }: { items: NavItem[]; brand: ShellBrand; userLabel: string; signOut?: () => Promise<void>; banner?: ReactNode; children: ReactNode }) {
   const { variants } = useTheme();
   const path = usePathname();
   const mobile = <MobileBar items={items} header={<BrandBlock brand={brand} tone="page" />} userLabel={userLabel} signOut={signOut} />;
-  const signOutForm = (cls: string) => (
-    <form action={signOut}>
-      <button className={cls}>Sign out</button>
-    </form>
-  );
+  // No sign-out in the demo (there is no sign-in).
+  const signOutForm = (cls: string) =>
+    signOut ? (
+      <form action={signOut}>
+        <button className={cls}>Sign out</button>
+      </form>
+    ) : null;
 
   if (variants.shell === "topbar") {
     return (

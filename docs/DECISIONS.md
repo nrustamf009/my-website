@@ -89,3 +89,10 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 
 ## No italic display type (owner request)
 - The owner rejected the slanted serif display look. maison's display family moves from Instrument Serif (with italics) to Hanken Grotesk upright, weights 500–600; all italic tokens and `italic` classes are removed (VerdictBadge, ImprovementList, DashboardShell count, emails, PDFs follow from the tokens). The landing headline no longer uses an italic emphasis. This overrides the maison type spec in DESIGN.md.
+
+## Demo is the default, with no Auth.js in the path (owner request, second pass)
+- The owner saw sign-in prompts and "function crashed" on Netlify. Demo mode is now ON unless `DEMO_LOGIN=false`, so no env var is needed for the hosted demo.
+- In demo mode `getSession()` does not call Auth.js at all: it reads the `demo_as` cookie (broker slug, `agency`, or a seeded email) and loads that seeded user, defaulting to Harborline. `/go` only sets that cookie. Every dashboard page opens on first visit; there is no Sign out.
+- Public tracking still uses the real Auth.js session, so demo visits to scenario/listing pages are tracked like an investor's.
+- `/api/health` reports whether the database is reachable and how many brokers exist (no secrets), to debug a deploy without logs.
+- Verified on a production build against Postgres with `DEMO_LOGIN` unset: 142 pages across three brokers and the agency open with no redirects, no error text and no client errors.

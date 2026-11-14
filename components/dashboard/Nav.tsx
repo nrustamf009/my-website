@@ -58,7 +58,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
 }
 
 /** Mobile: compact top bar with a menu button that opens the full navigation. */
-export function MobileBar({ items, header, userLabel, signOut }: { items: NavItem[]; header: ReactNode; userLabel: string; signOut: () => Promise<void> }) {
+export function MobileBar({ items, header, userLabel, signOut }: { items: NavItem[]; header: ReactNode; userLabel: string; signOut?: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   useEffect(() => setOpen(false), [path]);
@@ -85,7 +85,7 @@ export function MobileBar({ items, header, userLabel, signOut }: { items: NavIte
           <SideNav items={items} />
           <div className="mx-3 mt-3 flex items-center justify-between rounded-lg bg-ink/5 px-3 py-2 text-xs text-muted">
             <span className="truncate">{userLabel}</span>
-            <form action={signOut}><button className="font-medium text-ink">Sign out</button></form>
+            {signOut && <form action={signOut}><button className="font-medium text-ink">Sign out</button></form>}
           </div>
         </div>
       )}

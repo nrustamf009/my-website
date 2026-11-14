@@ -18,7 +18,8 @@ for (const { theme, slug, families } of THEMES) {
     const loaded: string[] = await page.evaluate(() => Array.from(document.fonts).filter((f) => f.status === "loaded").map((f) => f.family.replace(/['"]/g, "")));
     const used = ALL.filter((f) => loaded.some((l) => l === f));
     expect(used.length).toBeGreaterThan(0);
-    for (const f of used) expect(families as readonly string[]).toContain(f);
+    // The demo bar is platform chrome (maison: Hanken Grotesk) above the broker's page.
+    for (const f of used) expect([...families, "hankenGrotesk"]).toContain(f);
     expect(await themeOf(page)).toBe(theme);
 
     const snap = await prisma.snapshot.findFirstOrThrow({ where: { broker: { slug } } });

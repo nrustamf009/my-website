@@ -1,5 +1,5 @@
 import type { Broker } from "@prisma/client";
-import { auth } from "@/lib/auth/config";
+import { getStaffSession } from "@/lib/auth/session";
 import { isThemeId, type ThemeId } from "@design";
 import type { PublicBrand } from "@/lib/broker";
 
@@ -12,7 +12,7 @@ export async function withPreview(brand: PublicBrand, broker: Pick<Broker, "id" 
   const accent = typeof q.previewAccent === "string" && /^#?[0-9a-fA-F]{6}$/.test(q.previewAccent) ? `#${q.previewAccent.replace("#", "")}` : null;
   if (!theme && !accent) return brand;
   if (!broker.isDemo) {
-    const session = await auth();
+    const session = await getStaffSession();
     const u = session?.user;
     if (!u || !(u.brokerId === broker.id || (u.role === "AGENCY_ADMIN" && u.agencyId === broker.agencyId))) return brand;
   }

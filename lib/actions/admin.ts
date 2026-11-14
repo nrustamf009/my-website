@@ -6,8 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
 import { THEME_IDS, THEMES, checkAccent, isThemeId } from "@design";
 import { prisma, forBroker } from "@/lib/db";
-import { requireAdmin, signImpersonation, verifyImpersonation, IMPERSONATE_COOKIE } from "@/lib/auth/session";
-import { auth } from "@/lib/auth/config";
+import { getSession, requireAdmin, signImpersonation, verifyImpersonation, IMPERSONATE_COOKIE } from "@/lib/auth/session";
 import { randomToken, slugify } from "@/lib/tokens";
 import { DEFAULT_DISCLAIMER } from "@/lib/compliance/disclaimers";
 import { DEFAULT_GRID } from "@/lib/dscr";
@@ -18,7 +17,7 @@ export type FormState = { error?: string; fieldErrors?: Record<string, string>; 
 const fe = (e: z.ZodError) => Object.fromEntries(e.issues.map((i) => [String(i.path[0]), i.message]));
 
 async function audit(agencyId: string, action: string, targetBrokerId: string | null, meta: Record<string, unknown> = {}) {
-  const session = await auth();
+  const session = await getSession();
   await prisma.auditLog.create({ data: { agencyId, actorUserId: session?.user.id ?? "system", action, targetBrokerId, meta: JSON.stringify(meta) } });
 }
 
@@ -32,7 +31,7 @@ export async function impersonate(brokerId: string) {
 }
 
 export async function stopImpersonating() {
-  const session = await auth();
+  const session = await getSession();
   const jar = await cookies();
   const brokerId = verifyImpersonation(jar.get(IMPERSONATE_COOKIE)?.value);
   jar.delete(IMPERSONATE_COOKIE);

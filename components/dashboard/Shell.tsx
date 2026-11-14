@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { NavItem } from "./Nav";
 import { signOutAction } from "@/lib/actions/auth";
+import { demoLoginEnabled } from "@/lib/auth/demo";
 import { ThemeScope } from "@design/ThemeScope";
 import { DashboardShell, type ShellBrand } from "@design/variants/DashboardShell";
 
@@ -8,7 +9,7 @@ import { DashboardShell, type ShellBrand } from "@design/variants/DashboardShell
 export function Shell({ items, brand, banner, theme, accent, userLabel, children }: { items: NavItem[]; brand: ShellBrand; banner?: ReactNode; theme: string; accent?: string | null; userLabel: string; children: ReactNode }) {
   return (
     <ThemeScope theme={theme} accent={accent} paintRoot>
-      <DashboardShell items={items} brand={brand} banner={banner} userLabel={userLabel} signOut={signOutAction}>
+      <DashboardShell items={items} brand={brand} banner={banner} userLabel={userLabel} signOut={demoLoginEnabled() ? undefined : signOutAction}>
         {children}
       </DashboardShell>
     </ThemeScope>
