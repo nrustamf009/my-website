@@ -3,7 +3,9 @@
 The app runs on Netlify as-is: Netlify detects Next.js, `netlify.toml` sets the build, and four
 scheduled functions in `netlify/functions/` call the same `/api/cron/*` routes Vercel Cron would.
 
-## 1. Database (free)
+## 1. Database (optional)
+Without `DATABASE_URL` the build ships a pre-seeded demo database with the site (no setup; new leads are temporary). For persistent data use Postgres:
+
 Create a Postgres database at neon.tech and copy its connection string (`postgresql://…?sslmode=require`).
 The build switches Prisma to Postgres and creates the tables automatically.
 
@@ -20,7 +22,7 @@ Site configuration → Environment variables, before the first deploy:
 | `AUTH_SECRET` | any random 32+ characters (`openssl rand -base64 32`) |
 | `CRON_SECRET` | another random string |
 | `DEMO_LOGIN` | leave unset for the demo (no sign-in, the home page is the module picker). Set `false` for a real deployment with email sign-in. |
-| `SEED_IF_EMPTY` | `true` to load the demo brokers on the first deploy. It only seeds an empty database and never wipes data. |
+| `SEED_IF_EMPTY` | optional. The demo brokers load into an empty Postgres database automatically; `false` turns that off. It never wipes data. |
 | `APP_URL` | optional; defaults to the Netlify site URL. Set it when you add a custom domain. |
 
 Optional keys (`RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `RENTCAST_API_KEY`, Turnstile) are the same as in the README.

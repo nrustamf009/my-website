@@ -96,3 +96,9 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - Public tracking still uses the real Auth.js session, so demo visits to scenario/listing pages are tracked like an investor's.
 - `/api/health` reports whether the database is reachable and how many brokers exist (no secrets), to debug a deploy without logs.
 - Verified on a production build against Postgres with `DEMO_LOGIN` unset: 142 pages across three brokers and the agency open with no redirects, no error text and no client errors.
+
+## Deploy hardening after "function crashed" on Netlify
+- `DATABASE_URL` is normalized at build and runtime (`scripts/db-url.mjs`, `lib/db/url.ts`): Neon's `psql '…'` snippet, quotes, a `DATABASE_URL=` prefix and the `channel_binding` parameter (unsupported by Prisma's engine) are accepted. The runtime client gets an explicit URL only when it had to be cleaned, so relative SQLite paths keep resolving against `prisma/`.
+- Zero-config fallback: a Netlify build (or `BUNDLED_SQLITE=true`) without a Postgres URL builds and seeds `prisma/demo.db` and traces it into the functions; at runtime it is copied to `/tmp` (function files are read-only). Each instance has its own copy, so new leads are per-instance and temporary. Acceptable for a demo; set a Postgres URL for persistent data.
+- The Postgres demo seed now runs on any empty database unless `SEED_IF_EMPTY=false`.
+- `/api/health` never throws and reports the URL shape (missing / postgres / sqlite-file / unrecognized), whether it was cleaned, the Prisma provider and engines present, the bundled DB, and the database error message with any URL masked.
