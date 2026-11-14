@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma, forBroker } from "@/lib/db";
 import { env } from "@/lib/env";
 import { hmacSha256, safeEqual } from "@/lib/tokens";
-import { auth } from "./config";
+import { auth, demoLoginEnabled } from "./config";
 
 export const IMPERSONATE_COOKIE = "dscr_impersonate";
 
@@ -24,7 +24,7 @@ export async function getSession() {
 
 export async function requireAdmin() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(demoLoginEnabled() ? "/go?as=agency&to=/admin" : "/login");
   if (session.user.role !== "AGENCY_ADMIN" || !session.user.agencyId) redirect("/dashboard");
   const agency = await prisma.agency.findUniqueOrThrow({ where: { id: session.user.agencyId } });
   return { session, agency };
@@ -37,7 +37,7 @@ export async function requireAdmin() {
  */
 export async function requireBroker(opts: { manage?: boolean; onboarding?: boolean } = {}) {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(demoLoginEnabled() ? "/go" : "/login");
   let brokerId: string | null = null;
   let impersonating = false;
   if (session.user.role === "AGENCY_ADMIN") {

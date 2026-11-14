@@ -39,6 +39,8 @@ async function demoSignIn(formData: FormData) {
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const session = await auth();
   if (session?.user) redirect(session.user.role === "AGENCY_ADMIN" ? "/admin" : "/dashboard");
+  // Demo has no sign-in: the home page is the module picker.
+  if (demoLoginEnabled()) redirect("/");
   const { error } = await searchParams;
   const demo = demoLoginEnabled();
   const demoUsers = demo

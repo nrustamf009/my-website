@@ -77,3 +77,15 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - Added `netlify.toml` and four scheduled functions that call the existing `/api/cron/*` routes with `CRON_SECRET`, so crons work without Vercel. `vercel.json` stays; both hosts are supported.
 - `APP_URL` falls back to Netlify's `URL` env var, then `VERCEL_URL`.
 - `SEED_IF_EMPTY=true` seeds the demo data during the build only when the Postgres database has zero brokers, so a hosted demo comes up populated and later deploys never wipe data. No new dependencies (Netlify applies its Next.js runtime itself).
+
+## Demo without sign-in (owner request)
+- With `DEMO_LOGIN=true` (and in development) there is no sign-in screen. The home page is a module picker: choose one of the three demo brokers (one per theme), then open modules 1–5. `/go?as=<slug>&to=<path>` signs the visitor in as that broker's seeded admin through the existing demo Credentials provider and redirects; `/login` redirects to `/`; `requireBroker`/`requireAdmin` send unauthenticated visitors to `/go` instead of `/login`.
+- A thin demo bar (root layout, hidden on `/`, `/embed`, `/dev`) links back to the picker, to modules 1–5 and switches broker while staying on the same module.
+- Production without `DEMO_LOGIN` is unchanged: magic-link sign-in.
+- `app/error.tsx` replaces Next's blank "Application error" screen with a readable message and a way back.
+
+## Prisma engine for Netlify/Lambda
+- The first Netlify deploy showed a client-side "Application error". The likely cause: the Prisma client was generated only for the build image (debian), so server pages failed on Netlify Functions (Amazon Linux, rhel-openssl-3.0.x) and client navigations surfaced it as a client exception. Added `binaryTargets = ["native", "rhel-openssl-3.0.x"]` and traced that engine into every function bundle.
+
+## No italic display type (owner request)
+- The owner rejected the slanted serif display look. maison's display family moves from Instrument Serif (with italics) to Hanken Grotesk upright, weights 500–600; all italic tokens and `italic` classes are removed (VerdictBadge, ImprovementList, DashboardShell count, emails, PDFs follow from the tokens). The landing headline no longer uses an italic emphasis. This overrides the maison type spec in DESIGN.md.

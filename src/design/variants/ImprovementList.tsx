@@ -25,7 +25,7 @@ export function ImprovementList({ items, stretchLabel }: { items: Improvement[];
           <span
             className={
               style === "italic"
-                ? "w-8 shrink-0 font-display text-2xl italic text-accent"
+                ? "w-8 shrink-0 font-display text-2xl font-medium text-accent"
                 : style === "chip"
                   ? "num w-24 shrink-0 font-mono text-base font-medium text-accent"
                   : "num w-[46%] shrink-0 whitespace-nowrap font-display text-[length:min(var(--type-option-rate-size),8.5vw)] font-bold leading-none tracking-tight text-ink"

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { PLATFORM_THEME } from "@design";
 import { ThemeScope } from "@design/ThemeScope";
+import { demoLoginEnabled } from "@/lib/auth/demo";
+import { DemoBar } from "@/components/demo/DemoBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen antialiased">
         <ThemeScope theme={PLATFORM_THEME.id} accent={PLATFORM_THEME.accent}>
+          {demoLoginEnabled() && <DemoBar />}
           {children}
         </ThemeScope>
       </body>

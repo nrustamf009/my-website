@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { prisma, signInAs } from "./helpers";
 
 const THEMES = [
-  { theme: "maison", slug: "harborline", families: ["instrumentSerif", "hankenGrotesk"] },
+  { theme: "maison", slug: "harborline", families: ["hankenGrotesk"] },
   { theme: "terminal", slug: "cactus-ridge", families: ["plexSans", "plexMono"] },
   { theme: "atelier", slug: "evergreen-key", families: ["interTight"] },
 ] as const;

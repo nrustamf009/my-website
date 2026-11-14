@@ -19,7 +19,7 @@ export interface ResultHeroProps {
 }
 
 /**
- * Theme-branching (DESIGN.md §6). maison: dark inverse panel, serif numeral with italic verdict ·
+ * Theme-branching (DESIGN.md §6). maison: dark inverse panel, grotesk numeral with display verdict ·
  * terminal: surface card with a gauge and a mono numeral · atelier: numeral on white, then a full-bleed accent block.
  */
 export function ResultHero({ address, value, verdict, min, strong, explanation, note }: ResultHeroProps) {

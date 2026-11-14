@@ -12,7 +12,7 @@ Three complete visual languages, not recolors. A broker (or the agency) picks on
 
 | id | Name | In one line | Fits |
 |---|---|---|---|
-| `maison` | Maison | Private-bank calm. Deep green, serif numerals, hairlines, brass accent. | Conservative, relationship-led brokers |
+| `maison` | Maison | Private-bank calm. Deep green, upright grotesk numerals (no italics, see DECISIONS.md), hairlines, brass accent. | Conservative, relationship-led brokers |
 | `terminal` | Terminal | Dark precision. Graphite, mono numerals, gauge, dense tables. | Data-forward, tech-savvy brokers |
 | `atelier` | Atelier | Swiss editorial. White, giant bold numerals, 2px rules, one color block. | Bold, modern brokers |
 

@@ -4,7 +4,7 @@ import type { Verdict } from "@/lib/dscr";
 import { t } from "@/lib/strings/en";
 import { useTheme } from "../ThemeContext";
 
-/** Theme-branching (DESIGN.md §6): maison italic display text, terminal mono chip, atelier bold sentence. The label is always text. */
+/** Theme-branching (DESIGN.md §6): maison display text, terminal mono chip, atelier bold sentence. The label is always text. */
 export function VerdictBadge({ verdict, size = "lg", testId = "verdict" }: { verdict: Verdict; size?: "lg" | "sm"; testId?: string }) {
   const { variants } = useTheme();
   const label = t.verdict[verdict];
@@ -20,5 +20,5 @@ export function VerdictBadge({ verdict, size = "lg", testId = "verdict" }: { ver
       </span>
     );
   }
-  return <span className={`font-display italic ${size === "lg" ? "text-[length:var(--type-option-letter-size)] leading-tight" : ""}`} data-testid={testId}>{label}</span>;
+  return <span className={`font-display font-semibold ${size === "lg" ? "text-[length:var(--type-option-letter-size)] leading-tight" : ""}`} data-testid={testId}>{label}</span>;
 }

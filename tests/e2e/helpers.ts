@@ -5,8 +5,7 @@ export const prisma = new PrismaClient();
 
 /** One-click demo sign-in (demo mode is on in development and with DEMO_LOGIN=true). */
 export async function signInAs(page: Page, email: string) {
-  await page.goto("/login");
-  await page.locator("form", { has: page.locator(`input[value="${email}"]`) }).getByRole("button").click();
+  await page.goto(`/go?email=${encodeURIComponent(email)}${email.startsWith("admin@") ? "&to=/admin" : ""}`);
   await page.waitForURL(/\/(dashboard|admin|onboarding)/, { timeout: 30_000 });
 }
 

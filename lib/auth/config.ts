@@ -14,10 +14,8 @@ declare module "next-auth" {
   }
 }
 
-/** Demo one-click login: on in development, or when DEMO_LOGIN=true. */
-export function demoLoginEnabled() {
-  return process.env.DEMO_LOGIN === "true" || process.env.NODE_ENV !== "production";
-}
+import { demoLoginEnabled } from "./demo";
+export { demoLoginEnabled };
 
 async function magicLinkHtml(url: string) {
   const { render } = await import("@react-email/components");

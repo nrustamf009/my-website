@@ -28,7 +28,7 @@ function BrandBlock({ brand, tone }: { brand: ShellBrand; tone: "page" | "invers
 }
 
 /**
- * Theme-branching (DESIGN.md §6). maison: dark 232px sidebar, current item light with an italic count ·
+ * Theme-branching (DESIGN.md §6). maison: dark 232px sidebar, current item light with a display count ·
  * terminal: bordered 208px sidebar, current item raised with an accent badge · atelier: top bar with a
  * 2px rule and an underlined current item. Phones always get the compact bar + menu.
  */
@@ -92,7 +92,7 @@ export function DashboardShell({ items, brand, userLabel, signOut, banner, child
                   {!dark && <span className={on ? "text-accent" : "text-muted"}><Icon name={it.icon} /></span>}
                   <span className="flex-1">{it.label}</span>
                   {it.badge ? (
-                    dark ? <span className="font-display text-lg italic">{it.badge}</span> : <span className="rounded-sm bg-accent px-1.5 font-mono text-xs text-on-accent">{it.badge}</span>
+                    dark ? <span className="font-display text-lg font-medium">{it.badge}</span> : <span className="rounded-sm bg-accent px-1.5 font-mono text-xs text-on-accent">{it.badge}</span>
                   ) : null}
                 </Link>
               );

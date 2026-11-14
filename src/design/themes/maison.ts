@@ -1,15 +1,15 @@
 import type { ThemeDefinition } from "../tokens";
 
-/** Private-bank calm. Deep green, serif numerals, hairlines, brass accent. */
+/** Private-bank calm. Deep green, upright grotesk numerals, hairlines, brass accent. */
 export const maison: ThemeDefinition = {
   id: "maison",
   name: "Maison",
-  tagline: "Private-bank calm. Deep green, serif numerals, hairlines, brass accent.",
+  tagline: "Private-bank calm. Deep green, upright grotesk numerals, hairlines, brass accent.",
   fits: "Conservative, relationship-led brokers",
   defaultAccent: "#7D5E22",
   presets: ["#7D5E22", "#1F4E79", "#7A1F2B", "#0F5B4B"],
-  families: { display: "instrumentSerif", body: "hankenGrotesk", mono: "systemMono" },
-  stacks: { display: "Georgia, 'Times New Roman', serif", body: "system-ui, -apple-system, 'Segoe UI', sans-serif", mono: "ui-monospace, Menlo, Consolas, monospace" },
+  families: { display: "hankenGrotesk", body: "hankenGrotesk", mono: "systemMono" },
+  stacks: { display: "system-ui, -apple-system, 'Segoe UI', sans-serif", body: "system-ui, -apple-system, 'Segoe UI', sans-serif", mono: "ui-monospace, Menlo, Consolas, monospace" },
   tokens: {
     color: {
       bg: "#F3F4F0",
@@ -36,15 +36,15 @@ export const maison: ThemeDefinition = {
       focus: "#10241D",
     },
     type: {
-      heroNumeral: { family: "display", size: 132, line: 112, tracking: -0.02, weight: 400 },
-      dashboardCount: { family: "display", size: 64, line: 64, tracking: -0.02, weight: 400, italic: true },
-      h1: { family: "display", size: 40, line: 42, tracking: -0.01, weight: 400 },
-      h1Desktop: { family: "display", size: 48, line: 52, tracking: -0.01, weight: 400 },
-      section: { family: "display", size: 30, line: 34, tracking: 0, weight: 400 },
-      metric: { family: "display", size: 38, line: 38, tracking: 0, weight: 400 },
+      heroNumeral: { family: "display", size: 132, line: 112, tracking: -0.02, weight: 500 },
+      dashboardCount: { family: "display", size: 64, line: 64, tracking: -0.02, weight: 500 },
+      h1: { family: "display", size: 40, line: 42, tracking: -0.01, weight: 600 },
+      h1Desktop: { family: "display", size: 48, line: 52, tracking: -0.01, weight: 600 },
+      section: { family: "display", size: 30, line: 34, tracking: 0, weight: 600 },
+      metric: { family: "display", size: 38, line: 38, tracking: 0, weight: 500 },
       metricPanel: { family: "body", size: 18, line: 24, tracking: 0, weight: 600 },
-      optionRate: { family: "display", size: 60, line: 60, tracking: -0.01, weight: 400 },
-      optionLetter: { family: "display", size: 24, line: 28, tracking: 0, weight: 400, italic: true },
+      optionRate: { family: "display", size: 60, line: 60, tracking: -0.01, weight: 500 },
+      optionLetter: { family: "display", size: 24, line: 28, tracking: 0, weight: 600 },
       eyebrow: { family: "body", size: 11, line: 16, tracking: 0.14, weight: 500, upper: true },
       body: { family: "body", size: 15, line: 24, tracking: 0, weight: 400 },
       bodySmall: { family: "body", size: 13, line: 20, tracking: 0, weight: 400 },
