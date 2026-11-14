@@ -62,9 +62,9 @@ export default async function SnapshotsPage() {
                   <div key={l as string} className="rounded-xl bg-paper/70 py-2"><div className="num font-display text-2xl">{v}</div><div className="text-xs text-muted">{l}</div></div>
                 ))}
               </div>
-              <div className="flex items-center justify-between border-t border-line px-5 py-3 text-xs text-muted">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-5 py-3 text-xs text-muted">
                 <span>Last activity {st?.lastActivity ? relativeTime(st.lastActivity) : "—"}</span>
-                <details className="text-right"><summary className="cursor-pointer text-accent">Edit</summary><div className="mt-3 text-left"><RealtorForm initial={r} /></div></details>
+                <details className="min-w-0 text-right open:basis-full"><summary className="cursor-pointer text-accent">Edit</summary><div className="mt-3 text-left"><RealtorForm initial={r} /></div></details>
               </div>
             </Card>
           );

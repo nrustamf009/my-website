@@ -102,3 +102,8 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - Zero-config fallback: a Netlify build (or `BUNDLED_SQLITE=true`) without a Postgres URL builds and seeds `prisma/demo.db` and traces it into the functions; at runtime it is copied to `/tmp` (function files are read-only). Each instance has its own copy, so new leads are per-instance and temporary. Acceptable for a demo; set a Postgres URL for persistent data.
 - The Postgres demo seed now runs on any empty database unless `SEED_IF_EMPTY=false`.
 - `/api/health` never throws and reports the URL shape (missing / postgres / sqlite-file / unrecognized), whether it was cleaned, the Prisma provider and engines present, the bundled DB, and the database error message with any URL masked.
+
+## Mobile pass and crash guard
+- maison hero numeral 132 → 96px and the verdict wraps under the numeral on narrow screens (the upright grotesk is wider than the old serif and pushed the verdict off-screen).
+- CardHeader and the realtor card footer wrap on phones; a phone-width audit of 34 pages (home, public check, every dashboard module, admin; three themes) finds no horizontal overflow.
+- `instrumentation.ts` logs unhandled rejections/exceptions instead of letting them end the serverless function.

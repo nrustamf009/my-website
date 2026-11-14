@@ -36,7 +36,7 @@ export const maison: ThemeDefinition = {
       focus: "#10241D",
     },
     type: {
-      heroNumeral: { family: "display", size: 132, line: 112, tracking: -0.02, weight: 500 },
+      heroNumeral: { family: "display", size: 96, line: 92, tracking: -0.03, weight: 500 },
       dashboardCount: { family: "display", size: 64, line: 64, tracking: -0.02, weight: 500 },
       h1: { family: "display", size: 40, line: 42, tracking: -0.01, weight: 600 },
       h1Desktop: { family: "display", size: 48, line: 52, tracking: -0.01, weight: 600 },

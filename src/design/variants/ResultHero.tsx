@@ -75,9 +75,9 @@ export function ResultHero({ address, value, verdict, min, strong, explanation, 
     <section className="-mx-[var(--space-page)] bg-inverse px-[var(--space-page)] py-7 text-on-inverse sm:mx-0 sm:rounded-2xl sm:px-7" aria-label="Estimated DSCR">
       <div className="type-eyebrow text-on-inverse-muted">Estimated debt service coverage</div>
       {address && <div className="mt-2 text-on-inverse">{address}</div>}
-      <div className="mt-4 flex items-end gap-5">
+      <div className="mt-4 flex flex-wrap items-end gap-x-5 gap-y-1">
         {numeral}
-        <div className="pb-3">
+        <div className="min-w-0 pb-3">
           <span className="text-on-inverse"><VerdictBadge verdict={verdict} /></span>
           <div className="type-body-small text-on-inverse-muted">{note ?? "Estimate, not an offer"}</div>
         </div>

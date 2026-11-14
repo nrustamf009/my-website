@@ -32,9 +32,9 @@
   --font-mono: ui-monospace, Menlo, Consolas, monospace;
   --font-sans: var(--font-body);
   --type-hero-numeral-family: var(--font-display);
-  --type-hero-numeral-size: 132px;
-  --type-hero-numeral-line: 112px;
-  --type-hero-numeral-tracking: -0.02em;
+  --type-hero-numeral-size: 96px;
+  --type-hero-numeral-line: 92px;
+  --type-hero-numeral-tracking: -0.03em;
   --type-hero-numeral-weight: 500;
   --type-hero-numeral-style: normal;
   --type-hero-numeral-case: none;
