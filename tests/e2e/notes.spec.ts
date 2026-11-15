@@ -10,7 +10,7 @@ test("Module 5: paste notes → review (nothing saved) → confirm → draft sce
 
   await page.goto("/dashboard/notes");
   await hydrated(page);
-  await page.getByRole("button", { name: /Try: duplex purchase/ }).click();
+  await page.getByRole("button", { name: /duplex purchase/ }).click();
   await page.getByRole("button", { name: "Extract the deal" }).click();
   await expect(page.getByTestId("notes-review")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByLabel("Name")).toHaveValue("Marcus Bellweather");

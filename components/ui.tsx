@@ -6,17 +6,19 @@ export const cx = clsx;
 
 type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-ink text-page hover:bg-ink-2 shadow-sm",
-  accent: "bg-accent text-on-accent hover:brightness-110 shadow-sm",
-  secondary: "bg-surface text-ink border border-line hover:bg-paper",
-  ghost: "text-ink-2 hover:bg-ink/5",
-  danger: "bg-surface text-bad border border-bad/30 hover:bg-bad-soft",
+  // Solid, high-contrast fills; outlines use the strong rule so they read on every theme's page colour.
+  primary: "bg-inverse text-on-inverse hover:opacity-90",
+  accent: "bg-accent text-on-accent hover:brightness-110",
+  secondary: "bg-surface text-ink border border-rule-strong hover:bg-inverse hover:text-on-inverse",
+  ghost: "text-ink-2 underline-offset-4 hover:text-ink hover:underline",
+  danger: "bg-surface text-bad border border-bad hover:bg-bad hover:text-page",
 };
-const sizes = { sm: "h-8 px-3 text-sm", md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-base" };
+// Touch-friendly: md and lg meet the 44px target on phones.
+const sizes = { sm: "h-9 px-3.5 text-sm", md: "h-11 px-5 text-sm", lg: "h-12 px-6 text-base" };
 
 export function buttonClass(variant: Variant = "primary", size: keyof typeof sizes = "md", extra?: string) {
   return cx(
-    "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition focus-accent disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-lg font-semibold tracking-[0.01em] transition-colors focus-accent active:translate-y-px disabled:opacity-55 disabled:pointer-events-none whitespace-nowrap",
     variants[variant],
     sizes[size],
     extra,

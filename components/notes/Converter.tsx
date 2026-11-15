@@ -47,15 +47,18 @@ export function NotesConverter({ samples }: { samples: { id: string; label: stri
     return (
       <Card className="p-5">
         <label htmlFor="notes-text" className="mb-2 block font-display text-xl">Paste call notes, an email thread or a transcript</label>
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted">Or try an example:</span>
+          {samples.map((s) => (
+            <Button key={s.id} type="button" size="sm" variant="secondary" onClick={() => setText(s.text)}>{s.label.replace(/^Try:\s*/i, "")}</Button>
+          ))}
+        </div>
         <Textarea id="notes-text" rows={12} value={text} onChange={(e) => setText(e.target.value)} placeholder={"Spoke with Jordan about a duplex in Tampa, under contract at $468k, 25% down, rents $3,850 combined…"} maxLength={20_000} />
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
           <span>{text.length.toLocaleString()} / 20,000 · Nothing is saved until you confirm. Don&apos;t paste SSNs or account numbers.</span>
-          <span className="flex flex-wrap gap-2">
-            {samples.map((s) => <button key={s.id} type="button" className="text-accent underline" onClick={() => setText(s.text)}>{s.label}</button>)}
-          </span>
         </div>
         {error && <div className="mt-3"><Notice tone="bad">{error}</Notice></div>}
-        <Button className="mt-4" variant="accent" size="lg" onClick={extract} disabled={pending || text.trim().length < 40}>{pending ? "Reading the notes…" : "Extract the deal"}</Button>
+        <Button className="mt-4 w-full sm:w-auto" variant="accent" size="lg" onClick={extract} disabled={pending || text.trim().length < 40}>{pending ? "Reading the notes…" : "Extract the deal"}</Button>
       </Card>
     );
   }
