@@ -6,7 +6,6 @@ import { recordConsents } from "@/lib/compliance/consent";
 import { e164, toDealInput, type PublicLeadInput } from "@/lib/check/form";
 import { emit } from "@/lib/events";
 import { sendBrandEmail } from "@/lib/emails";
-import { renderEstimatePdf } from "@/lib/pdf/EstimatePdf";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { env } from "@/lib/env";
 import { dscr, pct, rate, usd } from "@/lib/format";
@@ -70,15 +69,22 @@ export async function createPublicLead(p: {
 
   const notify = async () => {
     const first = input.contact.name.split(" ")[0];
+    // Lazy and optional: if the PDF library cannot run on a host, the investor still gets the email.
+    let pdf: Buffer | null = null;
     try {
-      const pdf = await renderEstimatePdf({ brand, ctx, input: deal, address: input.form.address, investor: input.contact.name });
+      const { renderEstimatePdf } = await import("@/lib/pdf/EstimatePdf");
+      pdf = await renderEstimatePdf({ brand, ctx, input: deal, address: input.form.address, investor: input.contact.name });
+    } catch (err) {
+      log.error("lead.pdf_failed", err);
+    }
+    try {
       await sendBrandEmail({
         brand,
         to: email,
         subject: `Your DSCR estimate for ${input.form.address.split(",")[0]}`,
         heading: "Your DSCR estimate",
         hero: { label: "Estimated debt service coverage", value: dscr(a.dscrRatio), note: t.verdict[a.verdict] },
-        intro: `Hi ${first}, here's your estimate for ${input.form.address}. The PDF has the full breakdown, the cash you'd need, and what would change the outcome.`,
+        intro: `Hi ${first}, here's your estimate for ${input.form.address}. ${pdf ? "The PDF has the full breakdown, the cash you'd need, and what would change the outcome." : "Reply to this email for the full breakdown."}`,
         rows: [
           { label: "Estimated DSCR", value: `${dscr(a.dscrRatio)} · ${t.verdict[a.verdict]}` },
           { label: "Estimated payment (PITIA)", value: `${usd(a.pitiaCents)}/mo` },
@@ -87,11 +93,11 @@ export async function createPublicLead(p: {
         footerNote: `You're receiving this because you requested an estimate from ${broker.companyName}.`,
         replyTo: brand.lo.email,
         fromName: `${brand.lo.name} · ${broker.companyName}`,
-        attachments: [{ filename: `DSCR-estimate-${input.form.address.split(",")[0]!.replace(/[^a-z0-9]+/gi, "-")}.pdf`, content: pdf }],
+        attachments: pdf ? [{ filename: `DSCR-estimate-${input.form.address.split(",")[0]!.replace(/[^a-z0-9]+/gi, "-")}.pdf`, content: pdf }] : [],
         tag: "lead.investor_pdf",
       });
     } catch (err) {
-      log.error("lead.pdf_failed", err);
+      log.error("lead.investor_email_failed", err);
     }
     const heading = snapshot ? `New listing lead via ${snapshot.realtor.name}` : existing ? "Returning lead submitted again" : "New Instant Check lead";
     await sendBrandEmail({

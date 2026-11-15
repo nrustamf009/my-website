@@ -107,3 +107,8 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - maison hero numeral 132 → 96px and the verdict wraps under the numeral on narrow screens (the upright grotesk is wider than the old serif and pushed the verdict off-screen).
 - CardHeader and the realtor card footer wrap on phones; a phone-width audit of 34 pages (home, public check, every dashboard module, admin; three themes) finds no horizontal overflow.
 - `instrumentation.ts` logs unhandled rejections/exceptions instead of letting them end the serverless function.
+
+## Simpler home, lazy PDF, Vercel zero-config
+- Home page reduced to a theme switch and five large module buttons with one line each (owner: "less text, buttons barely visible").
+- The PDF library is imported lazily (lead notifications, snapshot PDFs). A lead is saved and the investor and LO emails are sent even if PDF rendering fails on a host; the investor email then has no attachment.
+- Vercel builds without `DATABASE_URL` use the same bundled demo database as Netlify (`VERCEL=1`), so importing the repo on Vercel needs no settings. Vercel is the recommended host (native Next.js runtime, readable function logs).

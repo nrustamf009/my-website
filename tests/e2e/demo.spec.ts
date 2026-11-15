@@ -22,7 +22,7 @@ for (const b of BROKERS) {
     await expect(page.getByRole("link", { name: /Sign in/ })).toHaveCount(0);
     for (const m of MODULES) {
       await page.goto(`/?b=${b.slug}`);
-      await page.getByRole("link", { name: `Open module ${m.n} →` }).click();
+      await page.getByRole("link", { name: new RegExp(`Open module ${m.n}$`) }).click();
       await page.waitForURL(m.url, { timeout: 30_000 });
       await expect(page).not.toHaveURL(/\/login/);
       await expect(page.getByRole("navigation", { name: "Demo" })).toBeVisible();
@@ -46,5 +46,5 @@ test("demo bar switches broker and keeps the module", async ({ page }) => {
 test("/login goes straight to the module picker in demo", async ({ page }) => {
   await page.goto("/login");
   await expect(page).toHaveURL(/\/$|\/\?/);
-  await expect(page.getByRole("link", { name: "Open module 1 →" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Open module 1$/ })).toBeVisible();
 });

@@ -2,7 +2,6 @@ import type { Broker, Realtor, Snapshot } from "@prisma/client";
 import type { PublicBrand } from "@/lib/broker";
 import type { EngineContext, ListingInput, PropertyType, UsState } from "@/lib/dscr";
 import { env } from "@/lib/env";
-import { renderSnapshotPdf } from "@/lib/pdf/SnapshotPdf";
 
 export const listingInputOf = (s: Snapshot): ListingInput => ({
   state: s.state as UsState,
@@ -17,7 +16,9 @@ export const listingInputOf = (s: Snapshot): ListingInput => ({
 
 export const snapshotUrl = (broker: Pick<Broker, "slug">, s: Pick<Snapshot, "token">) => `${env.appUrl}/b/${broker.slug}/l/${s.token}?src=qr`;
 
-export function snapshotPdf(broker: Broker, brand: PublicBrand, ctx: EngineContext, s: Snapshot & { realtor: Realtor }, template?: "CLASSIC" | "MODERN") {
+export async function snapshotPdf(broker: Broker, brand: PublicBrand, ctx: EngineContext, s: Snapshot & { realtor: Realtor }, template?: "CLASSIC" | "MODERN") {
+  // Lazy: pages that only need listingInputOf/snapshotUrl never load the PDF library.
+  const { renderSnapshotPdf } = await import("@/lib/pdf/SnapshotPdf");
   return renderSnapshotPdf({
     brand,
     ctx,

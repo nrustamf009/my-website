@@ -85,7 +85,11 @@ Check current vendor pricing before quoting a client; the expensive line is rent
 
 See [docs/DEPLOY-NETLIFY.md](docs/DEPLOY-NETLIFY.md): Neon Postgres, import the repo, set 5 env vars, deploy. Crons run as Netlify scheduled functions.
 
-## Deploy to Vercel
+## Deploy to Vercel (recommended)
+
+Zero-config demo: vercel.com → Add New → Project → import this repo → Deploy. Without `DATABASE_URL` the build ships a pre-seeded demo database. For persistent data add a Postgres database (Storage → Neon) and redeploy.
+
+### With your own Postgres
 
 1. Import the repo. Add **Neon Postgres** from the Vercel Marketplace (sets `DATABASE_URL`).
 2. Set `AUTH_SECRET`, `APP_URL`, `CRON_SECRET` and any optional keys.

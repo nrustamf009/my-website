@@ -14,11 +14,11 @@ export function normalizeDbUrl(raw) {
 }
 
 /**
- * Hosted build without a usable Postgres URL (Netlify, or BUNDLED_SQLITE=true): ship a pre-seeded
+ * Hosted build without a usable Postgres URL (Netlify, Vercel, or BUNDLED_SQLITE=true): ship a pre-seeded
  * SQLite file with the app instead (prisma/demo.db); lib/db/client.ts copies it to /tmp at runtime.
  */
 export function useBundledSqlite(url) {
-  const hosted = process.env.NETLIFY === "true" || process.env.BUNDLED_SQLITE === "true";
+  const hosted = process.env.NETLIFY === "true" || process.env.VERCEL === "1" || process.env.BUNDLED_SQLITE === "true";
   return hosted && !/^postgres(ql)?:\/\//.test(url);
 }
 export const BUNDLED_DB_URL = "file:./demo.db"; // relative to prisma/schema.prisma
