@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { after } from "next/server";
+import { afterSafe } from "@/lib/after-safe";
 import { z } from "zod/v4";
 import { forBroker } from "@/lib/db";
 import { emit } from "@/lib/events";
@@ -40,7 +40,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   if (kind) {
     await emit(db, kind === "first" ? "scenario.opened" : "scenario.reopened", "Scenario", s.id, { device });
     await db.scenario.update({ where: { id: s.id }, data: { lastNotifiedAt: now } });
-    after(() => notifyOpened(pc.broker, pc.brand, s, kind!, device));
+    afterSafe(() => notifyOpened(pc.broker, pc.brand, s, kind!, device), "scenario_opened");
   }
   return NextResponse.json({ ok: true, notified: kind });
 }

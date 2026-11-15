@@ -21,7 +21,11 @@ type Level = "info" | "warn" | "error";
 function write(level: Level, event: string, data?: Record<string, unknown>) {
   if (process.env.NODE_ENV === "test") return;
   const line = JSON.stringify({ level, event, ...(data ? (scrub(data) as object) : {}), at: new Date().toISOString() });
-  if (level === "error") console.error(line);
+  if (level === "error") {
+    console.error(line);
+    recentErrors().unshift(line.slice(0, 1200));
+    recentErrors().splice(20);
+  }
   else if (level === "warn") console.warn(line);
   else console.log(line);
 }
@@ -32,3 +36,9 @@ export const log = {
   error: (event: string, err?: unknown, data?: Record<string, unknown>) =>
     write("error", event, { ...data, error: err instanceof Error ? err.name + ": " + scrub(err.message) : String(scrub(err)) }),
 };
+
+/** Last errors on this server instance (already scrubbed), shown by /api/health?errors=1 for deploy debugging. */
+export function recentErrors(): string[] {
+  const g = globalThis as unknown as { __dscrErrors?: string[] };
+  return (g.__dscrErrors ??= []);
+}

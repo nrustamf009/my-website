@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * Deploy check: what database URL shape the server sees, which Prisma engine/provider it has,
  * and whether the database answers. Never returns the URL or any secret. Never throws.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const raw = process.env.DATABASE_URL ?? "";
   const url = normalizeDbUrl(raw);
   const out: Record<string, unknown> = {
@@ -35,6 +35,16 @@ export async function GET() {
   } catch (e) {
     out.db = "error";
     out.error = String((e as Error)?.message ?? e).replace(/postgres(ql)?:\/\/\S+/g, "postgres://***").split("\n").map((l) => l.trim()).filter(Boolean).slice(-3).join(" ").slice(0, 400);
+  }
+  if (new URL(req.url).searchParams.has("errors")) {
+    const { recentErrors } = await import("@/lib/log");
+    out.recentErrors = recentErrors().map((l) => {
+      try {
+        return JSON.parse(l);
+      } catch {
+        return l;
+      }
+    });
   }
   return NextResponse.json(out, { status: 200 });
 }

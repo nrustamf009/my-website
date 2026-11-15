@@ -112,3 +112,7 @@ Every judgment call made while building v2, newest at the bottom. Format: **deci
 - Home page reduced to a theme switch and five large module buttons with one line each (owner: "less text, buttons barely visible").
 - The PDF library is imported lazily (lead notifications, snapshot PDFs). A lead is saved and the investor and LO emails are sent even if PDF rendering fails on a host; the investor email then has no attachment.
 - Vercel builds without `DATABASE_URL` use the same bundled demo database as Netlify (`VERCEL=1`), so importing the repo on Vercel needs no settings. Vercel is the recommended host (native Next.js runtime, readable function logs).
+
+## Writes failed on Netlify: read-only demo database copy
+- Reads worked on Netlify but every write (lead, module 4 buttons, module 5 extraction) failed. The bundled `prisma/demo.db` is read-only inside the function, and `copyFileSync` kept that mode on the `/tmp` copy; the server there is not root, so SQLite refused writes. Fixed with `chmodSync(dst, 0o666)`. Verified by running the bundled build as a non-root user: module 4 and module 5 writes succeed.
+- Background work uses `afterSafe()` (logs instead of rejecting). `instrumentation.ts` records every server error (`onRequestError`) in a per-instance buffer; `/api/health?errors=1` returns it and the error page shows the cause under "Technical details".

@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { copyFileSync, existsSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { normalizeDbUrl } from "./url";
 
@@ -21,6 +21,9 @@ function bundledDemoUrl(): string | null {
   if (!src) return null;
   const dst = join("/tmp", "dscr-demo.db");
   if (!existsSync(dst)) copyFileSync(src, dst);
+  // The deployed file is read-only and copyFileSync keeps its mode; SQLite then refuses every write
+  // (and on Lambda, where the server is not root, the first write ended the function).
+  chmodSync(dst, 0o666);
   return `file:${dst}`;
 }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { after } from "next/server";
+import { afterSafe } from "@/lib/after-safe";
 import { z } from "zod/v4";
 import { forBroker } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/request";
@@ -22,6 +22,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const { pc, s } = r;
   if (pc.unavailable) return NextResponse.json({ error: "Unavailable" }, { status: 404 });
   await forBroker(pc.broker.id).scenario.update({ where: { id: s.id }, data: { interestedOptionId: option.id, interestedAt: new Date(), interestQuestion: question } });
-  after(() => notifyInterest(pc.broker, pc.brand, s, option, question));
+  afterSafe(() => notifyInterest(pc.broker, pc.brand, s, option, question), "scenario_interest");
   return NextResponse.json({ ok: true, label: option.label });
 }

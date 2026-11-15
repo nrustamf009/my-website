@@ -1,4 +1,5 @@
-import { NextResponse, after } from "next/server";
+import { NextResponse } from "next/server";
+import { afterSafe } from "@/lib/after-safe";
 import { forBroker } from "@/lib/db";
 import { getPublicContext } from "@/lib/broker";
 import { createPublicLead } from "@/lib/leads";
@@ -32,7 +33,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   }
   try {
     const { lead, notify } = await createPublicLead({ broker: pc.broker, brand: pc.brand, ctx: pc.ctx, input, ip, userAgent: await userAgent(), snapshot });
-    after(notify);
+    afterSafe(notify, "lead_notify");
     return NextResponse.json({ ok: true, leadId: lead.id });
   } catch (err) {
     log.error("lead.create_failed", err);
